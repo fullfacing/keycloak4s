@@ -1,4 +1,4 @@
-package models.enums
+package com.fullfacing.keycloak4s.models.enums
 import enumeratum._
 
 sealed trait PolicyEnforcementMode extends EnumEntry

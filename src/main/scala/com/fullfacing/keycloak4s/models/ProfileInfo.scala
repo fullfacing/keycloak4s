@@ -1,4 +1,4 @@
-package models
+package com.fullfacing.keycloak4s.models
 
 case class ProfileInfo(
                         disabledFeatures: Option[List[String]],

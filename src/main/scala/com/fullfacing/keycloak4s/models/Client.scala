@@ -1,4 +1,4 @@
-package models
+package com.fullfacing.keycloak4s.models
 
 case class Client(
                    access: Option[Map[_, _]],

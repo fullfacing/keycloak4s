@@ -1,4 +1,4 @@
-package models
+package com.fullfacing.keycloak4s.models
 
 case class ClientScope(
                         attributes: Option[Map[_, _]],
