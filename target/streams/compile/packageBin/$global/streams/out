@@ -1,0 +1,263 @@
+[0m[[0m[0minfo[0m] [0m[0mPackaging /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/keycloak_2.12-0.1.jar ...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/IdentityProviderMapper$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/IdentityProviderMapper$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ComponentType$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ComponentType$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Permission.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Permission.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ResourceServer$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ResourceServer$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/IdentityProviderMapper.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/IdentityProviderMapper.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/PolicyEnforcementMode$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/PolicyEnforcementMode$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AccessTokenCertConf$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AccessTokenCertConf$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/PartialImport$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/PartialImport$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AccessTokenAuthorization.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AccessTokenAuthorization.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/PolicyEnforcementMode$ENFORCING$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/PolicyEnforcementMode$ENFORCING$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/GlobalRequestResult.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/GlobalRequestResult.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Mappings.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Mappings.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/KeysMetadataRepresentationKeyMetadataRepresentation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/KeysMetadataRepresentationKeyMetadataRepresentation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ComponentExport$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ComponentExport$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Certificate$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Certificate$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category$ID$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category$ID$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Group$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Group$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Policy$OVERWRITE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Policy$OVERWRITE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category$ACCESS$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category$ACCESS$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/MemoryInfo.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/MemoryInfo.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Role$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Role$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ProtocolMapper$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ProtocolMapper$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/PolicyEnforcementMode.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/PolicyEnforcementMode.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Client$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Client$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/KeysMetadataRepresentationKeyMetadataRepresentation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/KeysMetadataRepresentationKeyMetadataRepresentation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Permission_.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Permission_.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationExecutionInfo.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationExecutionInfo.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/PolicyEnforcementMode$DISABLED$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/PolicyEnforcementMode$DISABLED$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientMappings.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientMappings.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/RoleComposites.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/RoleComposites.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/PolicyRepresentation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/PolicyRepresentation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/UserConsent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/UserConsent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AccessTokenCertConf.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AccessTokenCertConf.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/KeyStoreConfig.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/KeyStoreConfig.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ConfigProperty$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ConfigProperty$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Permission$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Permission$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/MultivaluedHashMap$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/MultivaluedHashMap$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AccessTokenAuthorization$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AccessTokenAuthorization$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/UserConsent$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/UserConsent$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticatorConfig.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticatorConfig.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/DecisionStrategy$AFFIRMATIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/DecisionStrategy$AFFIRMATIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationFlow.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationFlow.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/IdentityProvider.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/IdentityProvider.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ConfigProperty.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ConfigProperty.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AccessTokenAccess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AccessTokenAccess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationFlow$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationFlow$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/PasswordPolicyType$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/PasswordPolicyType$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationExecutionExport.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationExecutionExport.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationExecution.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationExecution.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ResourceServer.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ResourceServer.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ProtocolMapper.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ProtocolMapper.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Logic$NEGATIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Logic$NEGATIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/EventRepresentation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/EventRepresentation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientInitialAccessCreate$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientInitialAccessCreate$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/PartialImport.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/PartialImport.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/DecisionStrategy.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/DecisionStrategy.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/KeysMetadata$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/KeysMetadata$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AdminEvent$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AdminEvent$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category$USERINFO$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category$USERINFO$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientScopeEvaluateResourceProtocolMapperEvaluation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientScopeEvaluateResourceProtocolMapperEvaluation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Component.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Component.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ManagementPermission.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ManagementPermission.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Credential.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Credential.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Policy$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Policy$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/PolicyEnforcementMode$PERMISSIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/PolicyEnforcementMode$PERMISSIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientInitialAccess$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientInitialAccess$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthDetails.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthDetails.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Logic.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Logic.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ManagementPermission$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ManagementPermission$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AddressClaimSet.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AddressClaimSet.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/FederatedIdentity$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/FederatedIdentity$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Logic$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Logic$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/DecisionStrategy$UNANIMOUS$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/DecisionStrategy$UNANIMOUS$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationExecutionInfo$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationExecutionInfo$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category$ADMIN$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category$ADMIN$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Mappings$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Mappings$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AddressClaimSet$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AddressClaimSet$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/PolicyRepresentation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/PolicyRepresentation.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Policy$FAIL$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Policy$FAIL$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Policy$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Policy$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationExecutionExport$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationExecutionExport$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Client.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Client.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticatorConfig$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticatorConfig$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientScope.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientScope.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticatorConfigInfo$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticatorConfigInfo$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthDetails$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthDetails$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientMappings$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientMappings$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/User.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/User.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Group.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Group.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticationExecution$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticationExecution$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Policy.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Policy.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Scope.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Scope.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Scope$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Scope$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/User$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/User$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientInitialAccessCreate.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientInitialAccessCreate.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/RoleComposites$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/RoleComposites$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/MemoryInfo$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/MemoryInfo$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ComponentType.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ComponentType.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Resource.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Resource.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/IdentityProvider$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/IdentityProvider$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientScopeEvaluateResourceProtocolMapperEvaluation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientScopeEvaluateResourceProtocolMapperEvaluation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/KeysMetadata.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/KeysMetadata.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Credential$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Credential$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/KeyStoreConfig$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/KeyStoreConfig$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Component$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Component$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientScope$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientScope$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Policy$SKIP$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Policy$SKIP$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/FederatedIdentity.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/FederatedIdentity.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Permission_$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Permission_$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AdminEvent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AdminEvent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Role.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Role.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ComponentExport.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ComponentExport.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Certificate.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Certificate.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/GlobalRequestResult$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/GlobalRequestResult$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/DecisionStrategy$CONSENSUS$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/DecisionStrategy$CONSENSUS$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/MultivaluedHashMap.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/MultivaluedHashMap.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/EventRepresentation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/EventRepresentation$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Policy.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Policy.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/DecisionStrategy$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/DecisionStrategy$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Category$INTERNAL$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Category$INTERNAL$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/enums/Logic$POSITIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/enums/Logic$POSITIVE$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AuthenticatorConfigInfo.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AuthenticatorConfigInfo.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/ClientInitialAccess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/ClientInitialAccess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/Resource$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/Resource$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/AccessTokenAccess$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/AccessTokenAccess$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	models/PasswordPolicyType.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/jonathan/Full Facing projects/Keycloak/target/scala-2.12/classes/models/PasswordPolicyType.class[0m
+[0m[[0m[0minfo[0m] [0m[0mDone packaging.[0m

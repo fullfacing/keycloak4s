@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: org.keycloak:keycloak-authz-client:4.8.2.Final:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.keycloak/keycloak-authz-client/jars/keycloak-authz-client-4.8.2.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.keycloak/keycloak-authz-client/srcs/keycloak-authz-client-4.8.2.Final-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

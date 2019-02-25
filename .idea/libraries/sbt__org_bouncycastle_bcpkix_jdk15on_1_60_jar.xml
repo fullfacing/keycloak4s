@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: org.bouncycastle:bcpkix-jdk15on:1.60:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.bouncycastle/bcpkix-jdk15on/jars/bcpkix-jdk15on-1.60.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.bouncycastle/bcpkix-jdk15on/srcs/bcpkix-jdk15on-1.60-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sbt: org.keycloak:keycloak-core:4.8.2.Final:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.keycloak/keycloak-core/jars/keycloak-core-4.8.2.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.keycloak/keycloak-core/srcs/keycloak-core-4.8.2.Final-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
