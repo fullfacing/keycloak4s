@@ -1,7 +1,6 @@
 package com.fullfacing.keycloak4s.models
 
-import models.enums.Category
-import models.{AccessTokenAccess, AccessTokenAuthorization, AccessTokenCertConf, AddressClaimSet}
+import com.fullfacing.keycloak4s.models.enums.Category
 
 case class AccessToken(
                         acr: Option[String],
