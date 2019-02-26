@@ -60,27 +60,27 @@ object SttpClient {
 
   def delete[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val uri = createUri(path, queries)
-    makeCall[A](sttp.delete(uri), queries)
+    makeCall[A](sttp.delete(uri))
   }
 
   def get[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val uri = createUri(path, queries)
-    makeCall[A](sttp.get(uri), queries)
+    makeCall[A](sttp.get(uri))
   }
 
   def put[A, B](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
     val uri = createUri(path, queries)
-    makeCall[A, B](body, sttp.put(uri), queries)
+    makeCall[A, B](body, sttp.put(uri))
   }
 
   def post[A, B](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
     val uri = createUri(path, queries)
-    makeCall[A, B](body, sttp.post(uri), queries)
+    makeCall[A, B](body, sttp.post(uri))
   }
 
   /* Bodiless POST **/
   def post[A](path: Seq[String], queries: Seq[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val uri = createUri(path, queries)
-    makeCall[A](sttp.post(uri), queries)
+    makeCall[A](sttp.post(uri))
   }
 }
