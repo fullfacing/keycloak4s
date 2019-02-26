@@ -73,6 +73,11 @@ object SttpClient {
     makeCall[A, B](body, sttp.put(uri))
   }
 
+  def put[A](path: Seq[String], queries: Seq[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
+    val uri = createUri(path, queries)
+    makeCall[A](sttp.put(uri))
+  }
+
   def post[A, B](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
     val uri = createUri(path, queries)
     makeCall[A, B](body, sttp.post(uri))
