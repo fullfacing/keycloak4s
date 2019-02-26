@@ -7,6 +7,7 @@ import com.fullfacing.apollo.core.networking.wire.serialization.ContentType
 import com.fullfacing.apollo.core.networking.wire.serialization.JsonFormats.default
 import com.fullfacing.apollo.core.protocol.ResponseCode
 import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
+import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp._
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import monix.eval.Task
@@ -23,17 +24,20 @@ object SttpClient {
   private val host    = ???
   private val port    = ???
 
-  private def createUri(path: Seq[String]) = Uri(
-    scheme  = scheme,
-    host    = host,
-    port    = port,
-    path    = path
+  private def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
+    scheme          = scheme,
+    userInfo        = None,
+    host            = host,
+    port            = port,
+    path            = path,
+    queryFragments  = queries,
+    fragment        = None
   )
 
   private def createError(protocol: String) = ErrorPayload(ResponseCode.InternalServerError, s"$protocol to Keycloak server failed.")
 
-  def delete(path: Seq[String]): Task[Either[ErrorPayload, Unit]] = {
-    val uri = createUri(path)
+  def delete(path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, Unit]] = {
+    val uri = createUri(path, queries)
 
     val task = sttp
       .delete(uri)
@@ -43,8 +47,8 @@ object SttpClient {
     task.map(_.body.fold(_ => createError("DELETE").asLeft[Unit], _ => ().asRight))
   }
 
-  def get[A](path: Seq[String]): Task[Either[ErrorPayload, A]] = {
-    val uri = createUri(path)
+  def get[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, A]] = {
+    val uri = createUri(path, queries)
 
     val task = sttp
       .get(uri)
@@ -54,8 +58,8 @@ object SttpClient {
     task.map(_.body.fold(_ => createError("GET").asLeft[A], r => read[A](r).asRight))
   }
 
-  def post[A, B](request: A, path: Seq[String]): Task[Either[ErrorPayload, B]] = {
-    val uri = createUri(path)
+  def post[A, B](request: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, B]] = {
+    val uri = createUri(path, queries)
 
     val body = Extraction
       .decompose(request)
