@@ -36,7 +36,7 @@ object SttpClient {
 
   private val error = ErrorPayload(ResponseCode.InternalServerError, "Call to Keycloak server failed.")
 
-  private def makeCall[A](request: Request[String, Nothing], queries: Seq[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
+  private def makeCall[A](request: Request[String, Nothing])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val task = request
       .response(asString)
       .send()
@@ -44,7 +44,7 @@ object SttpClient {
     task.map(_.body.fold(_ => error.asLeft[A], read[A](_).asRight))
   }
 
-  private def makeCall[A, B](body: A, request: Request[String, Nothing], queries: Seq[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
+  private def makeCall[A, B](body: A, request: Request[String, Nothing])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
     val bodyMap = Extraction
       .decompose(body)
       .extract[Map[String, String]]

@@ -64,4 +64,4 @@ val scalacOpts = Seq(
   "-Xfuture"
 )
 
-//scalacOptions ++= scalacOpts
+scalacOptions ++= scalacOpts
