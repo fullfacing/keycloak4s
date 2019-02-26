@@ -1,8 +1,8 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
+import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
+import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
-import monix.eval.Task
 
 import scala.collection.immutable.Seq
 
@@ -15,7 +15,7 @@ object AttackDetection {
    * @param realm Name of the Realm
    * @return
    */
-  def clearAllLoginFailures(realm: String): Task[Either[ErrorPayload, Unit]] = {
+  def clearAllLoginFailures(realm: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "attack-detection", "brute-force", "users")
     SttpClient.delete(path)
   }
@@ -27,9 +27,9 @@ object AttackDetection {
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String): Task[Either[ErrorPayload, Map[String, Any]]] = { //TODO Determine return type.
+  def getUserStatus(realm: String, userId: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
     val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
-    SttpClient.get[Map[String, Any]](path)
+    SttpClient.get(path)
   }
 
   /**
@@ -39,7 +39,7 @@ object AttackDetection {
    * @param realm Name of the Realm.
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure(realm: String, userId: String): Task[Either[ErrorPayload, Unit]] = {
+  def clearUserLoginFailure(realm: String, userId: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
     SttpClient.delete(path)
   }

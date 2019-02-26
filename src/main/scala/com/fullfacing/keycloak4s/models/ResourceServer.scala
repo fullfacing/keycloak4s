@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.models
 
-import models.enums.PolicyEnforcementMode
+import com.fullfacing.keycloak4s.models.enums.PolicyEnforcementMode
 
 case class ResourceServer(
                            allowRemoteResourceManagement: Option[Boolean],

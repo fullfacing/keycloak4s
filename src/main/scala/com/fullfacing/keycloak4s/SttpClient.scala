@@ -21,8 +21,8 @@ object SttpClient {
   implicit val backend: SttpBackend[Task, Observable[ByteBuffer]] = AsyncHttpClientMonixBackend()
 
   private val scheme  = "http"
-  private val host    = ???
-  private val port    = ???
+  private val host    = ""    //TODO Add correct host
+  private val port    = None  //TODO Add correct port
 
   private def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
     scheme          = scheme,
@@ -34,61 +34,53 @@ object SttpClient {
     fragment        = None
   )
 
-  private def createError(protocol: String) = ErrorPayload(ResponseCode.InternalServerError, s"$protocol to Keycloak server failed.")
+  private val error = ErrorPayload(ResponseCode.InternalServerError, "Call to Keycloak server failed.")
 
-  def delete(path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, Unit]] = {
-    val uri = createUri(path, queries)
-
-    val task = sttp
-      .delete(uri)
+  private def makeCall[A](request: Request[String, Nothing], queries: Seq[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
+    val task = request
       .response(asString)
       .send()
 
-    task.map(_.body.fold(_ => createError("DELETE").asLeft[Unit], _ => ().asRight))
+    task.map(_.body.fold(_ => error.asLeft[A], read[A](_).asRight))
   }
 
-  def get[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, A]] = {
-    val uri = createUri(path, queries)
-
-    val task = sttp
-      .get(uri)
-      .response(asString)
-      .send()
-
-    task.map(_.body.fold(_ => createError("GET").asLeft[A], read[A](_).asRight))
-  }
-
-  def post[A, B](request: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, B]] = {
-    val uri = createUri(path, queries)
-
-    val body = Extraction
-      .decompose(request)
+  private def makeCall[A, B](body: A, request: Request[String, Nothing], queries: Seq[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
+    val bodyMap = Extraction
+      .decompose(body)
       .extract[Map[String, String]]
 
-    val task = sttp
-      .post(uri)
+    val task = request
       .contentType(ContentType.Json)
-      .body(body)
+      .body(bodyMap)
       .response(asString)
       .send()
 
-    task.map(_.body.fold(_ => createError("POST").asLeft[B], read[B](_).asRight))
+    task.map(_.body.fold(_ => error.asLeft[B], read[B](_).asRight))
   }
 
-  def put[A, B](request: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, B]] = {
+  def delete[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val uri = createUri(path, queries)
+    makeCall[A](sttp.delete(uri), queries)
+  }
 
-    val body = Extraction
-      .decompose(request)
-      .extract[Map[String, String]]
+  def get[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
+    val uri = createUri(path, queries)
+    makeCall[A](sttp.get(uri), queries)
+  }
 
-    val task = sttp
-      .put(uri)
-      .contentType(ContentType.Json)
-      .body(body)
-      .response(asString)
-      .send()
+  def put[A, B](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
+    val uri = createUri(path, queries)
+    makeCall[A, B](body, sttp.put(uri), queries)
+  }
 
-    task.map(_.body.fold(_ => createError("PUT").asLeft[B], read[B](_).asRight))
+  def post[A, B](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
+    val uri = createUri(path, queries)
+    makeCall[A, B](body, sttp.post(uri), queries)
+  }
+
+  /* Bodiless POST **/
+  def post[A](path: Seq[String], queries: Seq[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
+    val uri = createUri(path, queries)
+    makeCall[A](sttp.post(uri), queries)
   }
 }

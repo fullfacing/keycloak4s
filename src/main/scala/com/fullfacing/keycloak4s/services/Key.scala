@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.models.KeysMetadata
 object Key {
   private val resource: String = "keys"
 
-  def getRealmKeys(realm: String): AsyncApolloResponse[KeysMetadata] = {
+  /*def getRealmKeys(realm: String): AsyncApolloResponse[KeysMetadata] = {
     ???
-  }
+  }*/
 }

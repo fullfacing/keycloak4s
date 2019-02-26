@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.models
 
-import models.enums.{Policy => policyEnum}
+import com.fullfacing.keycloak4s.models.enums.{Policy => policyEnum}
 
 case class PartialImport(
                           clients: Option[List[Client]],

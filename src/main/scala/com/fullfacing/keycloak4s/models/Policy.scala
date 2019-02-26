@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.models
 
-import models.enums.{DecisionStrategy, Logic}
+import com.fullfacing.keycloak4s.models.enums.{DecisionStrategy, Logic}
 
 case class Policy(
                    config: Option[Map[_, _]],

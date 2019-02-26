@@ -1,9 +1,10 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
+import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
+import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
 import com.fullfacing.keycloak4s.models.{AuthenticationExecution, AuthenticatorConfig, AuthenticatorConfigInfo}
-import monix.eval.Task
+import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
@@ -15,9 +16,9 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getAuthenticationProviders(realm: String): Task[Either[ErrorPayload, Map[String, Any]]] = { //TODO Determine return type.
+  def getAuthenticationProviders(realm: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "authenticator-providers")
-    SttpClient.get[Map[String, Any]](path)
+    SttpClient.get(path)
   }
 
   /**
@@ -26,9 +27,9 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getClientAuthenticationProviders(realm: String): Task[Either[ErrorPayload, Map[String, Any]]] = { //TODO Determine return type.
+  def getClientAuthenticationProviders(realm: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "client-authenticator-providers")
-    SttpClient.get[Map[String, Any]](path)
+    SttpClient.get(path)
   }
 
   /**
@@ -38,9 +39,9 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getProviderConfigDescription(providerId: String, realm: String): Task[Either[ErrorPayload, AuthenticatorConfigInfo]] = {
+  def getProviderConfigDescription(providerId: String, realm: String): AsyncApolloResponse[AuthenticatorConfigInfo] = {
     val path = Seq(realm, "authentication", "config-description", providerId)
-    SttpClient.get[AuthenticatorConfigInfo](path)
+    SttpClient.get(path)
   }
 
   /**
@@ -50,9 +51,9 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getAuthenticatorConfig(configId: String, realm: String): Task[Either[ErrorPayload, AuthenticatorConfig]] = {
+  def getAuthenticatorConfig(configId: String, realm: String): AsyncApolloResponse[AuthenticatorConfig] = {
     val path = Seq(realm, "authentication", "config", configId)
-    SttpClient.get[AuthenticatorConfig](path)
+    SttpClient.get(path)
   }
 
   /**
@@ -63,9 +64,9 @@ object AuthenticationManagement {
    * @param request  Object describing new state of authenticator configuration.
    * @return
    */
-  def updateAuthenticatorConfig(configId: String, realm: String, request: AuthenticatorConfig): Task[Either[ErrorPayload, Unit]] = {
+  def updateAuthenticatorConfig(configId: String, realm: String, request: AuthenticatorConfig): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "authentication", "config", configId)
-    SttpClient.put[AuthenticatorConfig, Any](request, path).map(_.map(_ => ()))
+    SttpClient.put(request, path)
   }
 
   /**
@@ -75,7 +76,7 @@ object AuthenticationManagement {
    * @param realm    Name of the Realm.
    * @return
    */
-  def deleteAuthenticatorConfig(configId: String, realm: String): Task[Either[ErrorPayload, Unit]] = {
+  def deleteAuthenticatorConfig(configId: String, realm: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "authentication", "config", configId)
     SttpClient.delete(path)
   }
@@ -87,9 +88,9 @@ object AuthenticationManagement {
    * @param request Object describing authentication execution.
    * @return
    */
-  def addNewAuthenticationExecution(realm: String, request: AuthenticationExecution): Task[Either[ErrorPayload, Any]] = { //TODO Determine return type.
+  def addNewAuthenticationExecution(realm: String, request: AuthenticationExecution): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "executions")
-    SttpClient.post[AuthenticationExecution, Any](request, path)
+    SttpClient.post(request, path)
   }
 
   /**
@@ -99,9 +100,9 @@ object AuthenticationManagement {
    * @param realm       Name of the Realm.
    * @return
    */
-  def getSingleExecution(executionId: String, realm: String): Task[Either[ErrorPayload, Any]] = { //TODO Determine return type.
+  def getSingleExecution(executionId: String, realm: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "executions", executionId)
-    SttpClient.get[Any](path)
+    SttpClient.get(path)
   }
 
   /**
@@ -111,7 +112,7 @@ object AuthenticationManagement {
    * @param realm       Name of the Realm.
    * @return
    */
-  def deleteExecution(executionId: String, realm: String): Task[Either[ErrorPayload, Unit]] = {
+  def deleteExecution(executionId: String, realm: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "authentication", "executions", executionId)
     SttpClient.delete(path)
   }
@@ -124,13 +125,13 @@ object AuthenticationManagement {
    * @param request     Object describing new configuration.
    * @return
    */
-  def updateExecutionConfig(executionId: String, realm: String, request: AuthenticatorConfig): Task[Either[ErrorPayload, Any]] = { //TODO Determine return type.
+  def updateExecutionConfig(executionId: String, realm: String, request: AuthenticatorConfig): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "executions", executionId, "config")
-    SttpClient.post[AuthenticatorConfig, Any](request, path)
+    SttpClient.post(request, path)
   }
 
-  def lowerExecutionPriority(executionId: String, realm: String): Task[Either[ErrorPayload, Unit]] = {
+  def lowerExecutionPriority(executionId: String, realm: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "authentication", "executions", executionId, "lower-priority")
-    Sttp
+    SttpClient.post(path, Seq.empty[KeyValue])
   }
 }
