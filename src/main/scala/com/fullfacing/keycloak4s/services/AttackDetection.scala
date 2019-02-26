@@ -27,9 +27,9 @@ object AttackDetection {
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String): Task[Either[ErrorPayload, Map[Any, Any]]] = {
+  def getUserStatus(realm: String, userId: String): Task[Either[ErrorPayload, Map[String, Any]]] = { //TODO Determine return type.
     val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
-    SttpClient.get[Map[Any, Any]](path)
+    SttpClient.get[Map[String, Any]](path)
   }
 
   /**

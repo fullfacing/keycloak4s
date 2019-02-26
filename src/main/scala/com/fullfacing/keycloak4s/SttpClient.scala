@@ -55,7 +55,7 @@ object SttpClient {
       .response(asString)
       .send()
 
-    task.map(_.body.fold(_ => createError("GET").asLeft[A], r => read[A](r).asRight))
+    task.map(_.body.fold(_ => createError("GET").asLeft[A], read[A](_).asRight))
   }
 
   def post[A, B](request: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, B]] = {
@@ -72,6 +72,23 @@ object SttpClient {
       .response(asString)
       .send()
 
-    task.map(_.body.fold(_ => createError("POST").asLeft[B], r => read[B](r).asRight))
+    task.map(_.body.fold(_ => createError("POST").asLeft[B], read[B](_).asRight))
+  }
+
+  def put[A, B](request: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, B]] = {
+    val uri = createUri(path, queries)
+
+    val body = Extraction
+      .decompose(request)
+      .extract[Map[String, String]]
+
+    val task = sttp
+      .put(uri)
+      .contentType(ContentType.Json)
+      .body(body)
+      .response(asString)
+      .send()
+
+    task.map(_.body.fold(_ => createError("PUT").asLeft[B], read[B](_).asRight))
   }
 }
