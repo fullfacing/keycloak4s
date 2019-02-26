@@ -3,8 +3,7 @@ package com.fullfacing.keycloak4s
 import java.nio.ByteBuffer
 
 import cats.implicits._
-import com.fullfacing.apollo.core.networking.wire.serialization.ContentType
-import com.fullfacing.apollo.core.networking.wire.serialization.JsonFormats.default
+import com.fullfacing.apollo.core.networking.wire.serialization.{ContentType, JsonFormats}
 import com.fullfacing.apollo.core.protocol.ResponseCode
 import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
@@ -12,12 +11,13 @@ import com.softwaremill.sttp._
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import monix.eval.Task
 import monix.reactive.Observable
-import org.json4s.Extraction
 import org.json4s.native.Serialization.read
+import org.json4s.{Extraction, Formats}
 
 import scala.collection.immutable.Seq
 
 object SttpClient {
+  implicit val formats: Formats = JsonFormats.default ++ EnumSerializers.all
   implicit val backend: SttpBackend[Task, Observable[ByteBuffer]] = AsyncHttpClientMonixBackend()
 
   private val scheme  = "http"

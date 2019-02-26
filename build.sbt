@@ -22,7 +22,7 @@ val keycloak = {
 
 val enumeratum_Json4s = {
   val version ="1.5.13"
-  Seq("com.beachape" %% "enumeratum" % version)
+  Seq("com.beachape" %% "enumeratum-json4s" % version)
 }
 
 val apollo = {
