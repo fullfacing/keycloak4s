@@ -7,5 +7,4 @@ case class RoleRepresentation(attributes: Option[Map[_, _]],
                               containerId: Option[String],
                               description: Option[String],
                               id: Option[String],
-                              name: Option[String]
-                             )
+                              name: Option[String])
