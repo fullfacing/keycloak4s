@@ -64,6 +64,12 @@ object SttpClient {
     makeCall[A](sttp.delete(uri))
   }
 
+  /* DELETE with body **/
+  def delete[A, B](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[B]): Task[Either[ErrorPayload, B]] = {
+    val uri = createUri(path, queries)
+    makeCall[A, B](body, sttp.delete(uri))
+  }
+
   def get[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val uri = createUri(path, queries)
     makeCall[A](sttp.get(uri))
