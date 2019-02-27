@@ -23,6 +23,13 @@ object UserStorageProvider {
     SttpClient.get(path)
   }
 
+  /**
+   * Need this for admin console to display simple name of provider when displaying user detail KEYCLOAK-4328
+   *
+   * @param realm
+   * @param id
+   * @return
+   */
   def ????(realm: String, id: String): AsyncApolloResponse[TODO] = { // TODO
     val path = Seq(realm, resource, id, "name")
     SttpClient.get(path)
