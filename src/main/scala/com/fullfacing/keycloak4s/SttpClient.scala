@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s
 import java.nio.ByteBuffer
 
 import cats.implicits._
+import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.networking.wire.serialization.{ContentType, JsonFormats}
 import com.fullfacing.apollo.core.protocol.ResponseCode
 import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
@@ -88,5 +89,10 @@ object SttpClient {
   def post[A](path: Seq[String], queries: Seq[KeyValue])(implicit mb: Manifest[A]): Task[Either[ErrorPayload, A]] = {
     val uri = createUri(path, queries)
     makeCall[A](sttp.post(uri))
+  }
+
+  def options[A](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[ErrorPayload, A]] = {
+    val uri = createUri(path, queries)
+    makeCall[A](sttp.options(uri))
   }
 }
