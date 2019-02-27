@@ -15,7 +15,7 @@ object Groups {
    * @param group Object representing the group details.
    * @return
    */
-  def addGroupSet(realm: String, group: Group): AsyncApolloResponse[Any] = { //TODO Determine return tyoe.
+  def addGroupSet(realm: String, group: Group): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "groups")
     SttpClient.post(group, path)
   }
