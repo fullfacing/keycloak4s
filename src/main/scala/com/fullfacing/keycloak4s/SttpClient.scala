@@ -3,7 +3,6 @@ package com.fullfacing.keycloak4s
 import java.nio.ByteBuffer
 
 import cats.implicits._
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.networking.wire.serialization.{ContentType, JsonFormats}
 import com.fullfacing.apollo.core.protocol.ResponseCode
 import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
