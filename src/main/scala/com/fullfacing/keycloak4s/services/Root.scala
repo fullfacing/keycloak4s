@@ -12,4 +12,9 @@ object Root {
   def serverInfo: AsyncApolloResponse[ServerInfo] = {
     SttpClient.get(Seq.empty[String])
   }
+
+  /** "CORS preflight" */
+  def `TBD`(path: Seq[String] = Seq.empty[String]): AsyncApolloResponse[TODO] = { //TODO test call
+    SttpClient.options(path)
+  }
 }
