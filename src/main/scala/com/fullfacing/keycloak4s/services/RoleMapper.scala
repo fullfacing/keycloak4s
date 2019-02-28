@@ -2,10 +2,8 @@ package com.fullfacing.keycloak4s.services
 
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s
 import com.fullfacing.keycloak4s.SttpClient
 import com.fullfacing.keycloak4s.models.{Mappings, Role}
-import monix.reactive.MulticastStrategy.ReplayLimited
 
 import scala.collection.immutable.Seq
 
@@ -140,11 +138,23 @@ object RoleMapper {
   /**
    * Get realm-level roles that can be mapped
    *
-   * @param realm
-   * @param userId
+   * @param realm  realm name (not id!)
+   * @param userId User id
    * @return
    */
   def getAvailableUserRealmRoles(realm: String, userId: String): AsyncApolloResponse[List[Role]] = {
+    val path = Seq(realm, "users", userId, role_mappings, "realm", "available")
+    SttpClient.get(path)
+  }
+
+  /**
+   * Get effective realm-level role mappings. This will recurse all composite roles to get the result.
+   *
+   * @param realm  realm name (not id!)
+   * @param userId User id
+   * @return
+   */
+  def getEffectiveUserRealmRoles(realm: String, userId: String): AsyncApolloResponse[List[Role]] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm", "available")
     SttpClient.get(path)
   }
