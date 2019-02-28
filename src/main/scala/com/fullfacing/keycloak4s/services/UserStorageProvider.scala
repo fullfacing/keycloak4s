@@ -58,7 +58,7 @@ object UserStorageProvider {
   def sync(realm: String, id: String, action: Option[String]): AsyncApolloResponse[Synchronization] = {
     val path  = Seq(realm, resource, id, "sync")
     val query = createQuery(("action", action))
-    SttpClient.post(path, query.to[Seq])
+    SttpClient.post(path, query)
   }
 
   /**
@@ -85,6 +85,6 @@ object UserStorageProvider {
   def mapperDataSync(realm: String, id: String, parentId: String, direction: Option[String]): AsyncApolloResponse[Synchronization] = {
     val path  = Seq(realm, resource, parentId, "mappers", id, "sync")
     val query = createQuery(("direction", direction))
-    SttpClient.post(path, query.to[Seq])
+    SttpClient.post(path, query)
   }
 }

@@ -184,7 +184,7 @@ object Roles {
   def usersByRoleName(realm: String, id: String, roleName: String, first: Option[Int], max: Option[Int]): AsyncApolloResponse[List[User]] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    SttpClient.get(path, query.to[Seq])
+    SttpClient.get(path, query)
   }
 
   /**
@@ -348,6 +348,6 @@ object Roles {
   def fetchUsersByRoleName(realm: String, roleName: String, first: Option[Int], max: Option[Int]): AsyncApolloResponse[User] = {
     val path  = Seq(realm, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    SttpClient.get(path, query.to[Seq])
+    SttpClient.get(path, query)
   }
 }
