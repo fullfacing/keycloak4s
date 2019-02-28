@@ -60,7 +60,7 @@ object Users {
     )
 
     val path = Seq(realm, resource)
-    SttpClient.get(path, query.to[Seq])
+    SttpClient.get(path, query)
   }
 
   /**
@@ -173,7 +173,7 @@ object Users {
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
 
     val path = Seq(realm, resource, userId, "execute-actions-email")
-    SttpClient.put(actions, path, query.to[Seq])
+    SttpClient.put(actions, path, query)
   }
 
   /**
@@ -233,7 +233,7 @@ object Users {
     val query = createQuery(("first", first), ("max", max), ("search", search))
 
     val path = Seq(realm, resource, userId, "groups")
-    SttpClient.get(path, query.to[Seq])
+    SttpClient.get(path, query)
   }
 
   /**
@@ -343,7 +343,7 @@ object Users {
     val query = createQuery(("client_id", clientId), ("redirect_uri",redirectUri))
 
     val path = Seq(realm, resource, userId, "send-verify-email")
-    SttpClient.put(path, query.to[Seq])
+    SttpClient.put(path, query)
   }
 
   /**
