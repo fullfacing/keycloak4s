@@ -15,7 +15,7 @@ object AttackDetection {
    * @param realm Name of the Realm
    * @return
    */
-  def clearAllLoginFailures(realm: String): AsyncApolloResponse[NoContent] = {
+  def clearAllLoginFailures(realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "attack-detection", "brute-force", "users")
     SttpClient.delete(path)
   }
@@ -27,7 +27,7 @@ object AttackDetection {
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getUserStatus(realm: String, userId: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
     val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
     SttpClient.get(path)
   }
@@ -39,7 +39,7 @@ object AttackDetection {
    * @param realm Name of the Realm.
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure(realm: String, userId: String): AsyncApolloResponse[NoContent] = {
+  def clearUserLoginFailure(realm: String, userId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
     SttpClient.delete(path)
   }

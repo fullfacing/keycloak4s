@@ -38,12 +38,6 @@ val sttp = {
   )
 }
 
-val commonfng = {
-  Seq(
-    "com.fullfacing" %% "common-fng" % "1.2.326-SNAPSHOT"
-  )
-}
-
 libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp ++ commonfng
 
 val scalacOpts = Seq(
