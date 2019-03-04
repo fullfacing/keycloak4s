@@ -19,7 +19,7 @@ object RolesById {
    * @param roleId id of role
    * @return
    */
-  def fetch(realm: String, roleId: String): AsyncApolloResponse[Role] = {
+  def fetch(realm: String, roleId: String)(implicit authToken: String): AsyncApolloResponse[Role] = {
     val path = Seq(realm, resource, roleId)
     SttpClient.get(path)
   }
@@ -32,7 +32,7 @@ object RolesById {
    * @param role
    * @return
    */
-  def update(realm: String, roleId: String, role: Role): AsyncApolloResponse[NoContent] = {
+  def update(realm: String, roleId: String, role: Role)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, roleId)
     SttpClient.put(role, path)
   }
@@ -44,7 +44,7 @@ object RolesById {
    * @param roleId id of role
    * @return
    */
-  def delete(realm: String, roleId: String): AsyncApolloResponse[NoContent] = {
+  def delete(realm: String, roleId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, roleId)
     SttpClient.delete(path)
   }
@@ -57,7 +57,7 @@ object RolesById {
    * @param role
    * @return
    */
-  def addSubRoles(realm: String, roleId: String, roles: List[Role]): AsyncApolloResponse[NoContent] = {
+  def addSubRoles(realm: String, roleId: String, roles: List[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, roleId, "composites")
     SttpClient.post(roles, path)
   }
@@ -69,7 +69,7 @@ object RolesById {
    * @param roleId id of role
    * @return
    */
-  def fetchSubRoles(realm: String, roleId: String): AsyncApolloResponse[List[Role]] = {
+  def fetchSubRoles(realm: String, roleId: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
     val path = Seq(realm, resource, roleId, "composites")
     SttpClient.get(path)
   }
@@ -82,7 +82,7 @@ object RolesById {
    * @param roles   A set of roles to be removed
    * @return
    */
-  def removeSubRoles(realm: String, roleId: String, roles: List[Role]): AsyncApolloResponse[NoContent] = {
+  def removeSubRoles(realm: String, roleId: String, roles: List[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, roleId, "composites")
     SttpClient.delete(roles, path, Seq.empty[KeyValue])
   }
@@ -95,7 +95,7 @@ object RolesById {
    * @param client
    * @return
    */
-  def getSubRoleClientLevelRoles(realm: String, roleId: String, client: String): AsyncApolloResponse[List[Role]] = {
+  def getSubRoleClientLevelRoles(realm: String, roleId: String, client: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
     val path = Seq(realm, resource, roleId, "composites", "clients", client)
     SttpClient.get(path)
   }
@@ -107,7 +107,7 @@ object RolesById {
    * @param roleId id of role
    * @return
    */
-  def getSubRoleRealmLevelRoles(realm: String, roleId: String): AsyncApolloResponse[List[Role]] = {
+  def getSubRoleRealmLevelRoles(realm: String, roleId: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
     val path = Seq(realm, resource, roleId, "composites", "realm")
     SttpClient.get(path)
   }
@@ -119,7 +119,7 @@ object RolesById {
    * @param roleId id of role
    * @return
    */
-  def authPermissionsInitialised(realm: String, roleId: String): AsyncApolloResponse[ManagementPermission] = {
+  def authPermissionsInitialised(realm: String, roleId: String)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
     val path = Seq(realm, resource, roleId, "management", "permissions")
     SttpClient.get(path)
   }
@@ -132,7 +132,7 @@ object RolesById {
    * @param ref    ..
    * @return
    */
-  def initialiseRoleAuthPermissions(realm: String, roleId: String, ref: ManagementPermission): AsyncApolloResponse[ManagementPermission] = {
+  def initialiseRoleAuthPermissions(realm: String, roleId: String, ref: ManagementPermission)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
     val path = Seq(realm, resource, roleId, "management", "permissions")
     SttpClient.put(ref, path)
   }
