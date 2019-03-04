@@ -33,12 +33,18 @@ val apollo = {
 val sttp = {
   val version = "1.5.11"
   Seq(
-    "com.softwaremill.sttp" %% "core" % version,
+    "com.softwaremill.sttp" %% "json4s" % version,
     "com.softwaremill.sttp" %% "async-http-client-backend-monix" % version
   )
 }
 
-libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp
+val commonfng = {
+  Seq(
+    "com.fullfacing" %% "common-fng" % "1.2.326-SNAPSHOT"
+  )
+}
+
+libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp ++ commonfng
 
 val scalacOpts = Seq(
   "-Ywarn-unused:implicits",
@@ -64,4 +70,4 @@ val scalacOpts = Seq(
   "-Xfuture"
 )
 
-scalacOptions ++= scalacOpts
+//scalacOptions ++= scalacOpts

@@ -5,6 +5,7 @@ import java.io.File
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.keycloak4s.SttpClient
 import com.fullfacing.keycloak4s.models._
+import com.fullfacing.keycloak4s.models.enums.ContentType
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
@@ -71,29 +72,31 @@ object ClientAttributeCertificate {
    * Upload certificate and private key.
    *
    * @param attribute
-   * @param clientId  ID of client (not client-id).
-   * @param realm     Name of the Realm.
+   * @param clientId    ID of client (not client-id).
+   * @param realm       Name of the Realm.
    * @param file
+   * @param contentType The file's content type.
    * @return
    */
-  def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File): AsyncApolloResponse[Certificate] = {
-    //TODO Add functionality to SttpClient for multipart form-data.
+  def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType): AsyncApolloResponse[Certificate] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
-    SttpClient.post(file, path)
+    val multipart = createMultipart(file, contentType)
+    SttpClient.post(multipart, path)
   }
 
   /**
    * Upload only certificate, not private key.
    *
    * @param attribute
-   * @param clientId  ID of client (not client-id).
-   * @param realm     Name of the Realm.
+   * @param clientId    ID of client (not client-id).
+   * @param realm       Name of the Realm.
    * @param file
+   * @param contentType The file's content type.
    * @return
    */
-  def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File): AsyncApolloResponse[Certificate] = {
-    //TODO Add functionality to SttpClient for multipart form-data.
+  def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType): AsyncApolloResponse[Certificate] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload-certificate")
-    SttpClient.post(file, path)
+    val multipart = createMultipart(file, contentType)
+    SttpClient.post(multipart, path)
   }
 }

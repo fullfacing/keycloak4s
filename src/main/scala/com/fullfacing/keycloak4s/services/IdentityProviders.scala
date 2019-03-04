@@ -6,6 +6,7 @@ import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
 import com.fullfacing.keycloak4s.models._
+import com.fullfacing.keycloak4s.models.enums.ContentType
 
 import scala.collection.immutable.Seq
 
@@ -16,11 +17,13 @@ object IdentityProviders {
    *
    * @param realm   Name of the Realm.
    * @param config
+   * @param contentType The file's content type.
    * @return
    */
-  def importIdentityProvider(realm: String, config: File): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type, modify SttpClient to handle multipart/form-data
+  def importIdentityProvider(realm: String, config: File, contentType: ContentType): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type, modify SttpClient to handle multipart/form-data
     val path = Seq(realm, "identity-provider", "import-config")
-    SttpClient.post(config, path)
+    val multipart = createMultipart(config, contentType)
+    SttpClient.post(multipart, path)
   }
 
   /**

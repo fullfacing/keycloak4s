@@ -4,6 +4,7 @@ import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
 import com.fullfacing.keycloak4s.models.{ManagementPermission, Role}
+import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
@@ -83,7 +84,7 @@ object RolesById {
    */
   def removeSubRoles(realm: String, roleId: String, roles: List[Role]): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, roleId, "composites")
-    SttpClient.delete(roles, path)
+    SttpClient.delete(roles, path, Seq.empty[KeyValue])
   }
 
   /**

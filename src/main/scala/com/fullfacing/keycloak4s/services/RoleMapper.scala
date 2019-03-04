@@ -4,6 +4,7 @@ import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
 import com.fullfacing.keycloak4s.models.{Mappings, Role}
+import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
@@ -58,7 +59,7 @@ object RoleMapper {
    */
   def removeRealmRoleMappings(realm: String, id: String, roles: List[Role]): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm")
-    SttpClient.delete(roles, path)
+    SttpClient.delete(roles, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -132,7 +133,7 @@ object RoleMapper {
    */
   def removeUserRealmRoleMappings(realm: String, userId: String, roles: List[Role]): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm")
-    SttpClient.delete(roles, path)
+    SttpClient.delete(roles, path, Seq.empty[KeyValue])
   }
 
   /**
