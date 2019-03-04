@@ -19,7 +19,7 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def clientSimpleProviderName(id: String): AsyncApolloResponse[UnknownMap] = {
+  def clientSimpleProviderName(id: String)(implicit authToken: String): AsyncApolloResponse[UnknownMap] = {
     val path = Seq(id, "name")
     SttpClient.get(path)
   }
@@ -31,7 +31,7 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def userSimpleProviderName(realm: String, id: String): AsyncApolloResponse[UnknownMap] = { // TODO
+  def userSimpleProviderName(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[UnknownMap] = { // TODO
     val path = Seq(realm, resource, id, "name")
     SttpClient.get(path)
   }
@@ -43,7 +43,7 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def removeImportedUser(realm: String, id: String): AsyncApolloResponse[NoContent] = {
+  def removeImportedUser(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, id, "remove-imported-users")
     SttpClient.post(path, Seq.empty[KeyValue])
   }
@@ -56,7 +56,7 @@ object UserStorageProvider {
    * @param action
    * @return
    */
-  def sync(realm: String, id: String, action: Option[String]): AsyncApolloResponse[Synchronization] = {
+  def sync(realm: String, id: String, action: Option[String])(implicit authToken: String): AsyncApolloResponse[Synchronization] = {
     val path  = Seq(realm, resource, id, "sync")
     val query = createQuery(("action", action))
     SttpClient.post(path, query)
@@ -69,7 +69,7 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def unlink(realm: String, id: String): AsyncApolloResponse[NoContent] = {
+  def unlink(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, resource, id, "unlink-users")
     SttpClient.post(path, Seq.empty[KeyValue])
   }
@@ -83,7 +83,7 @@ object UserStorageProvider {
    * @param direction
    * @return
    */
-  def mapperDataSync(realm: String, id: String, parentId: String, direction: Option[String]): AsyncApolloResponse[Synchronization] = {
+  def mapperDataSync(realm: String, id: String, parentId: String, direction: Option[String])(implicit authToken: String): AsyncApolloResponse[Synchronization] = {
     val path  = Seq(realm, resource, parentId, "mappers", id, "sync")
     val query = createQuery(("direction", direction))
     SttpClient.post(path, query)

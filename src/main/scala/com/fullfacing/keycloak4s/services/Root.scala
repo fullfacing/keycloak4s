@@ -10,11 +10,11 @@ import scala.collection.immutable.Seq
 object Root {
 
   /** Get themes, social providers, auth providers, and event listeners available on this server */
-  def serverInfo: AsyncApolloResponse[ServerInfo] = {
+  def serverInfo(implicit authToken: String): AsyncApolloResponse[ServerInfo] = {
     SttpClient.get(Seq.empty[String])
   }
 
-  def corsPreflight(path: Seq[String] = Seq.empty[String]): AsyncApolloResponse[UnknownResponse] = { //TODO test call
+  def corsPreflight(path: Seq[String] = Seq.empty[String])(implicit authToken: String): AsyncApolloResponse[UnknownResponse] = { //TODO test call
     SttpClient.options(path)
   }
 }
