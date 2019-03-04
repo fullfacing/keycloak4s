@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
+import com.fullfacing.keycloak4s.SttpClient.{UnknownMap, UnknownResponse}
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
@@ -19,9 +20,9 @@ object Users {
    * @param user
    * @return
    */
-  def createUser(realm: String, user: User): AsyncApolloResponse[TODO] = { //TODO return type check
+  def createUser(realm: String, user: User): AsyncApolloResponse[UnknownResponse] = { //TODO return type check
     val path = Seq(realm, resource)
-    SttpClient.post[User, TODO](user, path)
+    SttpClient.post[User, UnknownResponse](user, path)
   }
 
   /**
@@ -93,9 +94,9 @@ object Users {
    * @param updated
    * @return
    */
-  def updateUser(realm: String, userId: String, updated: User): AsyncApolloResponse[TODO] = {
+  def updateUser(realm: String, userId: String, updated: User): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, resource, userId)
-    SttpClient.put[User, Nothing](updated, path)
+    SttpClient.put(updated, path)
   }
 
   /**
@@ -105,8 +106,8 @@ object Users {
    * @param userId
    * @return
    */
-  def deleteUser(realm: String, userId: String): AsyncApolloResponse[Unit] = {
-    val path = Seq(realm, resource)
+  def deleteUser(realm: String, userId: String): AsyncApolloResponse[UnknownResponse] = {
+    val path = Seq(realm, resource, userId)
     SttpClient.delete(path)
   }
 
@@ -117,7 +118,7 @@ object Users {
    * @param userId
    * @return
    */
-  def getUserConsents(realm: String, userId: String): AsyncApolloResponse[List[TODO]] = {
+  def getUserConsents(realm: String, userId: String): AsyncApolloResponse[List[UnknownMap]] = {
     val path = Seq(realm, resource, userId, "consents")
     SttpClient.get(path)
   }
@@ -168,7 +169,7 @@ object Users {
                           clientId: Option[String] = None,
                           lifespan: Option[Int] = None,
                           redirectUri: Option[String],
-                          actions: List[String]): AsyncApolloResponse[TODO] = {
+                          actions: List[String]): AsyncApolloResponse[UnknownResponse] = {
 
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
 
@@ -197,7 +198,7 @@ object Users {
    * @param rep
    * @return
    */
-  def addUserSocialLoginProvider(realm: String, userId: String, provider: String, rep: FederatedIdentity): AsyncApolloResponse[TODO] = {
+  def addUserSocialLoginProvider(realm: String, userId: String, provider: String, rep: FederatedIdentity): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, resource, userId, "federated-identity", provider)
     SttpClient.post(rep, path)
   }
@@ -242,7 +243,7 @@ object Users {
    * @param userId
    * @return
    */
-  def groupCount(realm: String, userId: String): AsyncApolloResponse[TODO] = {
+  def groupCount(realm: String, userId: String): AsyncApolloResponse[UnknownMap] = {
     val path = Seq(realm, resource, userId, "groups", "count")
     SttpClient.get(path)
   }
@@ -271,7 +272,7 @@ object Users {
    * @param userId
    * @return
    */
-  def impersonate(realm: String, userId: String): AsyncApolloResponse[TODO] = {
+  def impersonate(realm: String, userId: String): AsyncApolloResponse[UnknownMap] = {
     val path = Seq(realm, resource, userId, "impersonation")
     SttpClient.post(path, Seq.empty[KeyValue])
   }
@@ -338,7 +339,7 @@ object Users {
    */
   def sendVerificationEmail(realm: String, userId: String,
                             clientId: Option[String] = None,
-                            redirectUri: Option[String] = None): AsyncApolloResponse[TODO] = {
+                            redirectUri: Option[String] = None): AsyncApolloResponse[UnknownResponse] = {
 
     val query = createQuery(("client_id", clientId), ("redirect_uri",redirectUri))
 

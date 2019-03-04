@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
+import com.fullfacing.keycloak4s.SttpClient.UnknownResponse
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
@@ -402,7 +403,7 @@ object RealmsAdmin {
    * @param rep
    * @return
    */
-  def partialImport(realm: String, rep: PartialImport): AsyncApolloResponse[TODO] = {
+  def partialImport(realm: String, rep: PartialImport): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, "partialImport")
     SttpClient.post(rep, path)
   }
@@ -431,14 +432,27 @@ object RealmsAdmin {
     SttpClient.delete(path)
   }
 
-  def testLdapConnection(realm: String, // TODO Figure out how queries should be sent
+  /**
+   * Test LDAP connection
+   *
+   * @param realm             realm name (not id!)
+   * @param action
+   * @param bindCredential
+   * @param bindDn
+   * @param componentId
+   * @param connectionTimeout
+   * @param connectionUrl
+   * @param useTruststoreSpi
+   * @return
+   */
+  def testLdapConnection(realm: String, // TODO Figure out how queries should be sent - FormData
                          action: Option[String] = None,
                          bindCredential: Option[String] = None,
                          bindDn: Option[String] = None,
                          componentId: Option[String] = None,
                          connectionTimeout: Option[String] = None,
                          connectionUrl: Option[String] = None,
-                         useTruststoreSpi: Option[String] = None): AsyncApolloResponse[TODO] = {
+                         useTruststoreSpi: Option[String] = None): AsyncApolloResponse[UnknownResponse] = {
 
     val path = Seq(realm, "testLDAPConnection")
     val queries = createQuery(
@@ -461,7 +475,7 @@ object RealmsAdmin {
    * @param config SMTP server configuration
    * @return
    */
-  def testSmtpConnection(realm: String, config: String): AsyncApolloResponse[TODO] = {
+  def testSmtpConnection(realm: String, config: String): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, "testSMTPConnection", config)
     SttpClient.post(path, Seq.empty[KeyValue])
   }
