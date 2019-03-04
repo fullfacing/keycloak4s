@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
+import com.fullfacing.keycloak4s.SttpClient.UnknownResponse
 import com.fullfacing.keycloak4s.models.{ManagementPermission, Role, User}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
@@ -10,8 +11,8 @@ import scala.collection.immutable.Seq
 
 object Roles {
 
-  private val clients_path   = "clients"
-  private val roles_path = "roles"
+  private val clients_path = "clients"
+  private val roles_path   = "roles"
 
   /**
    * Create a new role for the realm or client
@@ -21,7 +22,7 @@ object Roles {
    * @param role
    * @return
    */
-  def create(realm: String, id: String, role: Role): AsyncApolloResponse[TODO] = {
+  def createClientRole(realm: String, id: String, role: Role): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, clients_path, id, roles_path)
     SttpClient.post(role, path)
   }
@@ -60,7 +61,7 @@ object Roles {
    * @param role
    * @return
    */
-  def updateByName(realm: String, id: String, roleName: String, role: Role): AsyncApolloResponse[TODO] = {
+  def updateByName(realm: String, id: String, roleName: String, role: Role): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
     SttpClient.put(role, path)
   }
@@ -195,7 +196,7 @@ object Roles {
    * @param role
    * @return
    */
-  def createRealmRole(realm: String, role: Role): AsyncApolloResponse[TODO] = {
+  def createRealmRole(realm: String, role: Role): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, roles_path)
     SttpClient.post(role, path)
   }
@@ -231,7 +232,7 @@ object Roles {
    * @param role     Updated role
    * @return
    */
-  def updateRealmRoleByName(realm: String, roleName: String, role: Role): AsyncApolloResponse[TODO] = {
+  def updateRealmRoleByName(realm: String, roleName: String, role: Role): AsyncApolloResponse[UnknownResponse] = {
     val path = Seq(realm, roles_path, roleName)
     SttpClient.put(role, path)
   }

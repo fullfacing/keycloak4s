@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.SttpClient
+import com.fullfacing.keycloak4s.SttpClient.UnknownMap
 import com.fullfacing.keycloak4s.models.Synchronization
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
@@ -18,7 +19,7 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def name(id: String): AsyncApolloResponse[TODO] = {
+  def clientSimpleProviderName(id: String): AsyncApolloResponse[UnknownMap] = {
     val path = Seq(id, "name")
     SttpClient.get(path)
   }
@@ -30,7 +31,7 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def ????(realm: String, id: String): AsyncApolloResponse[TODO] = { // TODO
+  def userSimpleProviderName(realm: String, id: String): AsyncApolloResponse[UnknownMap] = { // TODO
     val path = Seq(realm, resource, id, "name")
     SttpClient.get(path)
   }

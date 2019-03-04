@@ -38,7 +38,7 @@ val sttp = {
   )
 }
 
-libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp ++ commonfng
+libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp
 
 val scalacOpts = Seq(
   "-Ywarn-unused:implicits",

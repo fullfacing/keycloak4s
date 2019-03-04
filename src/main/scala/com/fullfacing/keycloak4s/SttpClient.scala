@@ -19,6 +19,11 @@ import org.json4s.native.Serialization.{read, write}
 import scala.collection.immutable.Seq
 
 object SttpClient {
+
+  /** Temp return type for calls with the unknown response types */
+  trait UnknownResponse extends AnyRef
+  type UnknownMap = Map[String, Any]
+
   /* Implicits **/
 
   implicit val formats: Formats = JsonFormats.default ++ EnumSerializers.all
@@ -26,9 +31,10 @@ object SttpClient {
 
   /* Server Details **/
 
-  private val scheme  = "http"
-  private val host    = "localhost" //TODO Add correct host
-  private val port    = Some(8192)  //TODO Add correct port
+  private val scheme   = "http"
+  private val host     = "localhost"  //TODO Add correct host
+  private val port     = Some(8080)   //TODO Add correct port
+  private val basePath = Seq("auth", "admin")
 
   /* URI Builder **/
 
@@ -37,7 +43,7 @@ object SttpClient {
     userInfo        = None,
     host            = host,
     port            = port,
-    path            = path,
+    path            = basePath ++ path,
     queryFragments  = queries,
     fragment        = None
   )
