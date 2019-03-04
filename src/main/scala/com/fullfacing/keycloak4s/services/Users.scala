@@ -61,7 +61,7 @@ object Users {
     )
 
     val path = Seq(realm, resource)
-    SttpClient.get(path, query)
+    SttpClient.get[List[User]](path, query)
   }
 
   /**

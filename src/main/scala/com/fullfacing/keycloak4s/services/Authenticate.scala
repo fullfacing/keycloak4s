@@ -15,7 +15,7 @@ object Authenticate {
       "client_id"  -> client_id,
       "grant_type" -> "password"
     )
-    SttpClient.auth(body, path)
+    SttpClient.auth[AccessTokenResponse](body, path)
   }
 
   def refreshAccessToken(realm: String, refreshToken: String, client_id: String): AsyncApolloResponse[AccessTokenResponse] = {
@@ -25,7 +25,7 @@ object Authenticate {
       "client_id"     -> client_id,
       "grant_type"    -> "refresh_token"
     )
-    SttpClient.auth(body, path)
+    SttpClient.auth[AccessTokenResponse](body, path)
   }
 
   case class AccessTokenResponse(access_token: String,

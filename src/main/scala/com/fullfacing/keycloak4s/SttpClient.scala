@@ -34,16 +34,16 @@ object SttpClient {
   private val scheme   = "http"
   private val host     = "localhost"  //TODO Add correct host
   private val port     = Some(8080)   //TODO Add correct port
-  private val basePath = Seq("auth", "admin")
+  private val basePath = Seq("auth", "admin", "realms")
 
   /* URI Builder **/
 
-  private def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
+  private def createUri(path: Seq[String], queries: Seq[KeyValue], bPath: Seq[String] = basePath) = Uri(
     scheme          = scheme,
     userInfo        = None,
     host            = host,
     port            = port,
-    path            = basePath ++ path,
+    path            = bPath ++ path,
     queryFragments  = queries,
     fragment        = None
   )
@@ -70,7 +70,7 @@ object SttpClient {
 
   private def setByteResponse(req: StringRequest): ByteRequest = req.response(asByteArray)
 
-  private def setAuthHeader(token: String): StringRequest => StringRequest = req => req.header("Authorization", token)
+  private def setAuthHeader(token: String): StringRequest => StringRequest = req => req.header("Authorization", s"Bearer $token")
 
   private def deserializeJson[A](resp: Task[Response[String]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
     resp.map(_.body.fold(_ => error.asLeft[A], read[A](_).asRight))
@@ -136,7 +136,7 @@ object SttpClient {
   }
 
   def auth[A <: AnyRef](form: Map[String, String], path: Seq[String])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] = {
-    val uri = createUri(path, Seq.empty[KeyValue])
+    val uri = createUri(path, Seq.empty[KeyValue], Seq("auth", "realms"))
     prepareRequest(form).andThen(prepareResponse[A](manifest))(sttp.post(uri))
   }
 }
