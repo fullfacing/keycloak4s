@@ -20,7 +20,7 @@ object IdentityProviders {
    * @param contentType The file's content type.
    * @return
    */
-  def importIdentityProvider(realm: String, config: File, contentType: ContentType): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type, modify SttpClient to handle multipart/form-data
+  def importIdentityProvider(realm: String, config: File, contentType: ContentType)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type, modify SttpClient to handle multipart/form-data
     val path = Seq(realm, "identity-provider", "import-config")
     val multipart = createMultipart(config, contentType)
     SttpClient.post(multipart, path)
@@ -33,7 +33,7 @@ object IdentityProviders {
    * @param identityProvider  Object representing IdentityProvider details.
    * @return
    */
-  def createIdentityProvider(realm: String, identityProvider: IdentityProvider): AsyncApolloResponse[Any] = { //TODO Determine return type
+  def createIdentityProvider(realm: String, identityProvider: IdentityProvider)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "instances")
     SttpClient.post(identityProvider, path)
   }
@@ -44,7 +44,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def getIdentityProviders(realm: String): AsyncApolloResponse[Seq[IdentityProvider]] = {
+  def getIdentityProviders(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[IdentityProvider]] = {
     val path = Seq(realm, "identity-provider", "instances")
     SttpClient.get(path)
   }
@@ -56,7 +56,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def getIdentityProvider(alias: String, realm: String): AsyncApolloResponse[IdentityProvider] = {
+  def getIdentityProvider(alias: String, realm: String)(implicit authToken: String): AsyncApolloResponse[IdentityProvider] = {
     val path = Seq(realm, "identity-provider", "instances", alias)
     SttpClient.get(path)
   }
@@ -68,7 +68,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def updateIdentityProvider(alias: String, realm: String, identityProvider: IdentityProvider): AsyncApolloResponse[IdentityProvider] = {
+  def updateIdentityProvider(alias: String, realm: String, identityProvider: IdentityProvider)(implicit authToken: String): AsyncApolloResponse[IdentityProvider] = {
     val path = Seq(realm, "identity-provider", "instances", alias)
     SttpClient.put(identityProvider, path)
   }
@@ -80,7 +80,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def deleteIdentityProvider(alias: String, realm: String): AsyncApolloResponse[IdentityProvider] = {
+  def deleteIdentityProvider(alias: String, realm: String)(implicit authToken: String): AsyncApolloResponse[IdentityProvider] = {
     val path = Seq(realm, "identity-provider", "instances", alias)
     SttpClient.delete(path)
   }
@@ -93,7 +93,7 @@ object IdentityProviders {
    * @param format  Optional format to use.
    * @return
    */
-  def exportIdentityProviderBrokerConfig(alias: String, realm: String, format: Option[String] = None): AsyncApolloResponse[Any] = { //TODO Determine return type
+  def exportIdentityProviderBrokerConfig(alias: String, realm: String, format: Option[String] = None)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type
     val query = createQuery(("format", format))
 
     val path = Seq(realm, "identity-provider", "instances", alias, "export")
@@ -107,7 +107,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def getManagementPermissions(alias: String, realm: String): AsyncApolloResponse[ManagementPermission] = {
+  def getManagementPermissions(alias: String, realm: String)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "management", "permissions")
     SttpClient.get(path)
   }
@@ -120,7 +120,7 @@ object IdentityProviders {
    * @param permissions
    * @return
    */
-  def updateManagementPermissions(alias: String, realm: String, permissions: ManagementPermission): AsyncApolloResponse[ManagementPermission] = {
+  def updateManagementPermissions(alias: String, realm: String, permissions: ManagementPermission)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "management", "permissions")
     SttpClient.put(permissions, path)
   }
@@ -132,7 +132,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def getMapperTypes(alias: String, realm: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type
+  def getMapperTypes(alias: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "instances", alias, "mapper-types")
     SttpClient.get(path)
   }
@@ -145,7 +145,7 @@ object IdentityProviders {
    * @param mapper
    * @return
    */
-  def addMapperTypes(alias: String, realm: String, mapper: IdentityProviderMapper): AsyncApolloResponse[Any] = { //TODO Determine return type
+  def addMapperTypes(alias: String, realm: String, mapper: IdentityProviderMapper)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "instances", alias, "mapper")
     SttpClient.post(mapper, path)
   }
@@ -157,7 +157,7 @@ object IdentityProviders {
    * @param realm Name of the Realm.
    * @return
    */
-  def getMappers(alias: String, realm: String): AsyncApolloResponse[Seq[IdentityProviderMapper]] = {
+  def getMappers(alias: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[IdentityProviderMapper]] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mappers")
     SttpClient.get(path)
   }
@@ -170,7 +170,7 @@ object IdentityProviders {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getMapper(alias: String, mapperId: String, realm: String): AsyncApolloResponse[IdentityProviderMapper] = {
+  def getMapper(alias: String, mapperId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[IdentityProviderMapper] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mappers", mapperId)
     SttpClient.get(path)
   }
@@ -184,7 +184,7 @@ object IdentityProviders {
    * @param mapper
    * @return
    */
-  def updateMapper(alias: String, mapperId: String, realm: String, mapper: IdentityProviderMapper): AsyncApolloResponse[IdentityProviderMapper] = {
+  def updateMapper(alias: String, mapperId: String, realm: String, mapper: IdentityProviderMapper)(implicit authToken: String): AsyncApolloResponse[IdentityProviderMapper] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mappers", mapperId)
     SttpClient.put(mapper, path)
   }
@@ -197,7 +197,7 @@ object IdentityProviders {
    * @param realm     Name of the Realm.
    * @return
    */
-  def deleteMapper(alias: String, mapperId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def deleteMapper(alias: String, mapperId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mappers", mapperId)
     SttpClient.delete(path)
   }
@@ -209,7 +209,7 @@ object IdentityProviders {
    * @param realm       Name of the Realm.
    * @return
    */
-  def getIdentityProviders(providerId: String, realm: String): AsyncApolloResponse[Any] = { //TODO Determine return type
+  def getIdentityProviders(providerId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "providers", providerId)
     SttpClient.get(path)
   }

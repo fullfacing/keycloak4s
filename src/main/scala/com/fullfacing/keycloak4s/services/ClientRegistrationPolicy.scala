@@ -14,7 +14,7 @@ object ClientRegistrationPolicy {
    * @param realm Name of the Realm.
    * @return
    */
-  def getClientRegistrationPolicyProviders(realm: String): AsyncApolloResponse[Seq[ComponentType]] = {
+  def getClientRegistrationPolicyProviders(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ComponentType]] = {
     val path = Seq(realm, "client-registration-policy", "providers")
     SttpClient.get(path)
   }

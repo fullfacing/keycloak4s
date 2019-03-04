@@ -21,7 +21,7 @@ object ClientRoleMappings {
    * @param roles
    * @return
    */
-  def addRolesToGroup(client: String, id: String, realm: String, roles: Seq[Role]): AsyncApolloResponse[NoContent] = {
+  def addRolesToGroup(client: String, id: String, realm: String, roles: Seq[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
     SttpClient.post(roles, path)
   }
@@ -34,7 +34,7 @@ object ClientRoleMappings {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getGroupRoleMappings(client: String, id: String, realm: String): AsyncApolloResponse[Seq[Role]] = {
+  def getGroupRoleMappings(client: String, id: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
     SttpClient.get(path)
   }
@@ -48,7 +48,7 @@ object ClientRoleMappings {
    * @param roles
    * @return
    */
-  def deleteGroupRoles(client: String, id: String, realm: String, roles: Seq[Role]): AsyncApolloResponse[NoContent] = {
+  def deleteGroupRoles(client: String, id: String, realm: String, roles: Seq[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
     SttpClient.delete(roles, path, Seq.empty[KeyValue])
   }
@@ -61,7 +61,7 @@ object ClientRoleMappings {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getAvailableGroupRoles(client: String, id: String, realm: String): AsyncApolloResponse[Seq[Role]] = {
+  def getAvailableGroupRoles(client: String, id: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val path = Seq(realm, "groups", id, "role-mapping", "clients", client, "available")
     SttpClient.get(path)
   }
@@ -75,7 +75,7 @@ object ClientRoleMappings {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getEffectiveGroupRoles(client: String, id: String, realm: String): AsyncApolloResponse[Seq[Role]] = {
+  def getEffectiveGroupRoles(client: String, id: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val path = Seq(realm, "groups", id, "role-mapping", "clients", client, "composite")
     SttpClient.get(path)
   }
@@ -89,7 +89,7 @@ object ClientRoleMappings {
    * @param roles
    * @return
    */
-  def addRolesToUser(client: String, id: String, realm: String, roles: Seq[Role]): AsyncApolloResponse[NoContent] = {
+  def addRolesToUser(client: String, id: String, realm: String, roles: Seq[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "users", id, "role-mapping", "clients", client)
     SttpClient.post(roles, path)
   }
@@ -102,7 +102,7 @@ object ClientRoleMappings {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getUserRoleMappings(client: String, id: String, realm: String): AsyncApolloResponse[Seq[Role]] = {
+  def getUserRoleMappings(client: String, id: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val path = Seq(realm, "users", id, "role-mapping", "clients", client)
     SttpClient.get(path)
   }
@@ -116,7 +116,7 @@ object ClientRoleMappings {
    * @param roles
    * @return
    */
-  def deleteUserRoles(client: String, id: String, realm: String, roles: Seq[Role]): AsyncApolloResponse[NoContent] = {
+  def deleteUserRoles(client: String, id: String, realm: String, roles: Seq[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
     SttpClient.delete(roles, path, Seq.empty[KeyValue])
   }
@@ -129,7 +129,7 @@ object ClientRoleMappings {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getAvailableUserRoles(client: String, id: String, realm: String): AsyncApolloResponse[Seq[Role]] = {
+  def getAvailableUserRoles(client: String, id: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val path = Seq(realm, "users", id, "role-mapping", "clients", client, "available")
     SttpClient.get(path)
   }
@@ -143,7 +143,7 @@ object ClientRoleMappings {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getEffectiveUserRoles(client: String, id: String, realm: String): AsyncApolloResponse[Seq[Role]] = {
+  def getEffectiveUserRoles(client: String, id: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val path = Seq(realm, "users", id, "role-mapping", "clients", client, "composite")
     SttpClient.get(path)
   }

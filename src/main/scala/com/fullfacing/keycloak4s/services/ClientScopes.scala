@@ -16,7 +16,7 @@ object ClientScopes {
    * @param clientScope Object representing ClientScope details.
    * @return
    */
-  def createNewClientScope(realm: String, clientScope: ClientScope): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def createNewClientScope(realm: String, clientScope: ClientScope)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "client-scopes")
     SttpClient.post(clientScope, path)
   }
@@ -27,7 +27,7 @@ object ClientScopes {
    * @param realm Name of the Realm.
    * @return
    */
-  def getRealmClientScopes(realm: String): AsyncApolloResponse[Seq[ClientScope]] = {
+  def getRealmClientScopes(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ClientScope]] = {
     val path = Seq(realm, "client-scopes")
     SttpClient.get(path)
   }
@@ -39,7 +39,7 @@ object ClientScopes {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getClientScope(scopeId: String, realm: String): AsyncApolloResponse[ClientScope] = {
+  def getClientScope(scopeId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[ClientScope] = {
     val path = Seq(realm, "client-scopes", scopeId)
     SttpClient.get(path)
   }
@@ -52,7 +52,7 @@ object ClientScopes {
    * @param clientScope Object representing ClientScope details.
    * @return
    */
-  def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "client-scopes", scopeId)
     SttpClient.put(clientScope, path)
   }
@@ -64,7 +64,7 @@ object ClientScopes {
    * @param realm   Name of the Realm.
    * @return
    */
-  def deleteClientScope(scopeId: String, realm: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def deleteClientScope(scopeId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "client-scopes", scopeId)
     SttpClient.delete(path)
   }

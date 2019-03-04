@@ -16,7 +16,7 @@ object Components {
    * @param component Object representing a component's details.
    * @return
    */
-  def createComponent(realm: String, component: Component): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def createComponent(realm: String, component: Component)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "components")
     SttpClient.post(component, path)
   }
@@ -27,7 +27,7 @@ object Components {
    * @param realm Name of the Realm.
    * @return
    */
-  def getComponents(realm: String): AsyncApolloResponse[Seq[Component]] = {
+  def getComponents(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Component]] = {
     val path = Seq(realm, "components")
     SttpClient.get(path)
   }
@@ -39,7 +39,7 @@ object Components {
    * @param realm       Name of the Realm.
    * @return
    */
-  def getComponent(componentId: String, realm: String): AsyncApolloResponse[Component] = {
+  def getComponent(componentId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Component] = {
     val path = Seq(realm, "components", componentId)
     SttpClient.get(path)
   }
@@ -52,7 +52,7 @@ object Components {
    * @param component   Object representing a component's details.
    * @return
    */
-  def updateComponent(componentId: String, realm: String, component: Component): AsyncApolloResponse[Component] = {
+  def updateComponent(componentId: String, realm: String, component: Component)(implicit authToken: String): AsyncApolloResponse[Component] = {
     val path = Seq(realm, "components", componentId)
     SttpClient.put(component, path)
   }
@@ -64,7 +64,7 @@ object Components {
    * @param realm       Name of the Realm.
    * @return
    */
-  def deleteComponent(componentId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def deleteComponent(componentId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "components", componentId)
     SttpClient.delete(path)
   }
@@ -77,7 +77,7 @@ object Components {
    * @param `type`
    * @return
    */
-  def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None): AsyncApolloResponse[Seq[ComponentType]] = {
+  def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None)(implicit authToken: String): AsyncApolloResponse[Seq[ComponentType]] = {
     val query = createQuery(("type", `type`))
 
     val path = Seq(realm, "components", componentId, "sub-component-types")

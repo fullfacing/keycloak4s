@@ -16,7 +16,7 @@ object ClientInitialAccess {
    * @param config
    * @return
    */
-  def createNewInitialAccessToken(realm: String, config: ClientInitialAccessCreate): AsyncApolloResponse[ClientInitialAccess] = {
+  def createNewInitialAccessToken(realm: String, config: ClientInitialAccessCreate)(implicit authToken: String): AsyncApolloResponse[ClientInitialAccess] = {
     val path = Seq(realm, "clients-initial-access")
     SttpClient.post(config, path)
   }
@@ -27,7 +27,7 @@ object ClientInitialAccess {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getInitialAccessTokens(realm: String): AsyncApolloResponse[Seq[ClientInitialAccess]] = {
+  def getInitialAccessTokens(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ClientInitialAccess]] = {
     val path = Seq(realm, "clients-initial-access")
     SttpClient.get(path)
   }
@@ -38,7 +38,7 @@ object ClientInitialAccess {
    * @param realm   Name of the Realm.
    * @return
    */
-  def deleteInitialAccessToken(tokenId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def deleteInitialAccessToken(tokenId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients-initial-access")
     SttpClient.delete(path)
   }

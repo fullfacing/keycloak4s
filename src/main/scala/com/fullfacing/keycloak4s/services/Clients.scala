@@ -18,7 +18,7 @@ object Clients {
    * @param client  Object representing a Client's details.
    * @return
    */
-  def createNewClient(realm: String, client: Client): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def createNewClient(realm: String, client: Client)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "clients")
     SttpClient.post(client, path)
   }
@@ -31,14 +31,14 @@ object Clients {
    * @param viewableOnly  Optional filter for clients that cannot be viewed in full by admin.
    * @return
    */
-  def getRealmClients(realm: String, clientId: Option[String] = None, viewableOnly: Boolean = false): AsyncApolloResponse[Seq[Client]] = {
+  def getRealmClients(realm: String, clientId: Option[String] = None, viewableOnly: Boolean = false)(implicit authToken: String): AsyncApolloResponse[Seq[Client]] = {
     val query = createQuery(
       ("clientId", clientId),
       ("viewableOnly", Some(viewableOnly))
     )
 
     val path = Seq(realm, "clients")
-    SttpClient.get(path, query.to[Seq])
+    SttpClient.get(path, query)
   }
 
   /**
@@ -48,7 +48,7 @@ object Clients {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getClient(clientId: String, realm: String): AsyncApolloResponse[Client] = {
+  def getClient(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Client] = {
     val path = Seq(realm, "clients", clientId)
     SttpClient.get(path)
   }
@@ -61,7 +61,7 @@ object Clients {
    * @param client    Object representing a Client's details.
    * @return
    */
-  def updateClient(clientId: String, realm: String, client: Client): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def updateClient(clientId: String, realm: String, client: Client)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "clients", clientId)
     SttpClient.put(client, path)
   }
@@ -73,7 +73,7 @@ object Clients {
    * @param realm     Name of the Realm.
    * @return
    */
-  def deleteClient(clientId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def deleteClient(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients", clientId)
     SttpClient.delete(path)
   }
@@ -85,7 +85,7 @@ object Clients {
    * @param realm     Name of the Realm.
    * @return
    */
-  def generateClientSecret(clientId: String, realm: String): AsyncApolloResponse[Credential] = {
+  def generateClientSecret(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Credential] = {
     val path = Seq(realm, "clients", clientId, "client-secret")
     SttpClient.post(path, Seq.empty[KeyValue])
   }
@@ -97,7 +97,7 @@ object Clients {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getClientSecret(clientId: String, realm: String): AsyncApolloResponse[Credential] = {
+  def getClientSecret(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Credential] = {
     val path = Seq(realm, "clients", clientId, "client-secret")
     SttpClient.get(path)
   }
@@ -110,7 +110,7 @@ object Clients {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getDefaultClientScopes(clientId: String, realm: String): AsyncApolloResponse[Seq[ClientScope]] = {
+  def getDefaultClientScopes(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ClientScope]] = {
     val path = Seq(realm, "clients", clientId, "default-client-scopes")
     SttpClient.get(path)
   }
@@ -123,7 +123,7 @@ object Clients {
    * @param realm         Name of the Realm.
    * @return
    */
-  def updateClientScope(clientScopeId: String, clientId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def updateClientScope(clientScopeId: String, clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients", clientId, "default-client-scopes", clientScopeId)
     SttpClient.put(path, Seq.empty[KeyValue])
   }
@@ -136,7 +136,7 @@ object Clients {
    * @param realm         Name of the Realm.
    * @return
    */
-  def deleteClientScope(clientScopeId: String, clientId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def deleteClientScope(clientScopeId: String, clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients", clientId, "default-client-scopes", clientScopeId)
     SttpClient.delete(path, Seq.empty[KeyValue])
   }
@@ -150,7 +150,7 @@ object Clients {
    * @param userId
    * @return
    */
-  def generateAccessTokenExample(clientId: String, realm: String, scope: Option[String] = None, userId: Option[String] = None): AsyncApolloResponse[AccessToken] = {
+  def generateAccessTokenExample(clientId: String, realm: String, scope: Option[String] = None, userId: Option[String] = None)(implicit authToken: String): AsyncApolloResponse[AccessToken] = {
     val query = createQuery(
       ("scope", scope),
       ("userId", userId)
@@ -168,7 +168,7 @@ object Clients {
    * @param scope
    * @return
    */
-  def getProtocolMappers(clientId: String, realm: String, scope: Option[String] = None): AsyncApolloResponse[Seq[ClientScopeEvaluateResourceProtocolMapperEvaluation]] = {
+  def getProtocolMappers(clientId: String, realm: String, scope: Option[String] = None)(implicit authToken: String): AsyncApolloResponse[Seq[ClientScopeEvaluateResourceProtocolMapperEvaluation]] = {
     val query = createQuery(("scope", scope))
 
     val path = Seq(realm, "clients", clientId, "evaluate-scopes", "protocol-mappers")
@@ -185,7 +185,7 @@ object Clients {
    * @param scope
    * @return
    */
-  def getEffectiveScopeMapping(clientId: String, realm: String, roleContainerId: String, scope: Option[String]): AsyncApolloResponse[Seq[Role]] = {
+  def getEffectiveScopeMapping(clientId: String, realm: String, roleContainerId: String, scope: Option[String])(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val query = createQuery(("scope", scope))
 
     val path = Seq(realm, "clients", clientId, "evaluate-scopes", "scope-mappings", roleContainerId, "granted")
@@ -201,7 +201,7 @@ object Clients {
    * @param scope
    * @return
    */
-  def getNonScopeRoles(clientId: String, realm: String, roleContainerId: String, scope: Option[String]): AsyncApolloResponse[Seq[Role]] = {
+  def getNonScopeRoles(clientId: String, realm: String, roleContainerId: String, scope: Option[String])(implicit authToken: String): AsyncApolloResponse[Seq[Role]] = {
     val query = createQuery(("scope", scope))
 
     val path = Seq(realm, "clients", clientId, "evaluate-scopes", "scope-mappings", roleContainerId, "not-granted")
@@ -216,7 +216,7 @@ object Clients {
    * @param realm       Name of the Realm.
    * @return
    */
-  def getClientInstallationProvider(clientId: String, providerId: String, realm: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def getClientInstallationProvider(clientId: String, providerId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
     val path = Seq(realm, "clients", clientId, "installation", "providers", providerId)
     SttpClient.get(path)
   }
@@ -228,7 +228,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def getClientAuthorizationPermissions(clientId: String, realm: String): AsyncApolloResponse[ManagementPermission] = {
+  def getClientAuthorizationPermissions(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
     val path = Seq(realm, "clients", clientId, "management", "permissions")
     SttpClient.get(path)
   }
@@ -241,7 +241,7 @@ object Clients {
    * @param permission
    * @return
    */
-  def updateClientAuthorizationPermissions(clientId: String, realm: String, permission: ManagementPermission): AsyncApolloResponse[ManagementPermission] = {
+  def updateClientAuthorizationPermissions(clientId: String, realm: String, permission: ManagementPermission)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
     val path = Seq(realm, "clients", clientId, "management", "permissions")
     SttpClient.put(permission, path)
   }
@@ -255,7 +255,7 @@ object Clients {
    * @param formParams
    * @return
    */
-  def registerClusterNode(clientId: String, realm: String, formParams: Map[String, Any]): AsyncApolloResponse[NoContent] = { //TODO Determine formParams type.
+  def registerClusterNode(clientId: String, realm: String, formParams: Map[String, Any])(implicit authToken: String): AsyncApolloResponse[NoContent] = { //TODO Determine formParams type.
     val path = Seq(realm, "clients", clientId, "nodes")
     SttpClient.post(formParams, path)
   }
@@ -267,7 +267,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def unregisterClusterNode(clientId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def unregisterClusterNode(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients", clientId, "nodes")
     SttpClient.delete(path)
   }
@@ -280,7 +280,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def getOfflineSessionCount(clientId: String, realm: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getOfflineSessionCount(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
     val path = Seq(realm, "clients", clientId, "offline-session-count")
     SttpClient.get(path)
   }
@@ -295,7 +295,7 @@ object Clients {
    * @param max      Optional maximum results size (defaults to 100).
    * @return
    */
-  def getOfflineSessions(clientId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None): AsyncApolloResponse[Seq[UserSession]] = {
+  def getOfflineSessions(clientId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None)(implicit authToken: String): AsyncApolloResponse[Seq[UserSession]] = {
     val query = createQuery(
       ("first", first),
       ("max", max)
@@ -313,7 +313,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def getOptionalClientScopes(clientId: String, realm: String): AsyncApolloResponse[Seq[ClientScope]] = {
+  def getOptionalClientScopes(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ClientScope]] = {
     val path = Seq(realm, "clients", clientId, "optional-client-scopes")
     SttpClient.get(path)
   }
@@ -326,7 +326,7 @@ object Clients {
    * @param realm         Name of the Realm.
    * @return
    */
-  def updateOptionalClientScope(clientScopeId: String, clientId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def updateOptionalClientScope(clientScopeId: String, clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients", clientId, "optional-client-scopes", clientScopeId)
     SttpClient.put(path, Seq.empty[KeyValue])
   }
@@ -339,7 +339,7 @@ object Clients {
    * @param realm         Name of the Realm.
    * @return
    */
-  def deleteOptionalClientScope(clientScopeId: String, clientId: String, realm: String): AsyncApolloResponse[NoContent] = {
+  def deleteOptionalClientScope(clientScopeId: String, clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
     val path = Seq(realm, "clients", clientId, "optional-client-scopes", clientScopeId)
     SttpClient.delete(path, Seq.empty[KeyValue])
   }
@@ -352,7 +352,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def pushRevocationPolicy(clientId: String, realm: String): AsyncApolloResponse[GlobalRequestResult] = {
+  def pushRevocationPolicy(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[GlobalRequestResult] = {
     val path = Seq(realm, "clients", clientId, "push-revocation")
     SttpClient.post(path, Seq.empty[KeyValue])
   }
@@ -364,7 +364,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def generateRegistrationAccessToken(clientId: String, realm: String): AsyncApolloResponse[Client] = {
+  def generateRegistrationAccessToken(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Client] = {
     val path = Seq(realm, "clients", clientId, "registration-access-token")
     SttpClient.post(path, Seq.empty[KeyValue])
   }
@@ -376,7 +376,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def getServiceAccountUser(clientId: String, realm: String): AsyncApolloResponse[User] = {
+  def getServiceAccountUser(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[User] = {
     val path = Seq(realm, "clients", clientId, "service-account-user")
     SttpClient.get(path)
   }
@@ -389,7 +389,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def getSessionCount(clientId: String, realm: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getSessionCount(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
     val path = Seq(realm, "clients", clientId, "session-count")
     SttpClient.get(path)
   }
@@ -402,7 +402,7 @@ object Clients {
    * @param realm    Name of the Realm.
    * @return
    */
-  def testNodesAvailability(clientId: String, realm: String): AsyncApolloResponse[GlobalRequestResult] = {
+  def testNodesAvailability(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[GlobalRequestResult] = {
     val path = Seq(realm, "clients", clientId, "test-nodes-available")
     SttpClient.get(path)
   }
@@ -417,7 +417,7 @@ object Clients {
    * @param max      Optional maximum results size (defaults to 100).
    * @return
    */
-  def getUserSessions(clientId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None): AsyncApolloResponse[Seq[UserSession]] = {
+  def getUserSessions(clientId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None)(implicit authToken: String): AsyncApolloResponse[Seq[UserSession]] = {
     val query = createQuery(
       ("first", first),
       ("max", max)

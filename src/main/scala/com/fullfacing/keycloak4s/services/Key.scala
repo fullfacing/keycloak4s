@@ -15,7 +15,7 @@ object Key {
    * @param realm
    * @return
    */
-  def getRealmKeys(realm: String): AsyncApolloResponse[KeysMetadata] = {
+  def getRealmKeys(realm: String)(implicit authToken: String): AsyncApolloResponse[KeysMetadata] = {
     val path = Seq(realm, resource)
     SttpClient.get(path)
   }

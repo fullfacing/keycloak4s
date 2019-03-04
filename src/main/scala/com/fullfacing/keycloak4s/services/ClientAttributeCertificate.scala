@@ -20,7 +20,7 @@ object ClientAttributeCertificate {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getKeyInfo(attribute: String, clientId: String, realm: String): AsyncApolloResponse[Certificate] = {
+  def getKeyInfo(attribute: String, clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Certificate] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute)
     SttpClient.get(path)
   }
@@ -34,8 +34,7 @@ object ClientAttributeCertificate {
    * @param config    Keystore configuration.
    * @return
    */
-  def getKeystoreFile(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): AsyncApolloResponse[Seq[Byte]] = {
-    //TODO Call produces an octet-stream, reminder to look into converting the bytes into a File instead.
+  def getKeystoreFile(attribute: String, clientId: String, realm: String, config: KeyStoreConfig)(implicit authToken: String): AsyncApolloResponse[File] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "download")
     SttpClient.post(config, path)
   }
@@ -48,7 +47,7 @@ object ClientAttributeCertificate {
    * @param realm     Name of the Realm.
    * @return
    */
-  def generateNewCertificate(attribute: String, clientId: String, realm: String): AsyncApolloResponse[Certificate] = {
+  def generateNewCertificate(attribute: String, clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Certificate] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate")
     SttpClient.post(path, queries = Seq.empty[KeyValue])
   }
@@ -62,8 +61,7 @@ object ClientAttributeCertificate {
    * @param config    Keystore configuration.
    * @return
    */
-  def generateAndDownloadNewCertificate(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): AsyncApolloResponse[Seq[Byte]] = {
-    //TODO Call produces an octet-stream, reminder to look into converting the bytes into a File instead.
+  def generateAndDownloadNewCertificate(attribute: String, clientId: String, realm: String, config: KeyStoreConfig)(implicit authToken: String): AsyncApolloResponse[File] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate-and-download")
     SttpClient.post(config, path)
   }
@@ -78,7 +76,7 @@ object ClientAttributeCertificate {
    * @param contentType The file's content type.
    * @return
    */
-  def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType): AsyncApolloResponse[Certificate] = {
+  def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType)(implicit authToken: String): AsyncApolloResponse[Certificate] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
     val multipart = createMultipart(file, contentType)
     SttpClient.post(multipart, path)
@@ -94,7 +92,7 @@ object ClientAttributeCertificate {
    * @param contentType The file's content type.
    * @return
    */
-  def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType): AsyncApolloResponse[Certificate] = {
+  def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType)(implicit authToken: String): AsyncApolloResponse[Certificate] = {
     val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload-certificate")
     val multipart = createMultipart(file, contentType)
     SttpClient.post(multipart, path)
