@@ -2,8 +2,8 @@ package com.fullfacing.keycloak4s.services
 
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s.SttpClient
-import com.fullfacing.keycloak4s.SttpClient.UnknownMap
+import com.fullfacing.keycloak4s.handles.SttpClient.UnknownMap
+import com.fullfacing.keycloak4s.handles.SttpClient
 import com.fullfacing.keycloak4s.models.Synchronization
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 

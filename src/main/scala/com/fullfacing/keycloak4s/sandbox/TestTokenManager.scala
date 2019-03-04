@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s
+package com.fullfacing.keycloak4s.sandbox
 
 import com.fullfacing.keycloak4s.services.Authenticate
 import monix.eval.Task

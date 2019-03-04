@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s
+package com.fullfacing.keycloak4s.handles
 
 import java.io.File
 import java.nio.ByteBuffer
@@ -7,20 +7,25 @@ import cats.implicits._
 import com.fullfacing.apollo.core.networking.wire.serialization.{JsonFormats, JsonSerializer}
 import com.fullfacing.apollo.core.protocol.ResponseCode
 import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
+import com.fullfacing.keycloak4s.EnumSerializers
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
-import com.softwaremill.sttp._
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
+import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, Response, SttpBackend, Uri, asByteArray, asString, sttp}
 import monix.eval.Task
 import monix.reactive.Observable
 import org.json4s.Formats
 import org.json4s.native.Serialization.{read, write}
+import com.fullfacing.keycloak4s.handles.Logging.logger
 
 import scala.collection.immutable.Seq
 
 object SttpClient {
 
-  /** Temp return type for calls with the unknown response types */
+  /* Temp logger statements **/
+  def jsonLog(s: String) = s"${Console.YELLOW}JSON Response:\n$s${Console.RESET}"
+
+  /* Temp return type for calls with the unknown response types **/
   trait UnknownResponse extends AnyRef
   type UnknownMap = Map[String, Any]
 
@@ -73,7 +78,7 @@ object SttpClient {
   private def setAuthHeader(token: String): StringRequest => StringRequest = req => req.header("Authorization", s"Bearer $token")
 
   private def deserializeJson[A](resp: Task[Response[String]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
-    resp.map(_.body.fold(_ => error.asLeft[A], read[A](_).asRight))
+    resp.map(_.body.fold(_ => error.asLeft[A], { s => logger.debug(jsonLog(s)) ;read[A](s).asRight}))
 
   private def deserializeBytes[A <: AnyRef](resp: Task[Response[Array[Byte]]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
     resp.map(_.body.fold(_ => error.asLeft[A], JsonSerializer.fromBytes[A](_).asRight))

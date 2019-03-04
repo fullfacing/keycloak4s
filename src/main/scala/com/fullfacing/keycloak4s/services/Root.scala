@@ -1,8 +1,8 @@
 package com.fullfacing.keycloak4s.services
 
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.keycloak4s.SttpClient
-import com.fullfacing.keycloak4s.SttpClient.UnknownResponse
+import com.fullfacing.keycloak4s.handles.SttpClient.UnknownResponse
+import com.fullfacing.keycloak4s.handles.SttpClient
 import com.fullfacing.keycloak4s.models.ServerInfo
 
 import scala.collection.immutable.Seq

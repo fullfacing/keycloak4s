@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.services
 import java.io.File
 
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.keycloak4s.SttpClient
+import com.fullfacing.keycloak4s.handles.SttpClient
 import com.fullfacing.keycloak4s.models._
 import com.fullfacing.keycloak4s.models.enums.ContentType
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue

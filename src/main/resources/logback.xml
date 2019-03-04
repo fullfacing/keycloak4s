@@ -1,0 +1,32 @@
+<configuration scan="true">
+
+    <!-- Logs TRACE, DEBUG and INFO levels to System.out -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="com.fullfacing.apollo.core.logging.StdOutFilter"/>
+        <encoder>
+            <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss,SSSXXX", UTC} - %-5level{1} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logs WARNING and ERROR levels to System.err -->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.err</Target>
+        <filter class="com.fullfacing.apollo.core.logging.StdErrFilter"/>
+        <encoder>
+            <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss,SSSXXX", UTC} - %-5level{1} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Apollo Loggers -->
+    <logger name="apollo.application" level="error"/>
+
+    <!-- 3rd Party Library Loggers -->
+    <logger name="io.netty"             level="error"/>
+    <logger name="org.asynchttpclient"  level="debug"/>
+
+    <root>
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </root>
+
+</configuration>
