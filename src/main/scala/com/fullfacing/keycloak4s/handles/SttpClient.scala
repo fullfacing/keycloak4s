@@ -66,7 +66,7 @@ object SttpClient {
 
   private def setEncodedData(form: Map[String, String], req: UnsetRequest): StringRequest = req.contentType(ContentTypes.UrlEncoded.value).body(form)
 
-  private def setJsonBody[A](body: A, req: UnsetRequest): StringRequest = {println(write(body)); req.contentType(ContentTypes.Json.value).body(write(body))}
+  private def setJsonBody[A](body: A, req: UnsetRequest): StringRequest = req.contentType(ContentTypes.Json.value).body(write(body))
 
   private def setMultipartBody(mp: Multipart, req: UnsetRequest): StringRequest = req.multipartBody(mp)
 
