@@ -22,10 +22,7 @@ import scala.collection.immutable.Seq
 
 object SttpClient {
 
-  /* Temp logger statements **/
-  def jsonLog(s: String) = s"${Console.YELLOW}JSON Response:\n$s${Console.RESET}"
-
-  /* Temp return type for calls with the unknown response types **/
+  /* Temporary return type for calls with unknown response types, to be removed when all responses are identified. **/
   trait UnknownResponse extends AnyRef
   type UnknownMap = Map[String, Any]
 
@@ -53,9 +50,11 @@ object SttpClient {
     fragment        = None
   )
 
-  /* STTP Client Error **/
-
-  private val error = ErrorPayload(ResponseCode.InternalServerError, "Call to Keycloak server failed.")
+  /* STTP Client Error Handling **/
+  private def handleError[A](err: String): Either[ErrorPayload, A] = {
+    logger.error(s"${Console.RED}Error Response: $err${Console.RESET}")
+    ErrorPayload(ResponseCode.InternalServerError, "Call to Keycloak server failed.").asLeft[A]
+  }
 
   /* Type Aliases **/
 
@@ -67,7 +66,7 @@ object SttpClient {
 
   private def setEncodedData(form: Map[String, String], req: UnsetRequest): StringRequest = req.contentType(ContentTypes.UrlEncoded.value).body(form)
 
-  private def setJsonBody[A](body: A, req: UnsetRequest): StringRequest = req.contentType(ContentTypes.Json.value).body(write(body))
+  private def setJsonBody[A](body: A, req: UnsetRequest): StringRequest = {println(write(body)); req.contentType(ContentTypes.Json.value).body(write(body))}
 
   private def setMultipartBody(mp: Multipart, req: UnsetRequest): StringRequest = req.multipartBody(mp)
 
@@ -78,10 +77,10 @@ object SttpClient {
   private def setAuthHeader(token: String): StringRequest => StringRequest = req => req.header("Authorization", s"Bearer $token")
 
   private def deserializeJson[A](resp: Task[Response[String]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
-    resp.map(_.body.fold(_ => error.asLeft[A], { s => logger.debug(jsonLog(s)) ;read[A](s).asRight}))
+    resp.map(_.body.fold(handleError, read[A](_).asRight))
 
   private def deserializeBytes[A <: AnyRef](resp: Task[Response[Array[Byte]]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
-    resp.map(_.body.fold(_ => error.asLeft[A], JsonSerializer.fromBytes[A](_).asRight))
+    resp.map(_.body.fold(handleError, JsonSerializer.fromBytes[A](_).asRight))
 
   private def sendRequestJson[A](implicit ma: Manifest[A]): StringRequest => Task[Either[ErrorPayload, A]] =
     (setJsonResponse _).andThen(_.send[Task]).andThen(deserializeJson[A])

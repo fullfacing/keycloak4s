@@ -16,9 +16,9 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getAuthenticationProviders(realm: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getAuthenticationProviders(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[AuthenticationProvider]] = {
     val path = Seq(realm, "authentication", "authenticator-providers")
-    SttpClient.get(path)
+    SttpClient.get[Seq[AuthenticationProvider]](path)
   }
 
   /**
@@ -27,9 +27,9 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getClientAuthenticationProviders(realm: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getClientAuthenticationProviders(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[AuthenticationProvider]] = {
     val path = Seq(realm, "authentication", "client-authenticator-providers")
-    SttpClient.get(path)
+    SttpClient.get[Seq[AuthenticationProvider]](path)
   }
 
   /**
@@ -88,9 +88,9 @@ object AuthenticationManagement {
    * @param request Object describing authentication execution.
    * @return
    */
-  def addNewAuthenticationExecution(realm: String, request: AuthenticationExecution)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def addNewAuthenticationExecution(realm: String, request: AuthenticationExecution)(implicit authToken: String): AsyncApolloResponse[AnyRef] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "executions")
-    SttpClient.post(request, path)
+    SttpClient.post[AuthenticationExecution, AnyRef](request, path)
   }
 
   /**

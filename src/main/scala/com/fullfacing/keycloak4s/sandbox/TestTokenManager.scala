@@ -4,22 +4,25 @@ import com.fullfacing.keycloak4s.services.Authenticate
 import monix.eval.Task
 import monix.execution.{Cancelable, Scheduler}
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 object TestTokenManager {
 
-  implicit val scheduler: Scheduler = Scheduler.fixedPool(s"device-io", 200)
+  /* PLEASE NOTE: THIS CLASS IS FOR LOCAL TESTING ONLY (@rich please ignore the vars) **/
 
-  private var accessToken  = ""
+  implicit val scheduler: Scheduler = Scheduler.fixedPool(s"scheduler", 200)
+
+  @volatile
+  private var accessToken = ""
+
+  @volatile
   private var refreshToken = ""
 
   implicit def getAuthToken: String = accessToken
 
   def getInitialToken(realm: String, client: String, username: String, password: String): Task[Cancelable] = Task.eval {
-    scheduler.scheduleOnce(FiniteDuration(5, "seconds")){
-      println("\nGet Token\n")
+    scheduler.scheduleOnce(5.seconds){
       Authenticate.getAccessToken(realm, username, password, client).foreach(_.foreach { response =>
-        println(response)
         accessToken = response.access_token
         refreshToken = response.refresh_token
       })
@@ -27,14 +30,11 @@ object TestTokenManager {
   }
 
   def refreshToken(realm: String, client: String): Task[Cancelable] = Task.eval {
-    scheduler.scheduleAtFixedRate(FiniteDuration(55, "seconds"), FiniteDuration(55, "seconds")) {
-      println("\nRefresh Token: \n")
+    scheduler.scheduleAtFixedRate(55.seconds, 55.seconds) {
       Authenticate.refreshAccessToken(realm, refreshToken, client).foreach(_.foreach { response =>
-        println(response)
         accessToken = response.access_token
         refreshToken = response.refresh_token
       })
     }
   }
-
 }

@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 import com.fullfacing.apollo.core.protocol.NoContent
 import com.fullfacing.keycloak4s.handles.SttpClient
+import com.fullfacing.keycloak4s.models.BruteForceResponse
 
 import scala.collection.immutable.Seq
 
@@ -27,9 +28,9 @@ object AttackDetection {
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getUserStatus(realm: String, userId: String)(implicit authToken: String): AsyncApolloResponse[BruteForceResponse] = {
     val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
-    SttpClient.get[Map[String, Any]](path)
+    SttpClient.get[BruteForceResponse](path)
   }
 
   /**
