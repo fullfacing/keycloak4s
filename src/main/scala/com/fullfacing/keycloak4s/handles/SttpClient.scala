@@ -4,10 +4,8 @@ import java.io.File
 import java.nio.ByteBuffer
 
 import cats.implicits._
-import com.fullfacing.apollo.core.networking.wire.serialization.{JsonFormats, JsonSerializer}
-import com.fullfacing.apollo.core.protocol.ResponseCode
-import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
 import com.fullfacing.keycloak4s.EnumSerializers
+import com.fullfacing.keycloak4s.handles.Logging.logger
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
@@ -15,8 +13,6 @@ import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, Response, SttpBa
 import monix.eval.Task
 import monix.reactive.Observable
 import org.json4s.Formats
-import org.json4s.native.Serialization.{read, write}
-import com.fullfacing.keycloak4s.handles.Logging.logger
 
 import scala.collection.immutable.Seq
 
