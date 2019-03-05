@@ -33,35 +33,9 @@ val apollo = {
 val sttp = {
   val version = "1.5.11"
   Seq(
-    "com.softwaremill.sttp" %% "core" % version,
+    "com.softwaremill.sttp" %% "json4s" % version,
     "com.softwaremill.sttp" %% "async-http-client-backend-monix" % version
   )
 }
 
 libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp
-
-val scalacOpts = Seq(
-  "-Ywarn-unused:implicits",
-  "-Ywarn-unused:imports",
-  "-Ywarn-unused:locals",
-  "-Ywarn-unused:params",
-  "-Ywarn-unused:patvars",
-  "-Ywarn-unused:privates",
-  "-Ypartial-unification",
-  "-deprecation",
-  "-encoding", "UTF-8", // yes, this is 2 args
-  "-feature",
-  "-language:existentials",
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xfatal-warnings",
-  "-Xlint",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code", // N.B. doesn't work well with the ??? hole,
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Xfuture"
-)
-
-scalacOptions ++= scalacOpts
