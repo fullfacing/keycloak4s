@@ -65,4 +65,9 @@ val sttp: Seq[ModuleID] = {
   )
 }
 
-libraryDependencies := keycloak ++ json4s ++ sttp ++ enumeratum ++ logback
+val cats: Seq[ModuleID] = {
+  val version = "1.6.0"
+  Seq("org.typelevel" %% "cats-core" % version)
+}
+
+libraryDependencies := keycloak ++ cats ++ json4s ++ sttp ++ enumeratum ++ logback

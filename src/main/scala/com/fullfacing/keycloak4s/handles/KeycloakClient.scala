@@ -1,43 +1,32 @@
 package com.fullfacing.keycloak4s.handles
 
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 import com.fullfacing.keycloak4s.EnumSerializers
-import com.fullfacing.keycloak4s.handles.Logging.logger
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
-import com.softwaremill.sttp.{Id, MonadAsyncError, Multipart, Request, RequestT, Response, SttpBackend, Uri, asByteArray, asString, sttp}
+import com.softwaremill.sttp.{Id, MonadError, Multipart, Request, RequestT, Response, SttpBackend, Uri, asByteArray, asString, sttp}
 import org.json4s.Formats
+import org.json4s.native.Serialization
 
 import scala.collection.immutable.Seq
 
-class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBackend[R, M], F: MonadAsyncError[R]) {
+class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBackend[R, M], F: MonadError[R]) {
 
   /* Implicits */
   implicit val formats: Formats = org.json4s.DefaultFormats ++ EnumSerializers.all
 
-  /* Server Details */
-  private val scheme   = "http"
-  private val host     = "localhost"  //TODO Add correct host
-  private val port     = Some(8080)   //TODO Add correct port
-  private val basePath = Seq("auth", "admin", "realms")
-
   /* URI Builder **/
-  private def createUri(path: Seq[String], queries: Seq[KeyValue], bPath: Seq[String] = basePath) = Uri(
-    scheme          = scheme,
+  private def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
+    scheme          = config.scheme,
     userInfo        = None,
-    host            = host,
-    port            = port,
-    path            = bPath ++ path,
+    host            = config.host,
+    port            = Some(config.port),
+    path            = Seq("auth", "admin", "realms") ++ path,
     queryFragments  = queries,
     fragment        = None
   )
-
-  /* STTP Client Error Handling **/
-  private def handleError[A](err: String): Either[ErrorPayload, A] = {
-    logger.error(s"${Console.RED}Error Response: $err${Console.RESET}")
-    ErrorPayload(ResponseCode.InternalServerError, "Call to Keycloak server failed.").asLeft[A]
-  }
 
   /* Type Aliases */
   type UnsetRequest   = Request[String, Nothing]
@@ -46,17 +35,11 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
   
   type ErrorPayload = String
 
-  /**
-    *
-    * @param form
-    * @param req
-    * @return
-    */
   private def setEncodedData(form: Map[String, String], req: UnsetRequest): StringRequest =
     req.contentType(ContentTypes.UrlEncoded.value).body(form)
 
   private def setJsonBody[A](body: A, req: UnsetRequest): StringRequest =
-    req.contentType(ContentTypes.Json.value).body(Serializ.(body))
+    req.contentType(ContentTypes.Json.value).body(Serialization.write(body))
 
   private def setMultipartBody(mp: Multipart, req: UnsetRequest): StringRequest =
     req.multipartBody(mp)
@@ -70,70 +53,69 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
   private def setAuthHeader(token: String): StringRequest => StringRequest =
     req => req.header("Authorization", s"Bearer $token")
 
-  private def deserializeJson[A](resp: R[Response[String]])(implicit ma: Manifest[A]): R[Either[ErrorPayload, A]] =
-    F.map(resp)(_.body.fold(handleError, read[A](_).asRight))
+  private def deserializeJson[A](resp: R[Response[String]])(implicit ma: Manifest[A]): R[A] =
+    F.map(resp)(_.body.map(Serialization.read[A]))
 
-//  private def deserializeBytes[A <: AnyRef](resp: F[Response[Array[Byte]]])(implicit ma: Manifest[A]): F[Either[ErrorPayload, A]] =
-//    resp.map(_.body.fold(handleError, JsonSerializer.fromBytes[A](_).asRight))
-//
-//  private def sendRequestJson[A](implicit ma: Manifest[A]): StringRequest => F[Either[ErrorPayload, A]] =
-//    (setJsonResponse _).andThen(_.send[Task]).andThen(deserializeJson[A])
-//
-//  private def sendRequestBytes[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => F[Either[ErrorPayload, A]] =
-//    (setByteResponse _).andThen(_.send[Task]).andThen(deserializeBytes[A])
-//
+  private def deserializeBytes[A <: AnyRef](resp: R[Response[Array[Byte]]])(implicit ma: Manifest[A]): R[A] =
+    F.map(resp)(_.body.map(bytes => Serialization.read[A](new String(bytes, StandardCharsets.UTF_8))))
+
+  private def sendRequestJson[A](implicit ma: Manifest[A]): StringRequest => R[A] =
+    (setJsonResponse _).andThen(_.send[R]).andThen(deserializeJson[A])
+
+  private def sendRequestBytes[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => R[A] =
+    (setByteResponse _).andThen(_.send[R]).andThen(deserializeBytes[A])
+
   private def prepareRequest[A](req: A): UnsetRequest => StringRequest = req match {
     case m: Map[String, String] => (setEncodedData _).tupled(m, _)
     case mp: Multipart          => (setMultipartBody _).tupled(mp, _)
     case other                  => (setJsonBody[A] _).tupled(other, _)
   }
 
-  private def prepareResponse[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => F[Either[ErrorPayload, A]] =
+  private def prepareResponse[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => R[A] =
     if (ma <:< manifest[File]) sendRequestBytes[A] else sendRequestJson[A]
 
   /* REST Protocol Calls **/
-
-  def delete[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], authToken: String): F[Either[ErrorPayload, A]] = {
+  def delete[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A]): R[A] = {
     val uri = createUri(path, queries)
-    setAuthHeader(authToken).andThen(prepareResponse[A](manifest))(sttp.delete(uri))
+    prepareResponse[A](manifest)(sttp.delete(uri))
   }
 
-  def delete[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B], authToken: String): F[Either[ErrorPayload, B]] = {
+  def delete[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B]): R[B] = {
     val uri = createUri(path, queries)
-    prepareRequest[A](body).andThen(setAuthHeader(authToken)).andThen(prepareResponse[B])(sttp.delete(uri))
+    prepareRequest[A](body).andThen(prepareResponse[B])(sttp.delete(uri))
   }
 
-  def get[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], authToken: String): F[Either[ErrorPayload, A]] = {
+  def get[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A]): R[A] = {
     val uri = createUri(path, queries)
-    setAuthHeader(authToken).andThen(prepareResponse[A](manifest))(sttp.get(uri))
+    prepareResponse[A](manifest)(sttp.get(uri))
   }
 
-  def put[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B], authToken: String): F[Either[ErrorPayload, B]] = {
+  def put[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B], authToken: String): R[B] = {
     val uri = createUri(path, queries)
-    prepareRequest[A](body).andThen(setAuthHeader(authToken)).andThen(prepareResponse[B])(sttp.put(uri))
+    prepareRequest[A](body).andThen(prepareResponse[B])(sttp.put(uri))
   }
 
-  def put[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], authToken: String): F[Either[ErrorPayload, A]] = {
+  def put[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], authToken: String): R[A] = {
     val uri = createUri(path, queries)
-    setAuthHeader(authToken).andThen(prepareResponse[A](manifest))(sttp.put(uri))
+    prepareResponse[A](manifest)(sttp.put(uri))
   }
 
-  def post[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B], authToken: String): F[Either[ErrorPayload, B]] = {
+  def post[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[B] = {
     val uri = createUri(path, queries)
-    prepareRequest[A](body).andThen(setAuthHeader(authToken)).andThen(prepareResponse[B])(sttp.post(uri))
+    prepareRequest[A](body).andThen(prepareResponse[B])(sttp.post(uri))
   }
 
-  def post[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], authToken: String): F[Either[ErrorPayload, A]] = {
+  def post[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], authToken: String): R[A] = {
     val uri = createUri(path, queries)
-    setAuthHeader(authToken).andThen(prepareResponse[A](manifest))(sttp.post(uri))
+    prepareResponse[A](manifest)(sttp.post(uri))
   }
 
-  def options[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], authToken: String): F[Either[ErrorPayload, A]] = {
+  def options[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], authToken: String): R[A] = {
     val uri = createUri(path, queries)
-    setAuthHeader(authToken).andThen(prepareResponse[A](manifest))(sttp.options(uri))
+    prepareResponse[A](manifest)(sttp.options(uri))
   }
 
-  def auth[A <: AnyRef](form: Map[String, String], path: Seq[String])(implicit ma: Manifest[A]): F[Either[ErrorPayload, A]] = {
+  def auth[A <: AnyRef](form: Map[String, String], path: Seq[String])(implicit ma: Manifest[A]): R[A] = {
     val uri = createUri(path, Seq.empty[KeyValue], Seq("auth", "realms"))
     prepareRequest(form).andThen(prepareResponse[A](manifest))(sttp.post(uri))
   }
