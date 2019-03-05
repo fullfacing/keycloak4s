@@ -39,29 +39,3 @@ val sttp = {
 }
 
 libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp
-
-val scalacOpts = Seq(
-  "-Ywarn-unused:implicits",
-  "-Ywarn-unused:imports",
-  "-Ywarn-unused:locals",
-  "-Ywarn-unused:params",
-  "-Ywarn-unused:patvars",
-  "-Ywarn-unused:privates",
-  "-Ypartial-unification",
-  "-deprecation",
-  "-encoding", "UTF-8", // yes, this is 2 args
-  "-feature",
-  "-language:existentials",
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xfatal-warnings",
-  "-Xlint",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code", // N.B. doesn't work well with the ??? hole,
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Xfuture"
-)
-
-//scalacOptions ++= scalacOpts

@@ -171,9 +171,9 @@ object RealmsAdmin {
    * @param realm Name of the realm.
    * @return
    */
-  def getClientSessionStats(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Map[String, Any]]] = { //TODO Determine return type.
+  def getClientSessionStats(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ClientSessionStatistics]] = { //TODO Determine return type.
     val path = Seq(realm, "client-session-stats")
-    SttpClient.get(path)
+    SttpClient.get[Seq[ClientSessionStatistics]](path)
   }
 
   /**

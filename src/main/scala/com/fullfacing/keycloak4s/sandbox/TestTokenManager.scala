@@ -5,6 +5,7 @@ import monix.eval.Task
 import monix.execution.{Cancelable, Scheduler}
 
 import scala.concurrent.duration._
+import scala.io.StdIn
 
 object TestTokenManager {
 
@@ -19,6 +20,12 @@ object TestTokenManager {
   private var refreshToken = ""
 
   implicit def getAuthToken: String = accessToken
+
+  def startAuthenticationService(realm: String, client: String, username: String, password: String): Task[Unit] =
+    for {
+      _ <- getInitialToken(realm, client, username, password)
+      _ <- refreshToken(realm, client)
+    } yield StdIn.readLine()
 
   def getInitialToken(realm: String, client: String, username: String, password: String): Task[Cancelable] = Task.eval {
     scheduler.scheduleOnce(5.seconds){
