@@ -1,16 +1,34 @@
-name := "keycloak4s"
+name         := "keycloak4s"
+version      := "0.1.1"
+organization := "com.fullfacing"
 
-version := "0.1"
+val scalacOpts = Seq(
+  "-Ywarn-unused:implicits",
+  "-Ywarn-unused:imports",
+  "-Ywarn-unused:locals",
+  "-Ywarn-unused:params",
+  "-Ywarn-unused:patvars",
+  "-Ywarn-unused:privates",
+  "-Ypartial-unification",
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-Xlint",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard",
+  "-Xfuture"
+)
 
 scalaVersion := "2.12.8"
-
-resolvers ++= {
-  val nexusURL = sys.env.getOrElse("NEXUS_REPO_URL", "nexus.k8s.dev.fin.fullfacing.com")
-  Seq(
-    "Sonatype OSS Releases" at s"https://$nexusURL/repository/maven-releases",
-    "Sonatype OSS Snapshots" at s"https://$nexusURL/repository/maven-snapshots"
-  )
-}
+scalacOptions ++= scalacOpts
+addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
+addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4")
 
 val keycloak = {
   val version = "4.8.2.Final"
@@ -25,11 +43,6 @@ val enumeratum_Json4s = {
   Seq("com.beachape" %% "enumeratum-json4s" % version)
 }
 
-val apollo = {
-  val version = "2.1.2-SNAPSHOT"
-  Seq("com.fullfacing" %% "apollo-core" % version)
-}
-
 val sttp = {
   val version = "1.5.11"
   Seq(
@@ -38,4 +51,4 @@ val sttp = {
   )
 }
 
-libraryDependencies := keycloak ++ enumeratum_Json4s ++ apollo ++ sttp
+libraryDependencies := keycloak ++ enumeratum_Json4s ++ sttp
