@@ -24,6 +24,7 @@ object SttpClient {
 
   /* Temp logger statements **/
   def jsonLog(s: String) = s"${Console.YELLOW}JSON Response:\n$s${Console.RESET}"
+  def errLog(e: String) = s"${Console.RED}Error Response: $e${Console.RESET}"
 
   /* Temp return type for calls with the unknown response types **/
   trait UnknownResponse extends AnyRef
@@ -78,7 +79,7 @@ object SttpClient {
   private def setAuthHeader(token: String): StringRequest => StringRequest = req => req.header("Authorization", s"Bearer $token")
 
   private def deserializeJson[A](resp: Task[Response[String]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
-    resp.map(_.body.fold(_ => error.asLeft[A], { s => logger.debug(jsonLog(s)) ;read[A](s).asRight}))
+    resp.map(_.body.fold({e => logger.error(errLog(e)); error.asLeft[A]}, { s => logger.debug(jsonLog(s)) ;read[A](s).asRight}))
 
   private def deserializeBytes[A <: AnyRef](resp: Task[Response[Array[Byte]]])(implicit ma: Manifest[A]): Task[Either[ErrorPayload, A]] =
     resp.map(_.body.fold(_ => error.asLeft[A], JsonSerializer.fromBytes[A](_).asRight))

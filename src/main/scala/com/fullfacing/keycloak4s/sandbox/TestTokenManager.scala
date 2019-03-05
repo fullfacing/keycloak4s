@@ -15,11 +15,22 @@ object TestTokenManager {
 
   implicit def getAuthToken: String = accessToken
 
+  def startAuthenticationService(realm: String, client: String, username: String, password: String): Task[Unit] =
+    for {
+      _ <- getInitialToken(realm, client, username, password)
+      _ <- refreshToken(realm, client)
+    } yield run()
+
+  def run(): Unit = {
+    Thread.sleep(10000)
+    run()
+  }
+
   def getInitialToken(realm: String, client: String, username: String, password: String): Task[Cancelable] = Task.eval {
-    scheduler.scheduleOnce(FiniteDuration(5, "seconds")){
+    scheduler.scheduleOnce(FiniteDuration(2, "seconds")){
       println("\nGet Token\n")
       Authenticate.getAccessToken(realm, username, password, client).foreach(_.foreach { response =>
-        println(response)
+        println(s"\nToken request successful:\n ${response.access_token}\n")
         accessToken = response.access_token
         refreshToken = response.refresh_token
       })
@@ -30,7 +41,7 @@ object TestTokenManager {
     scheduler.scheduleAtFixedRate(FiniteDuration(55, "seconds"), FiniteDuration(55, "seconds")) {
       println("\nRefresh Token: \n")
       Authenticate.refreshAccessToken(realm, refreshToken, client).foreach(_.foreach { response =>
-        println(response)
+        println(s"\nToken refresh successful:\n ${response.access_token}\n")
         accessToken = response.access_token
         refreshToken = response.refresh_token
       })

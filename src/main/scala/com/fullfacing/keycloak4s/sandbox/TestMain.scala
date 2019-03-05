@@ -2,25 +2,13 @@ package com.fullfacing.keycloak4s.sandbox
 
 import com.fullfacing.apollo.core.protocol.internal.ErrorPayload
 import com.fullfacing.keycloak4s.sandbox.TestTokenManager._
-import com.fullfacing.keycloak4s.services.AttackDetection
-import monix.eval.Task
+import com.fullfacing.keycloak4s.services._
 import monix.execution.Cancelable
 
 import scala.concurrent.Await
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 object TestMain extends App {
-
-  def startAuthenticationService(realm: String, client: String, username: String, password: String): Task[Unit] =
-    for {
-      _ <- getInitialToken(realm, client, username, password)
-      _ <- refreshToken(realm, client)
-    } yield run()
-
-  def run(): Unit = {
-    Thread.sleep(10000)
-    run()
-  }
 
   def testFunction(): Cancelable = {
     scheduler.scheduleOnce(FiniteDuration(15, "seconds")){
