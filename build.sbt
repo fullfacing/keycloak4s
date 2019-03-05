@@ -30,7 +30,15 @@ scalacOptions ++= scalacOpts
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
 addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4")
 
-val keycloak = {
+val logback: Seq[ModuleID] = {
+  val version = "1.2.3"
+  Seq(
+    "ch.qos.logback" % "logback-core"    % version,
+    "ch.qos.logback" % "logback-classic" % version
+  )
+}
+
+val keycloak: Seq[ModuleID] = {
   val version = "4.8.2.Final"
   Seq(
     "org.keycloak" % "keycloak-authz-client" % version,
@@ -38,17 +46,23 @@ val keycloak = {
   )
 }
 
-val enumeratum_Json4s = {
-  val version ="1.5.13"
-  Seq("com.beachape" %% "enumeratum-json4s" % version)
-}
-
-val sttp = {
-  val version = "1.5.11"
+val json4s: Seq[ModuleID] = {
+  val version = "3.6.5"
   Seq(
-    "com.softwaremill.sttp" %% "json4s" % version,
-    "com.softwaremill.sttp" %% "async-http-client-backend-monix" % version
+    "org.json4s" %% "json4s-native" % version
   )
 }
 
-libraryDependencies := keycloak ++ enumeratum_Json4s ++ sttp
+val enumeratum: Seq[ModuleID] = Seq(
+  "com.beachape" %% "enumeratum-json4s" % "1.5.14"
+)
+
+val sttp: Seq[ModuleID] = {
+  val version = "1.5.11"
+  Seq(
+    "com.softwaremill.sttp" %% "core"   % version,
+    "com.softwaremill.sttp" %% "json4s" % version
+  )
+}
+
+libraryDependencies := keycloak ++ json4s ++ sttp ++ enumeratum ++ logback
