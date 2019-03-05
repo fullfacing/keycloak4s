@@ -3,10 +3,12 @@ package com.fullfacing.keycloak4s.handles
 import java.io.File
 import java.nio.charset.StandardCharsets
 
+import cats.implicits._
 import com.fullfacing.keycloak4s.EnumSerializers
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
-import com.softwaremill.sttp.{Id, MonadError, Multipart, Request, RequestT, Response, SttpBackend, Uri, asByteArray, asString, sttp}
+import com.softwaremill.sttp.json4s._
+import com.softwaremill.sttp.{Id, MonadError, Multipart, Request, RequestT, Response, SttpBackend, Uri, asByteArray, sttp}
 import org.json4s.Formats
 import org.json4s.native.Serialization
 
@@ -16,6 +18,7 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
 
   /* Implicits */
   implicit val formats: Formats = org.json4s.DefaultFormats ++ EnumSerializers.all
+  implicit val serialization: Serialization.type = org.json4s.native.Serialization
 
   /* URI Builder **/
   private def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
@@ -32,8 +35,6 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
   type UnsetRequest   = Request[String, Nothing]
   type StringRequest  = RequestT[Id, String, Nothing]
   type ByteRequest    = RequestT[Id, Array[Byte], Nothing]
-  
-  type ErrorPayload = String
 
   private def setEncodedData(form: Map[String, String], req: UnsetRequest): StringRequest =
     req.contentType(ContentTypes.UrlEncoded.value).body(form)
@@ -44,8 +45,8 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
   private def setMultipartBody(mp: Multipart, req: UnsetRequest): StringRequest =
     req.multipartBody(mp)
 
-  private def setJsonResponse(req: StringRequest): StringRequest =
-    req.response(asString)
+  private def setJsonResponse[A <: AnyRef: Manifest](req: StringRequest): StringRequest =
+    req.response(asJson[A])
 
   private def setByteResponse(req: StringRequest): ByteRequest =
     req.response(asByteArray)
@@ -53,17 +54,11 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
   private def setAuthHeader(token: String): StringRequest => StringRequest =
     req => req.header("Authorization", s"Bearer $token")
 
-  private def deserializeJson[A](resp: R[Response[String]])(implicit ma: Manifest[A]): R[A] =
-    F.map(resp)(_.body.map(Serialization.read[A]))
-
-  private def deserializeBytes[A <: AnyRef](resp: R[Response[Array[Byte]]])(implicit ma: Manifest[A]): R[A] =
-    F.map(resp)(_.body.map(bytes => Serialization.read[A](new String(bytes, StandardCharsets.UTF_8))))
-
   private def sendRequestJson[A](implicit ma: Manifest[A]): StringRequest => R[A] =
-    (setJsonResponse _).andThen(_.send[R]).andThen(deserializeJson[A])
+    (setJsonResponse _).andThen(_.response(asJson[A]).send[R]).andThen(fromString[A])
 
   private def sendRequestBytes[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => R[A] =
-    (setByteResponse _).andThen(_.send[R]).andThen(deserializeBytes[A])
+    (setByteResponse _).andThen(_.response(asJson[A])).andThen(fromBytes[A])
 
   private def prepareRequest[A](req: A): UnsetRequest => StringRequest = req match {
     case m: Map[String, String] => (setEncodedData _).tupled(m, _)
@@ -80,22 +75,22 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
     prepareResponse[A](manifest)(sttp.delete(uri))
   }
 
-  def delete[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B]): R[B] = {
+  def delete[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue]): R[B] = {
     val uri = createUri(path, queries)
     prepareRequest[A](body).andThen(prepareResponse[B])(sttp.delete(uri))
   }
 
-  def get[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A]): R[A] = {
+  def get[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[A] = {
     val uri = createUri(path, queries)
     prepareResponse[A](manifest)(sttp.get(uri))
   }
 
-  def put[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], mb: Manifest[B], authToken: String): R[B] = {
+  def put[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[B] = {
     val uri = createUri(path, queries)
     prepareRequest[A](body).andThen(prepareResponse[B])(sttp.put(uri))
   }
 
-  def put[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], authToken: String): R[A] = {
+  def put[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue]): R[A] = {
     val uri = createUri(path, queries)
     prepareResponse[A](manifest)(sttp.put(uri))
   }
@@ -105,18 +100,8 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
     prepareRequest[A](body).andThen(prepareResponse[B])(sttp.post(uri))
   }
 
-  def post[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])(implicit ma: Manifest[A], authToken: String): R[A] = {
+  def post[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue]): R[A] = {
     val uri = createUri(path, queries)
     prepareResponse[A](manifest)(sttp.post(uri))
-  }
-
-  def options[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A], authToken: String): R[A] = {
-    val uri = createUri(path, queries)
-    prepareResponse[A](manifest)(sttp.options(uri))
-  }
-
-  def auth[A <: AnyRef](form: Map[String, String], path: Seq[String])(implicit ma: Manifest[A]): R[A] = {
-    val uri = createUri(path, Seq.empty[KeyValue], Seq("auth", "realms"))
-    prepareRequest(form).andThen(prepareResponse[A](manifest))(sttp.post(uri))
   }
 }
