@@ -117,24 +117,3 @@ class KeycloakClient[R[_], -S](config: KeycloakConfig)(implicit client: SttpBack
     preparePayload[A](body).andThen(prepareResponse[B])(sttp.delete(uri))
   }
 }
-
-trait RequestBodyMagnet {
-  type Result = RequestT[Id, String, Nothing]
-
-  def apply(): Result
-}
-
-object RequestBodyMagnet {
-
-  implicit def toJsonBody[A <: AnyRef: Manifest](request: Request[String, Nothing], payload: A): RequestT[Id, String, Nothing] = {
-    request.contentType(ContentTypes.Json).body(payload)
-  }
-
-  implicit def toUrlEncodedBody(request: Request[String, Nothing], payload: Map[String, String]): RequestT[Id, String, Nothing] = {
-    request.contentType(ContentTypes.UrlEncoded).body(payload)
-  }
-
-  implicit def toMultiPartFormDataBody(request: Request[String, Nothing], payload: Multipart): RequestT[Id, String, Nothing] = {
-    request.contentType(ContentTypes.Multipart).body(payload)
-  }
-}
