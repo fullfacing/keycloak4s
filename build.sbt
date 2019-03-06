@@ -38,14 +38,6 @@ val logback: Seq[ModuleID] = {
   )
 }
 
-//val keycloak: Seq[ModuleID] = {
-//  val version = "4.8.2.Final"
-//  Seq(
-//    "org.keycloak" % "keycloak-authz-client" % version,
-//    "org.keycloak" % "keycloak-admin-client" % version
-//  )
-//}
-
 val json4s: Seq[ModuleID] = {
   val version = "3.6.5"
   Seq(
@@ -65,9 +57,9 @@ val sttp: Seq[ModuleID] = {
   )
 }
 
-val cats: Seq[ModuleID] = {
-  val version = "1.6.0"
-  Seq("org.typelevel" %% "cats-core" % version)
-}
+val cats: Seq[ModuleID] = Seq(
+  "org.typelevel" %% "cats-core"   % "1.6.0",
+  "org.typelevel" %% "cats-effect" % "1.2.0"
+)
 
 libraryDependencies := sttp ++ cats ++ json4s ++ enumeratum ++ logback

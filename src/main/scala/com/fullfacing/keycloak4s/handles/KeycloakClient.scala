@@ -1,9 +1,7 @@
 package com.fullfacing.keycloak4s.handles
 
-import java.io.File
 import java.nio.charset.StandardCharsets
 
-import cats.implicits._
 import com.fullfacing.keycloak4s.EnumSerializers
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
@@ -14,7 +12,7 @@ import org.json4s.native.Serialization
 
 import scala.collection.immutable.Seq
 
-class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBackend[R, M], F: MonadError[R]) {
+class KeycloakClient[R[_], -S](config: KeycloakConfig)(implicit client: SttpBackend[R, S], F: MonadError[R]) {
 
   /* Implicits */
   implicit val formats: Formats = org.json4s.DefaultFormats ++ EnumSerializers.all
@@ -22,86 +20,121 @@ class KeycloakClient[R[_], -M](config: KeycloakConfig)(implicit client: SttpBack
 
   /* URI Builder **/
   private def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
-    scheme          = config.scheme,
-    userInfo        = None,
-    host            = config.host,
-    port            = Some(config.port),
-    path            = Seq("auth", "admin", "realms") ++ path,
-    queryFragments  = queries,
-    fragment        = None
+    scheme         = config.scheme,
+    userInfo       = None,
+    host           = config.host,
+    port           = Some(config.port),
+    path           = Seq("auth", "admin", "realms") ++ path,
+    queryFragments = queries,
+    fragment       = None
   )
 
   /* Type Aliases */
-  type UnsetRequest   = Request[String, Nothing]
-  type StringRequest  = RequestT[Id, String, Nothing]
-  type ByteRequest    = RequestT[Id, Array[Byte], Nothing]
+  type UnsetRequest  = Request[String, Nothing]
+  type StringRequest = RequestT[Id, String, Nothing]
+  type ByteRequest   = RequestT[Id, Array[Byte], Nothing]
 
-  private def setEncodedData(form: Map[String, String], req: UnsetRequest): StringRequest =
-    req.contentType(ContentTypes.UrlEncoded.value).body(form)
-
-  private def setJsonBody[A](body: A, req: UnsetRequest): StringRequest =
-    req.contentType(ContentTypes.Json.value).body(Serialization.write(body))
-
-  private def setMultipartBody(mp: Multipart, req: UnsetRequest): StringRequest =
-    req.multipartBody(mp)
-
-  private def setJsonResponse[A <: AnyRef: Manifest](req: StringRequest): StringRequest =
-    req.response(asJson[A])
-
-  private def setByteResponse(req: StringRequest): ByteRequest =
-    req.response(asByteArray)
-
-  private def setAuthHeader(token: String): StringRequest => StringRequest =
-    req => req.header("Authorization", s"Bearer $token")
-
-  private def sendRequestJson[A](implicit ma: Manifest[A]): StringRequest => R[A] =
-    (setJsonResponse _).andThen(_.response(asJson[A]).send[R]).andThen(fromString[A])
-
-  private def sendRequestBytes[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => R[A] =
-    (setByteResponse _).andThen(_.response(asJson[A])).andThen(fromBytes[A])
-
-  private def prepareRequest[A](req: A): UnsetRequest => StringRequest = req match {
-    case m: Map[String, String] => (setEncodedData _).tupled(m, _)
-    case mp: Multipart          => (setMultipartBody _).tupled(mp, _)
-    case other                  => (setJsonBody[A] _).tupled(other, _)
+  private def sendRequestJson[A <: AnyRef: Manifest](req: StringRequest): R[Response[A]] = {
+    req.response(asJson[A]).send()
   }
 
-  private def prepareResponse[A <: AnyRef](implicit ma: Manifest[A]): StringRequest => R[A] =
-    if (ma <:< manifest[File]) sendRequestBytes[A] else sendRequestJson[A]
+  private def sendRequestBytes[A <: AnyRef: Manifest](req: StringRequest): R[Response[A]] = {
+    req.response(asByteArray)
+       .mapResponse(bytes => new String(bytes, StandardCharsets.UTF_8))
+       .mapResponse(Serialization.read[A])
+       .send()
+  }
+
+  private def preparePayload[A](req: Request[String, Nothing], data: A): StringRequest = data match {
+    case payload: Map[_, _] =>
+      req.contentType(ContentTypes.UrlEncoded).body(payload)
+    case payload: Multipart =>
+      req.contentType(ContentTypes.Multipart).multipartBody(payload)
+    case payload =>
+      req.contentType(ContentTypes.Json).body(payload)
+  }
 
   /* REST Protocol Calls **/
-  def delete[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])(implicit ma: Manifest[A]): R[A] = {
+  def get[A <: AnyRef: Manifest](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[A] = {
+    val uri = createUri(path, queries)
+    preparePayload(sttp.get(uri), )
+    F.flatMap(prepareResponse[A](sttp.get(uri)))(_.body match {
+      case Left(ex) => F.error[A](new Throwable(ex))
+      case Right(r) => F.unit(r)
+    })
+  }
+
+  // ------------------------------------------------------------- //
+  // ---------------------------- PUT ---------------------------- //
+  // ------------------------------------------------------------- //
+  def put[A: Manifest, B <: AnyRef: Manifest](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[B] = {
+    val uri = createUri(path, queries)
+    preparePayload[A](body).andThen(prepareResponse[B])(sttp.put(uri))
+  }
+
+  def put[A <: AnyRef: Manifest](path: Seq[String], queries: Seq[KeyValue]): R[A] = {
+    val uri = createUri(path, queries)
+    prepareResponse[A](sttp.put(uri))
+  }
+
+
+  // -------------------------------------------------------------- //
+  // ---------------------------- POST ---------------------------- //
+  // -------------------------------------------------------------- //
+  def post[A <: AnyRef: Manifest](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[A] = {
+    val uri = createUri(path, queries)
+    sttp.post(uri).response(asJson[A])
+  }
+
+  def post[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])
+                                    (implicit ma: Manifest[A], mb: Manifest[B]): R[B] = {
+    val uri = createUri(path, queries)
+    sttp.post(uri).contentType(ContentTypes.Json).body(payload).response(asJson[B]).send()
+  }
+
+  def post[A <: AnyRef](payload: Map[String, String], path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])
+                       (implicit ma: Manifest[A]): R[A] = {
+    val uri = createUri(path, queries)
+    sttp.post(uri).contentType(ContentTypes.UrlEncoded).body(payload).response(asJson[A]).send()
+  }
+
+  def post[A <: AnyRef](payload: Multipart, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue])
+                       (implicit ma: Manifest[A]): R[A] = {
+    val uri = createUri(path, queries)
+    sttp.post(uri).contentType(ContentTypes.Multipart).body(payload).response(asJson[A]).send()
+  }
+
+  // ---------------------------------------------------------------- //
+  // ---------------------------- DELETE ---------------------------- //
+  // ---------------------------------------------------------------- //
+  def delete[A <: AnyRef: Manifest](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[Unit] = {
     val uri = createUri(path, queries)
     prepareResponse[A](manifest)(sttp.delete(uri))
   }
 
   def delete[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue]): R[B] = {
     val uri = createUri(path, queries)
-    prepareRequest[A](body).andThen(prepareResponse[B])(sttp.delete(uri))
+    preparePayload[A](body).andThen(prepareResponse[B])(sttp.delete(uri))
+  }
+}
+
+trait RequestBodyMagnet {
+  type Result = RequestT[Id, String, Nothing]
+
+  def apply(): Result
+}
+
+object RequestBodyMagnet {
+
+  implicit def toJsonBody[A <: AnyRef: Manifest](request: Request[String, Nothing], payload: A): RequestT[Id, String, Nothing] = {
+    request.contentType(ContentTypes.Json).body(payload)
   }
 
-  def get[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[A] = {
-    val uri = createUri(path, queries)
-    prepareResponse[A](manifest)(sttp.get(uri))
+  implicit def toUrlEncodedBody(request: Request[String, Nothing], payload: Map[String, String]): RequestT[Id, String, Nothing] = {
+    request.contentType(ContentTypes.UrlEncoded).body(payload)
   }
 
-  def put[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[B] = {
-    val uri = createUri(path, queries)
-    prepareRequest[A](body).andThen(prepareResponse[B])(sttp.put(uri))
-  }
-
-  def put[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue]): R[A] = {
-    val uri = createUri(path, queries)
-    prepareResponse[A](manifest)(sttp.put(uri))
-  }
-
-  def post[A, B <: AnyRef](body: A, path: Seq[String], queries: Seq[KeyValue] = Seq.empty[KeyValue]): R[B] = {
-    val uri = createUri(path, queries)
-    prepareRequest[A](body).andThen(prepareResponse[B])(sttp.post(uri))
-  }
-
-  def post[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue]): R[A] = {
-    val uri = createUri(path, queries)
-    prepareResponse[A](manifest)(sttp.post(uri))
+  implicit def toMultiPartFormDataBody(request: Request[String, Nothing], payload: Multipart): RequestT[Id, String, Nothing] = {
+    request.contentType(ContentTypes.Multipart).body(payload)
   }
 }
