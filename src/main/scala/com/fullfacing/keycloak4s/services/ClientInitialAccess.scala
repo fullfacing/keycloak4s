@@ -17,7 +17,7 @@ object ClientInitialAccess {
    * @return
    */
   def createNewInitialAccessToken[R[_], S](realm: String, config: ClientInitialAccessCreate): Request[R, S, ClientInitialAccess] = Kleisli { client =>
-    client.post[ClientInitialAccessCreate, ClientInitialAccess](config, realm :: "clients-initial-access" :: Nil, Seq.empty[KeyValue])
+    client.post[ClientInitialAccessCreate, ClientInitialAccess](config, realm :: "clients-initial-access" :: Nil)
   }
 
   /**

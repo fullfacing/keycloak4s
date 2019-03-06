@@ -44,6 +44,14 @@ class KeycloakClient[R[_], -S](config: KeycloakConfig)(implicit client: SttpBack
   // ------------------------------------------------------------- //
   // ---------------------------- PUT ---------------------------- //
   // ------------------------------------------------------------- //
+  def putNoContent[A <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue]): R[Unit] = {
+    val uri = createUri(path, queries)
+    val response = sttp.put(uri).contentType(ContentTypes.Json).body(payload).mapResponse(_ => ()).send()
+
+    F.flatMap(response)(r => liftM(r.body))
+  }
+
+
   def put[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue])
                                    (implicit mb: Manifest[B]): R[B] = {
     val uri = createUri(path, queries)
@@ -63,32 +71,32 @@ class KeycloakClient[R[_], -S](config: KeycloakConfig)(implicit client: SttpBack
   // -------------------------------------------------------------- //
   // ---------------------------- POST ---------------------------- //
   // -------------------------------------------------------------- //
-  def post[A <: AnyRef : Manifest](path: Seq[String], queries: Seq[KeyValue]): R[A] = {
-    val uri = createUri(path, queries)
-    val response = sttp.post(uri).response(asJson[A]).send()
+  def post(path: Seq[String]): R[Unit] = {
+    val uri = createUri(path, Seq.empty[KeyValue])
+    val response = sttp.post(uri).mapResponse(_ => ()).send()
 
     F.flatMap(response)(r => liftM(r.body))
   }
 
-  def post[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue])
+  def post[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String])
                                     (implicit mb: Manifest[B]): R[B] = {
-    val uri = createUri(path, queries)
+    val uri = createUri(path, Seq.empty[KeyValue])
     val response = sttp.post(uri).contentType(ContentTypes.Json).body(payload).response(asJson[B]).send()
 
     F.flatMap(response)(r => liftM(r.body))
   }
 
-  def post[A <: AnyRef](payload: Map[String, String], path: Seq[String], queries: Seq[KeyValue])
+  def post[A <: AnyRef](payload: Map[String, String], path: Seq[String])
                        (implicit ma: Manifest[A]): R[A] = {
-    val uri = createUri(path, queries)
+    val uri = createUri(path, Seq.empty[KeyValue])
     val response = sttp.post(uri).contentType(ContentTypes.UrlEncoded).body(payload).response(asJson[A]).send()
 
     F.flatMap(response)(r => liftM(r.body))
   }
 
-  def post[A <: AnyRef](payload: Multipart, path: Seq[String], queries: Seq[KeyValue])
+  def post[A <: AnyRef](payload: Multipart, path: Seq[String])
                        (implicit ma: Manifest[A]): R[A] = {
-    val uri = createUri(path, queries)
+    val uri = createUri(path, Seq.empty[KeyValue])
     val response = sttp.post(uri).contentType(ContentTypes.Multipart).body(payload).response(asJson[A]).send()
 
     F.flatMap(response)(r => liftM(r.body))
