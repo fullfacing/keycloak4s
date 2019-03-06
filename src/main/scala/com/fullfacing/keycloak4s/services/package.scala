@@ -4,7 +4,6 @@ import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import java.io.File
 import java.nio.file.Files
 
-import com.fullfacing.keycloak4s.models.enums.ContentType
 import com.softwaremill.sttp.{ByteArrayBody, Multipart}
 
 import scala.collection.immutable.{Seq => iSeq}
@@ -17,8 +16,8 @@ package object services {
     }.to[iSeq]
   }
 
-  def createMultipart(file: File, contentType: ContentType): Multipart = {
+  def createMultipart(file: File, contentType: String): Multipart = {
     val byteArray = Files.readAllBytes(file.toPath)
-    Multipart("file", ByteArrayBody(byteArray), contentType = Some(contentType.value))
+    Multipart("file", ByteArrayBody(byteArray), contentType = Some(contentType))
   }
 }
