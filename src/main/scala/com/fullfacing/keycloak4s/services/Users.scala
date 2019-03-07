@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class Users[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val users_path = "users"
 

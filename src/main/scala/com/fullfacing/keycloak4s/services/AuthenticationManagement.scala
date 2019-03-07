@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{AuthenticationProvider, _}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class AuthenticationManagement[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Returns a list of authenticator providers.
