@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.data.Kleisli
-import com.fullfacing.keycloak4s.handles.KeycloakClient.Request
+import cats.effect.Effect
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.BruteForceResponse
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-object AttackDetection {
+class AttackDetection[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Clear any user login failures for all users.
@@ -16,7 +16,7 @@ object AttackDetection {
    * @param realm Name of the Realm
    * @return
    */
-  def clearAllLoginFailures[R[_], S](realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def clearAllLoginFailures(realm: String): R[Unit] = {
     client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: Nil, Seq.empty[KeyValue])
   }
 
@@ -27,7 +27,7 @@ object AttackDetection {
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus[R[_], S](realm: String, userId: String): Request[R, S, BruteForceResponse] = Kleisli { client =>
+  def getUserStatus(realm: String, userId: String): R[BruteForceResponse] = {
     client.get[BruteForceResponse](realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil, Seq.empty[KeyValue])
   }
 
@@ -38,7 +38,7 @@ object AttackDetection {
    * @param realm Name of the Realm.
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure[R[_], S](realm: String, userId: String): Request[R, S, Unit] = Kleisli { client =>
+  def clearUserLoginFailure(realm: String, userId: String): R[Unit] = {
     client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil, Seq.empty[KeyValue])
   }
 }

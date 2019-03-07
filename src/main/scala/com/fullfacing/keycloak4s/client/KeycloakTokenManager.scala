@@ -1,9 +1,6 @@
-package com.fullfacing.keycloak4s.handles
+package com.fullfacing.keycloak4s.client
 
 class KeycloakTokenManager {
-
   private val access  = ???
   private val refresh = ???
-
-
 }

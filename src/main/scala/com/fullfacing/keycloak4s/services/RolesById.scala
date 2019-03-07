@@ -2,7 +2,7 @@
 //
 //import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
 //import com.fullfacing.apollo.core.protocol.NoContent
-//import com.fullfacing.keycloak4s.handles.KeycloakClient
+//import com.fullfacing.keycloak4s.client.KeycloakClient
 //import com.fullfacing.keycloak4s.models.{ManagementPermission, Role}
 //import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 //

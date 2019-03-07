@@ -1,9 +1,9 @@
 package com.fullfacing.keycloak4s
 
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import java.io.File
 import java.nio.file.Files
 
+import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.{ByteArrayBody, Multipart}
 
 import scala.collection.immutable.{Seq => iSeq}

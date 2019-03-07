@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.handles
+package com.fullfacing.keycloak4s.client
 
 case class KeycloakConfig(scheme: String = "http",
                           host: String = "localhost",

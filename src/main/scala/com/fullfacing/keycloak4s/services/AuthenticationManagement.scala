@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.data.Kleisli
-import com.fullfacing.keycloak4s.handles.KeycloakClient.Request
+import cats.effect.Effect
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{AuthenticationProvider, _}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-object AuthenticationManagement {
+class AuthenticationManagement[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Returns a list of authenticator providers.
@@ -15,7 +15,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getAuthenticationProviders[R[_], S](realm: String): Request[R, S, Seq[AuthenticationProvider]] = Kleisli { client =>
+  def getAuthenticationProviders(realm: String): R[Seq[AuthenticationProvider]] = {
     client.get[Seq[AuthenticationProvider]](realm :: "authentication" :: "authenticator-providers" :: Nil, Seq.empty[KeyValue])
   }
 
@@ -25,7 +25,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getClientAuthenticationProviders[R[_], S](realm: String): Request[R, S, Seq[AuthenticationProvider]] = Kleisli { client =>
+  def getClientAuthenticationProviders(realm: String): R[Seq[AuthenticationProvider]] = {
     val path = Seq(realm, "authentication", "client-authenticator-providers")
     client.get[Seq[AuthenticationProvider]](path, Seq.empty[KeyValue])
   }
@@ -37,7 +37,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getProviderConfigDescription[R[_], S](providerId: String, realm: String): Request[R, S, AuthenticatorConfigInfo] = Kleisli { client =>
+  def getProviderConfigDescription(providerId: String, realm: String): R[AuthenticatorConfigInfo] = {
     val path = Seq(realm, "authentication", "config-description", providerId)
     client.get(path, Seq.empty[KeyValue])
   }
@@ -49,7 +49,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getAuthenticatorConfig[R[_], S](configId: String, realm: String): Request[R, S, AuthenticatorConfig] = Kleisli { client =>
+  def getAuthenticatorConfig(configId: String, realm: String): R[AuthenticatorConfig] = {
     val path = Seq(realm, "authentication", "config", configId)
     client.get(path, Seq.empty[KeyValue])
   }
@@ -62,7 +62,7 @@ object AuthenticationManagement {
    * @param request  Object describing new state of authenticator configuration.
    * @return
    */
-  def updateAuthenticatorConfig[R[_], S](configId: String, realm: String, request: AuthenticatorConfig): Request[R, S, Unit] = Kleisli { client =>
+  def updateAuthenticatorConfig(configId: String, realm: String, request: AuthenticatorConfig): R[Unit] = {
     val path = Seq(realm, "authentication", "config", configId)
     client.putNoContent[AuthenticatorConfig](request, path, Seq.empty[KeyValue])
   }
@@ -74,7 +74,7 @@ object AuthenticationManagement {
    * @param realm    Name of the Realm.
    * @return
    */
-  def deleteAuthenticatorConfig[R[_], S](configId: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def deleteAuthenticatorConfig(configId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "config", configId)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -86,7 +86,7 @@ object AuthenticationManagement {
    * @param request Object describing authentication execution.
    * @return
    */
-  def addNewAuthenticationExecution[R[_], S](realm: String, request: AuthenticationExecution): Request[R, S, AnyRef] = Kleisli { client => //TODO Determine return type.
+  def addNewAuthenticationExecution(realm: String, request: AuthenticationExecution): R[AnyRef] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "executions")
     client.post[AuthenticationExecution, AnyRef](request, path)
   }
@@ -98,7 +98,7 @@ object AuthenticationManagement {
 //   * @param realm       Name of the Realm.
 //   * @return
 //   */
-//  def getSingleExecution[R[_], S](executionId: String, realm: String): Request[R, S, Any] = Kleisli { client => //TODO Determine return type.
+//  def getSingleExecution(executionId: String, realm: String): R[Any] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "executions", executionId)
 //    client.get[Any](path, Seq.empty[KeyValue])
 //  }
@@ -110,7 +110,7 @@ object AuthenticationManagement {
    * @param realm       Name of the Realm.
    * @return
    */
-  def deleteExecution[R[_], S](executionId: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def deleteExecution(executionId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "executions", executionId)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -123,7 +123,7 @@ object AuthenticationManagement {
 //   * @param request     Object describing new configuration.
 //   * @return
 //   */
-//  def updateExecutionConfig[R[_], S](executionId: String, realm: String, request: AuthenticatorConfig): Request[R, S, Any] = Kleisli { client => //TODO Determine return type.
+//  def updateExecutionConfig(executionId: String, realm: String, request: AuthenticatorConfig): R[Any] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "executions", executionId, "config")
 //    client.post[AuthenticatorConfig, Any](request, path)
 //  }
@@ -135,7 +135,7 @@ object AuthenticationManagement {
    * @param realm       Name of the Realm.
    * @return
    */
-  def lowerExecutionPriority[R[_], S](executionId: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def lowerExecutionPriority(executionId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "executions", executionId, "lower-priority")
     client.postNoContent(path)
   }
@@ -147,7 +147,7 @@ object AuthenticationManagement {
    * @param realm       Name of the Realm.
    * @return
    */
-  def raiseExecutionPriority[R[_], S](executionId: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def raiseExecutionPriority(executionId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "executions", executionId, "raise-priority")
     client.postNoContent(path)
   }
@@ -158,7 +158,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getAuthenticationFlows[R[_], S](realm: String): Request[R, S, Seq[AuthenticationFlow]] = Kleisli { client =>
+  def getAuthenticationFlows(realm: String): R[Seq[AuthenticationFlow]] = {
     val path = Seq(realm, "authentication", "flows")
     client.get[Seq[AuthenticationFlow]](path, Seq.empty[KeyValue])
   }
@@ -171,7 +171,7 @@ object AuthenticationManagement {
 //   * @param newName   The name for the flow copy.
 //   * @return
 //   */
-//  def copyAuthenticationFlow[R[_], S](flowAlias: String, realm: String, newName: String): Request[R, S, Any] = Kleisli { client => //TODO Determine return type, and confirm body
+//  def copyAuthenticationFlow(flowAlias: String, realm: String, newName: String): R[Any] = { //TODO Determine return type, and confirm body
 //    val path = Seq(realm, "authentication", "flows", flowAlias, "copy")
 //    client.post[Any](Map("newName" -> newName), path)
 //  }
@@ -183,7 +183,7 @@ object AuthenticationManagement {
 //   * @param realm     Name of the Realm.
 //   * @return
 //   */
-//  def getFlowAuthenticationExecutions[R[_], S](flowAlias: String, realm: String): Request[R, S, Any] = Kleisli { client => //TODO Determine return type.
+//  def getFlowAuthenticationExecutions(flowAlias: String, realm: String): R[Any] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "flows", flowAlias, "executions")
 //    client.get[Any](path, Seq.empty[KeyValue])
 //  }
@@ -196,7 +196,7 @@ object AuthenticationManagement {
    * @param request   Object describing updated authentication executions.
    * @return
    */
-  def updateFlowAuthenticationExecutions[R[_], S](flowAlias: String, realm: String, request: AuthenticationExecutionInfo): Request[R, S, Unit] = Kleisli { client =>
+  def updateFlowAuthenticationExecutions(flowAlias: String, realm: String, request: AuthenticationExecutionInfo): R[Unit] = {
     val path = Seq(realm, "authentication", "flows", flowAlias, "executions")
     client.putNoContent[AuthenticationExecutionInfo](request, path, Seq.empty[KeyValue])
   }
@@ -209,7 +209,7 @@ object AuthenticationManagement {
 //   * @param provider  //TODO Determine if provider name or id
 //   * @return
 //   */
-//  def addFlowAuthenticationExecution[R[_], S](flowAlias: String, realm: String, provider: String): Request[R, S, Any] = Kleisli { client => //TODO Determine return type, and confirm body
+//  def addFlowAuthenticationExecution(flowAlias: String, realm: String, provider: String): R[Any] = { //TODO Determine return type, and confirm body
 //    val path = Seq(realm, "authentication", "flows", flowAlias, "executions", "execution")
 //    client.post[Any](Map("provider" -> provider), path)
 //  }
@@ -222,7 +222,7 @@ object AuthenticationManagement {
 //   * @param request   Object describing new authentication flow.
 //   * @return
 //   */
-//  def addNewFlowWithNewExecution[R[_], S](flowAlias: String, realm: String, request: NewAuthenticationFlow): Request[R, S, Any] = Kleisli { client => //TODO Determine return type.
+//  def addNewFlowWithNewExecution(flowAlias: String, realm: String, request: NewAuthenticationFlow): R[Any] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "flows", flowAlias, "executions", "flow")
 //    client.post[NewAuthenticationFlow, Any](request, path)
 //  }
@@ -234,7 +234,7 @@ object AuthenticationManagement {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getAuthenticationFlow[R[_], S](flowId: String, realm: String): Request[R, S, AuthenticationFlow] = Kleisli { client =>
+  def getAuthenticationFlow(flowId: String, realm: String): R[AuthenticationFlow] = {
     val path = Seq(realm, "authentication", "flows", flowId)
     client.get[AuthenticationFlow](path, Seq.empty[KeyValue])
   }
@@ -247,7 +247,7 @@ object AuthenticationManagement {
 //   * @param flow   Authentication flow representation.
 //   * @return
 //   */
-//  def updateAuthenticationFlow[R[_], S](flowId: String, realm: String, flow: AuthenticationFlow): Request[R, S, Any] = Kleisli { client => //TODO Determine return type.
+//  def updateAuthenticationFlow(flowId: String, realm: String, flow: AuthenticationFlow): R[Any] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "flows", flowId)
 //    client.put[AuthenticationFlow, Any](flow, path, Seq.empty[KeyValue])
 //  }
@@ -259,7 +259,7 @@ object AuthenticationManagement {
    * @param realm     Name of the Realm.
    * @return
    */
-  def deleteAuthenticationFlow[R[_], S](flowId: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def deleteAuthenticationFlow(flowId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "flows", flowId)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -270,7 +270,7 @@ object AuthenticationManagement {
 //   * @param realm Name of the Realm.
 //   * @return
 //   */
-//  def getFormActionProviders[R[_], S](realm: String): Request[R, S, Seq[Map[String, Any]]] = Kleisli { client => //TODO Determine return type.
+//  def getFormActionProviders(realm: String): R[Seq[Map[String, Any]]] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "form-action-providers")
 //    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
 //  }
@@ -281,7 +281,7 @@ object AuthenticationManagement {
 //   * @param realm Name of the Realm.
 //   * @return
 //   */
-//  def getFormProviders[R[_], S](realm: String): Request[R, S, Seq[Map[String, Any]]] = Kleisli { client => //TODO Determine return type.
+//  def getFormProviders(realm: String): R[Seq[Map[String, Any]]] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "form-providers")
 //    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
 //  }
@@ -292,7 +292,7 @@ object AuthenticationManagement {
 //   * @param realm Name of the Realm.
 //   * @return
 //   */
-//  def getConfigurationDescriptions[R[_], S](realm: String): Request[R, S, Seq[Map[String, Any]]] = Kleisli { client => //TODO Determine return type.
+//  def getConfigurationDescriptions(realm: String): R[Seq[Map[String, Any]]] = { //TODO Determine return type.
 //    val path = Seq(realm, "authentication", "per-client-config-description")
 //    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
 //  }
@@ -305,7 +305,7 @@ object AuthenticationManagement {
    * @param name        Name of the required action //TODO Confirm.
    * @return
    */
-  def registerRequiredAction[R[_], S](realm: String, providerId: String, name: String): Request[R, S, Unit] = Kleisli { client => //TODO Determine return type.
+  def registerRequiredAction(realm: String, providerId: String, name: String): R[Unit] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "register-required-action")
     client.postNoContent(Map("providerId" -> providerId, "name" -> name), path)
   }
@@ -316,7 +316,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getRequiredActions[R[_], S](realm: String): Request[R, S, Seq[RequiredActionProvider]] = Kleisli { client =>
+  def getRequiredActions(realm: String): R[Seq[RequiredActionProvider]] = {
     val path = Seq(realm, "authentication", "register-actions")
     client.get[Seq[RequiredActionProvider]](path, Seq.empty[KeyValue])
   }
@@ -328,7 +328,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getRequiredAction[R[_], S](alias: String, realm: String): Request[R, S, RequiredActionProvider] = Kleisli { client =>
+  def getRequiredAction(alias: String, realm: String): R[RequiredActionProvider] = {
     val path = Seq(realm, "authentication", "register-actions", alias)
     client.get[RequiredActionProvider](path, Seq.empty[KeyValue])
   }
@@ -341,7 +341,7 @@ object AuthenticationManagement {
    * @param request Object describing new state of required action.
    * @return
    */
-  def updateRequiredAction[R[_], S](alias: String, realm: String, request: RequiredActionProvider): Request[R, S, Unit] = Kleisli { client =>
+  def updateRequiredAction(alias: String, realm: String, request: RequiredActionProvider): R[Unit] = {
     val path = Seq(realm, "authentication", "register-actions", alias)
     client.putNoContent[RequiredActionProvider](request, path, Seq.empty[KeyValue])
   }
@@ -353,7 +353,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def deleteRequiredAction[R[_], S](alias: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def deleteRequiredAction(alias: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "register-actions", alias)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -365,7 +365,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def lowerRequiredActionPriority[R[_], S](alias: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def lowerRequiredActionPriority(alias: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "register-actions", alias, "lower-priority")
     client.postNoContent(path)
   }
@@ -377,7 +377,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def raiseRequiredActionPriority[R[_], S](alias: String, realm: String): Request[R, S, Unit] = Kleisli { client =>
+  def raiseRequiredActionPriority(alias: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "register-actions", alias, "raise-priority")
     client.postNoContent(path)
   }
@@ -388,7 +388,7 @@ object AuthenticationManagement {
    * @param realm Name of the Realm.
    * @return
    */
-  def getUnregisteredRequiredActions[R[_], S](realm: String): Request[R, S, Seq[Map[String, Any]]] = Kleisli { client =>
+  def getUnregisteredRequiredActions(realm: String): R[Seq[Map[String, Any]]] = {
     val path = Seq(realm, "authentication", "unregistered-required-actions")
     client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
   }

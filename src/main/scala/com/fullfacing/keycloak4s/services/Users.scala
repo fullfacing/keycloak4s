@@ -1,14 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.data.Kleisli
 import cats.effect.Effect
-import com.fullfacing.keycloak4s.handles.KeycloakClient.Request
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class Users[R[_] <: Effect[R], S] {
+class Users[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
 
   private val users_path = "users"
 
@@ -19,7 +18,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param user
    * @return
    */
-  def createUser(realm: String, user: User): Request[R, S, User] = Kleisli { client =>
+  def createUser(realm: String, user: User): R[User] = {
     val path = Seq(realm, users_path)
     client.post[User, User](user, path)
   }
@@ -46,7 +45,7 @@ class Users[R[_] <: Effect[R], S] {
                lastName: Option[String] = None,
                max: Option[Int] = None,
                search: Option[String] = None,
-               username: Option[String] = None): Request[R, S, List[User]] = Kleisli { client =>
+               username: Option[String] = None): R[List[User]] = {
 
     val query = createQuery(
       ("briefRepresentation", briefRep),
@@ -68,7 +67,7 @@ class Users[R[_] <: Effect[R], S] {
 //   * @param realm
 //   * @return
 //   */
-//  def getUsersCount(realm: String): Request[R, S, Int] = Kleisli { client => // TODO: Return Type
+//  def getUsersCount(realm: String): Request[R, S, Int] = { // TODO: Return Type
 //    val path = Seq(realm, users_path, "count")
 //    client.get[Int](path, Seq.empty[KeyValue])
 //  }
@@ -80,7 +79,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def getUserById(realm: String, userId: String): Request[R, S, User] = Kleisli { client =>
+  def getUserById(realm: String, userId: String): R[User] = {
     val path = Seq(realm, users_path, userId)
     client.get[User](path, Seq.empty[KeyValue])
   }
@@ -93,7 +92,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param updated
    * @return
    */
-  def updateUser(realm: String, userId: String, updated: User): Request[R, S, Unit] = Kleisli { client =>
+  def updateUser(realm: String, userId: String, updated: User): R[Unit] = {
     val path = Seq(realm, users_path, userId)
     client.putNoContent(updated, path, Seq.empty[KeyValue])
   }
@@ -105,7 +104,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def deleteUser(realm: String, userId: String): Request[R, S, Unit] = Kleisli { client =>
+  def deleteUser(realm: String, userId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -117,7 +116,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def getUserConsents(realm: String, userId: String): Request[R, S, List[Map[String, String]]] = Kleisli { client => // Don't know return type
+  def getUserConsents(realm: String, userId: String): R[List[Map[String, String]]] = { // Don't know return type
     val path = Seq(realm, users_path, userId, "consents")
     client.get[List[Map[String, String]]](path, Seq.empty[KeyValue])
   }
@@ -130,7 +129,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param clientId
    * @return
    */
-  def revokeClientConsentForUser(realm: String, userId: String, clientId: String): Request[R, S, Unit] = Kleisli { client =>
+  def revokeClientConsentForUser(realm: String, userId: String, clientId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId, "consents", clientId)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -142,7 +141,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param credTypes credentialTypes, required  -- TODO figure out what credential types there are
    * @return
    */
-  def disableUserCredentials(realm: String, userId: String, credTypes: List[String]): Request[R, S, Unit] = Kleisli { client =>
+  def disableUserCredentials(realm: String, userId: String, credTypes: List[String]): R[Unit] = {
     val path = Seq(realm, users_path, userId, "disable-credential-types")
     client.putNoContent[List[String]](credTypes, path, Seq.empty[KeyValue])
   }
@@ -168,7 +167,7 @@ class Users[R[_] <: Effect[R], S] {
                           clientId: Option[String] = None,
                           lifespan: Option[Int] = None,
                           redirectUri: Option[String],
-                          actions: List[String]): Request[R, S, Unit] = Kleisli { client => // Unknown Return Type
+                          actions: List[String]): R[Unit] = { // Unknown Return Type
 
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
 
@@ -183,7 +182,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def federatedIdentity(realm: String, userId: String): Request[R, S, List[FederatedIdentity]] = Kleisli { client =>
+  def federatedIdentity(realm: String, userId: String): R[List[FederatedIdentity]] = {
     val path = Seq(realm, users_path, userId, "federated-identity")
     client.get[List[FederatedIdentity]](path, Seq.empty[KeyValue])
   }
@@ -197,7 +196,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param rep
    * @return
    */
-  def addUserSocialLoginProvider(realm: String, userId: String, provider: String, rep: FederatedIdentity): Request[R, S, Unit] = Kleisli { client => // Unknown Return Type
+  def addUserSocialLoginProvider(realm: String, userId: String, provider: String, rep: FederatedIdentity): R[Unit] = { // Unknown Return Type
     val path = Seq(realm, users_path, userId, "federated-identity", provider)
     client.postNoContent(rep, path)
   }
@@ -210,7 +209,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param provider
    * @return
    */
-  def removeUserSocialLoginProvider(realm: String, userId: String, provider: String): Request[R, S, Unit] = Kleisli { client =>
+  def removeUserSocialLoginProvider(realm: String, userId: String, provider: String): R[Unit] = {
     val path = Seq(realm, users_path, userId, "federated-identity", provider)
     client.delete(path, Seq.empty[KeyValue])
   }
@@ -228,7 +227,7 @@ class Users[R[_] <: Effect[R], S] {
                 userId: String,
                 first: Option[Int] = None,
                 max: Option[Int] = None,
-                search: Option[String] = None): Request[R, S, List[Group]] = Kleisli { client =>
+                search: Option[String] = None): R[List[Group]] = {
 
     val query = createQuery(("first", first), ("max", max), ("search", search))
 
@@ -242,7 +241,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def groupCount(realm: String, userId: String): Request[R, S, GroupCount] = Kleisli { client =>
+  def groupCount(realm: String, userId: String): R[GroupCount] = {
     val path = Seq(realm, users_path, userId, "groups", "count")
     client.get[GroupCount](path, Seq.empty[KeyValue])
   }
@@ -271,7 +270,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def impersonate(realm: String, userId: String): Request[R, S, Unit] = Kleisli { client => // TODO: Figure out return type
+  def impersonate(realm: String, userId: String): R[Unit] = { // TODO: Figure out return type
     val path = Seq(realm, users_path, userId, "impersonation")
     client.postNoContent(path)
   }
@@ -284,7 +283,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def logout(realm: String, userId: String): Request[R, S, Unit] = Kleisli { client =>
+  def logout(realm: String, userId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId, "logout")
     client.postNoContent(path)
   }
@@ -296,7 +295,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param clientId
    * @return
    */
-  def getOfflineSessions(realm: String, userId: String, clientId: String): Request[R, S, List[UserSession]] = Kleisli { client =>
+  def getOfflineSessions(realm: String, userId: String, clientId: String): R[List[UserSession]] = {
     val path = Seq(realm, users_path, userId, "offline-sessions", clientId)
     client.get[List[UserSession]](path, Seq.empty[KeyValue])
   }
@@ -308,7 +307,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def removeTotp(realm: String, userId: String): Request[R, S, Unit] = Kleisli { client =>
+  def removeTotp(realm: String, userId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId, "remove-totp")
     client.put(path, Seq.empty[KeyValue])
   }
@@ -320,7 +319,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param pass
    * @return
    */
-  def resetPassword(realm: String, userId: String, pass: Credential): Request[R, S, Unit] = Kleisli { client =>
+  def resetPassword(realm: String, userId: String, pass: Credential): R[Unit] = {
     val path = Seq(realm, users_path, userId, "reset-password")
     client.putNoContent(pass, path, Seq.empty[KeyValue])
   }
@@ -339,7 +338,7 @@ class Users[R[_] <: Effect[R], S] {
   def sendVerificationEmail(realm: String,
                             userId: String,
                             clientId: Option[String] = None,
-                            redirectUri: Option[String] = None): Request[R, S, Unit] = Kleisli { client => // TODO: Unknown Response
+                            redirectUri: Option[String] = None): R[Unit] = { // TODO: Unknown Response
 
     val query = createQuery(("client_id", clientId), ("redirect_uri",redirectUri))
 
@@ -354,7 +353,7 @@ class Users[R[_] <: Effect[R], S] {
    * @param userId
    * @return
    */
-  def getSessions(realm: String, userId: String): Request[R, S, List[UserSession]] = Kleisli { client =>
+  def getSessions(realm: String, userId: String): R[List[UserSession]] = {
     val path = Seq(realm, users_path, userId, "sessions")
     client.get[List[UserSession]](path, Seq.empty[KeyValue])
   }

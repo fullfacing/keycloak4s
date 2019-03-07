@@ -53,6 +53,8 @@ val sttp: Seq[ModuleID] = {
   val version = "1.5.11"
   Seq(
     "com.softwaremill.sttp" %% "core"   % version,
+    "com.softwaremill.sttp" %% "akka-http-backend" % version,
+    "com.typesafe.akka" %% "akka-stream" % "2.5.21",
     "com.softwaremill.sttp" %% "json4s" % version
   )
 }
