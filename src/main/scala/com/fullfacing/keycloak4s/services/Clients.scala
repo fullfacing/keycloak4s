@@ -674,7 +674,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
     def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: String): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
       val multipart = createMultipart(file, contentType)
-      keycloakClient.post[Certificate](multipart, path)
+      keycloakClient.post[Multipart, Certificate](multipart, path)
     }
 
     /**

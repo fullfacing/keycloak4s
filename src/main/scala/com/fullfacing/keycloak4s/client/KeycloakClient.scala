@@ -29,10 +29,8 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     case Right(rsp) => F.unit(rsp)
   }
 
-  private type HttpForm = Map[String, String]
-
   private def determineContent[A <: AnyRef](payload: A): String = payload match {
-    case _: HttpForm  => ContentTypes.UrlEncoded
+    case _: Map[_, _] => ContentTypes.UrlEncoded
     case _: Multipart => ContentTypes.Multipart
     case _            => ContentTypes.Json
   }
