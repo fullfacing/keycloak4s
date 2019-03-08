@@ -15,9 +15,9 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param group Object representing the group details.
    * @return
    */
-  def addGroupSet(realm: String, group: Group): R[AnyRef] = { //TODO Determine return type.
+  def addGroupSet(realm: String, group: Group): R[Response] = {
     val path = Seq(realm, "groups")
-    client.post[Group, AnyRef](group, path)
+    client.post[Group, Response](group, path)
   }
 
   /**
@@ -48,14 +48,14 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param top
    * @return
    */
-  def getGroupsCounts(realm: String, search: Option[String] = None, top: Boolean = false): R[Map[String, Any]] = { //TODO Determine return type.
+  def getGroupsCounts(realm: String, search: Option[String] = None, top: Boolean = false): R[Count] = {
     val query = createQuery(
       ("search", search),
       ("top", Some(top))
     )
 
     val path = Seq(realm, "groups", "count")
-    client.get[Map[String, Any]](path, query)
+    client.get[Count](path, query)
   }
 
   /**

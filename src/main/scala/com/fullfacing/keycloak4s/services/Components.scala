@@ -15,8 +15,8 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param component Object representing a component's details.
    * @return
    */
-  def createComponent(realm: String, component: Component): R[AnyRef] = { //TODO Determine return type.
-    client.post[Component, AnyRef](component, realm :: "components" :: Nil)
+  def createComponent(realm: String, component: Component): R[Response] = {
+    client.post[Component, Response](component, realm :: "components" :: Nil)
   }
 
   /**
