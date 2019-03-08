@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.BruteForceResponse
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class AttackDetection[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Clear any user login failures for all users.
