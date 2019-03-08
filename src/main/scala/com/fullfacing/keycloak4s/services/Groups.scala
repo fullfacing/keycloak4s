@@ -1,14 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
-import com.fullfacing.apollo.core.Predef.R
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class Groups[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * This will update the group and set the parent if it exists. Create it and set the parent if the group doesn’t exist.
@@ -17,9 +16,9 @@ class Groups[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    * @param group Object representing the group details.
    * @return
    */
-  def addGroupSet(realm: String, group: Group): R[Any] = { //TODO Determine return type.
+  def addGroupSet(realm: String, group: Group): R[AnyRef] = { //TODO Determine return type.
     val path = Seq(realm, "groups")
-    client.post[Group, Any](group, path)
+    client.post[Group, AnyRef](group, path)
   }
 
   /**

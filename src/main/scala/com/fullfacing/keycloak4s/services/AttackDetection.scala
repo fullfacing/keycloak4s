@@ -17,7 +17,7 @@ class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * @return
    */
   def clearAllLoginFailures(realm: String): R[Unit] = {
-    client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: Nil, Seq.empty[KeyValue])
+    client.deleteNoContent(realm :: "attack-detection" :: "brute-force" :: "users" :: Nil, Seq.empty[KeyValue])
   }
 
   /**
@@ -39,6 +39,6 @@ class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * @param userId  ID of the User.
    */
   def clearUserLoginFailure(realm: String, userId: String): R[Unit] = {
-    client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil, Seq.empty[KeyValue])
+    client.deleteNoContent(realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil, Seq.empty[KeyValue])
   }
 }

@@ -2,14 +2,14 @@ package com.fullfacing.keycloak4s.services
 
 import java.io.File
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class IdentityProviders[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Import identity provider from uploaded JSON file

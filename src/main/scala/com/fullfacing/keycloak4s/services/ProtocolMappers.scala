@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class ProtocolMappers[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Create multiple protocol mappers for a client scope.

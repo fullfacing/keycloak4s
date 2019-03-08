@@ -62,15 +62,15 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[List[User]](path, query)
   }
 
-//  /**
-//   *
-//   * @param realm
-//   * @return
-//   */
-//  def getUsersCount(realm: String): Request[R, S, Int] = { // TODO: Return Type
-//    val path = Seq(realm, users_path, "count")
-//    client.get[Int](path, Seq.empty[KeyValue])
-//  }
+  /**
+   *
+   * @param realm
+   * @return
+   */
+  def getUsersCount(realm: String): R[String] = { //TODO
+    val path = Seq(realm, users_path, "count")
+    client.get[String](path, Seq.empty[KeyValue])
+  }
 
   /**
    * Get representation of the user
@@ -106,7 +106,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteUser(realm: String, userId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**
@@ -131,7 +131,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def revokeClientConsentForUser(realm: String, userId: String, clientId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId, "consents", clientId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**
@@ -211,7 +211,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def removeUserSocialLoginProvider(realm: String, userId: String, provider: String): R[Unit] = {
     val path = Seq(realm, users_path, userId, "federated-identity", provider)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**

@@ -146,7 +146,7 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
   // ---------------------------------------------------------------- //
   // ---------------------------- DELETE ---------------------------- //
   // ---------------------------------------------------------------- //
-  def delete[A <: AnyRef : Manifest](path: Seq[String], queries: Seq[KeyValue])
+  def delete[A <: AnyRef](path: Seq[String], queries: Seq[KeyValue])
                                     (implicit mb: Manifest[A]): F[A] = {
     val uri = createUri(path, queries)
     val response = withAuth(sttp.delete(uri).response(asJson[A]))
