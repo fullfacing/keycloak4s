@@ -3,7 +3,6 @@ package com.fullfacing.keycloak4s.services
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
@@ -42,7 +41,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[AnyRef] = { //TODO Determine return type.
     val path = Seq(realm)
-    keycloakClient.put[RealmRepresentation, AnyRef](update, path, Seq.empty[KeyValue])
+    keycloakClient.put[RealmRepresentation, AnyRef](update, path)
   }
 
   /**
@@ -53,7 +52,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def deleteRealm(realm: String): R[Unit] = {
     val path = Seq(realm)
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -111,7 +110,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def deleteAdminEvents(realm: String): R[Unit] = {
     val path = Seq(realm, "admin-events")
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -122,7 +121,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def clearKeysCache(realm: String): R[Unit] = {
     val path = Seq(realm, "clear-keys-cache")
-    keycloakClient.postNoContent(path)
+    keycloakClient.post(path)
   }
 
   /**
@@ -133,7 +132,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def clearRealmCache(realm: String): R[Unit] = {
     val path = Seq(realm, "clear-realm-cache")
-    keycloakClient.postNoContent(path)
+    keycloakClient.post(path)
   }
 
   /**
@@ -144,7 +143,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def clearUserCache(realm: String): R[Unit] = {
     val path = Seq(realm, "clear-user-cache")
-    keycloakClient.postNoContent(path)
+    keycloakClient.post(path)
   }
 
   //TODO Determine what exactly this route does, as the description does not correlate well with the route name.
@@ -194,7 +193,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateDefaultClientScope(scopeId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "default-default-client-scopes", scopeId)
-    keycloakClient.put(path, Seq.empty[KeyValue])
+    keycloakClient.put(path)
   }
 
   /**
@@ -206,7 +205,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def deleteDefaultClientScope(scopeId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "default-default-client-scopes", scopeId)
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -230,7 +229,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateGroupHierarchy(groupId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "default-groups", groupId)
-    keycloakClient.put(path, Seq.empty[KeyValue])
+    keycloakClient.put(path)
   }
 
   /**
@@ -242,7 +241,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def deleteGroupHierarchy(groupId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "default-groups", groupId)
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -265,7 +264,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateOptionalClientScope(scopeId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "default-Optional-client-scopes", scopeId)
-    keycloakClient.put(path, Seq.empty[KeyValue])
+    keycloakClient.put(path)
   }
 
   /**
@@ -277,7 +276,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def deleteOptionalClientScope(scopeId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "default-Optional-client-scopes", scopeId)
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -326,7 +325,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def deleteAllEvents(realm: String): R[Unit] = {
     val path = Seq(realm, "events")
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -351,7 +350,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateEventsConfig(realm: String, config: RealmEventsConfig): R[Unit] = {
     val path = Seq(realm, "events", "config")
-    keycloakClient.putNoContent(config, path, Seq.empty[KeyValue])
+    keycloakClient.put(config, path)
   }
 
   /**
@@ -427,7 +426,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def removeUserSession(realm: String, session: String): R[Unit] = {
     val path = Seq(realm, "sessions", session)
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -498,6 +497,6 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateUsersManagementPermissions(realm: String, ref: ManagementPermission): R[ManagementPermission] = {
     val path = Seq(realm, "users-management-permissions")
-    keycloakClient.put[ManagementPermission, ManagementPermission](ref, path, Seq.empty[KeyValue])
+    keycloakClient.put[ManagementPermission, ManagementPermission](ref, path)
   }
 }
