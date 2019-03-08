@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{Mappings, Role}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class ScopeMappings[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, S]) {
+class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]) {
 
   private val resource = "client-scopes"
   private val mappings = "scope-mappings"
@@ -35,7 +35,7 @@ class ScopeMappings[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def addClientRoles(realm: String, id: String, client: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, id, mappings, "clients", client)
-    keycloakClient.post[List[Role], Unit](roles, path)
+    keycloakClient.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -59,9 +59,9 @@ class ScopeMappings[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, 
    * @param client
    * @return
    */
-  def removeClientRoles(realm: String, id: String, client: String, roles: List[Role]): R[Unit] = { // TODO Test - Delete with body
+  def removeClientRoles(realm: String, id: String, client: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, id, mappings, "clients", client)
-    keycloakClient.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    keycloakClient.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -102,7 +102,7 @@ class ScopeMappings[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def addRealmRolesToClientScope(realm: String, id: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, id, mappings, "realm")
-    keycloakClient.post[List[Role], Unit](roles, path)
+    keycloakClient.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -127,7 +127,7 @@ class ScopeMappings[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def removeRealmRolesFromClientScope(realm: String, id: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, id, mappings, "realm")
-    keycloakClient.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    keycloakClient.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**

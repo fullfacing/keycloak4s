@@ -76,7 +76,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    */
   def deleteAuthenticatorConfig(configId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "config", configId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**
@@ -91,17 +91,17 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
     client.post[AuthenticationExecution, AnyRef](request, path)
   }
 
-//  /**
-//   * Get a single execution.
-//   *
-//   * @param executionId ID of the execution.
-//   * @param realm       Name of the Realm.
-//   * @return
-//   */
-//  def getSingleExecution(executionId: String, realm: String): R[Any] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "executions", executionId)
-//    client.get[Any](path, Seq.empty[KeyValue])
-//  }
+  /**
+   * Get a single execution.
+   *
+   * @param executionId ID of the execution.
+   * @param realm       Name of the Realm.
+   * @return
+   */
+  def getSingleExecution(executionId: String, realm: String): R[AnyRef] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "executions", executionId)
+    client.get[AnyRef](path, Seq.empty[KeyValue])
+  }
 
   /**
    * Delete an execution.
@@ -112,21 +112,21 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    */
   def deleteExecution(executionId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "executions", executionId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
-//  /**
-//   * Updates an execution with a new configuration.
-//   *
-//   * @param executionId ID of the execution.
-//   * @param realm       Name of the Realm.
-//   * @param request     Object describing new configuration.
-//   * @return
-//   */
-//  def updateExecutionConfig(executionId: String, realm: String, request: AuthenticatorConfig): R[Any] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "executions", executionId, "config")
-//    client.post[AuthenticatorConfig, Any](request, path)
-//  }
+  /**
+   * Updates an execution with a new configuration.
+   *
+   * @param executionId ID of the execution.
+   * @param realm       Name of the Realm.
+   * @param request     Object describing new configuration.
+   * @return
+   */
+  def updateExecutionConfig(executionId: String, realm: String, request: AuthenticatorConfig): R[AnyRef] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "executions", executionId, "config")
+    client.post[AuthenticatorConfig, AnyRef](request, path)
+  }
 
   /**
    * Lower an execution's priority.
@@ -163,30 +163,30 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
     client.get[Seq[AuthenticationFlow]](path, Seq.empty[KeyValue])
   }
 
-//  /**
-//   * Copy existing authentication flow under a new name.
-//   *
-//   * @param flowAlias Name of the existing authentication flow.
-//   * @param realm     Name of the Realm.
-//   * @param newName   The name for the flow copy.
-//   * @return
-//   */
-//  def copyAuthenticationFlow(flowAlias: String, realm: String, newName: String): R[Any] = { //TODO Determine return type, and confirm body
-//    val path = Seq(realm, "authentication", "flows", flowAlias, "copy")
-//    client.post[Any](Map("newName" -> newName), path)
-//  }
-//
-//  /**
-//   * Get authentication executions for a flow.
-//   *
-//   * @param flowAlias Name of the existing authentication flow.
-//   * @param realm     Name of the Realm.
-//   * @return
-//   */
-//  def getFlowAuthenticationExecutions(flowAlias: String, realm: String): R[Any] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "flows", flowAlias, "executions")
-//    client.get[Any](path, Seq.empty[KeyValue])
-//  }
+  /**
+   * Copy existing authentication flow under a new name.
+   *
+   * @param flowAlias Name of the existing authentication flow.
+   * @param realm     Name of the Realm.
+   * @param newName   The name for the flow copy.
+   * @return
+   */
+  def copyAuthenticationFlow(flowAlias: String, realm: String, newName: String): R[AnyRef] = { //TODO Determine return type, and confirm body
+    val path = Seq(realm, "authentication", "flows", flowAlias, "copy")
+    client.post[AnyRef](Map("newName" -> newName), path)
+  }
+
+  /**
+   * Get authentication executions for a flow.
+   *
+   * @param flowAlias Name of the existing authentication flow.
+   * @param realm     Name of the Realm.
+   * @return
+   */
+  def getFlowAuthenticationExecutions(flowAlias: String, realm: String): R[AnyRef] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "flows", flowAlias, "executions")
+    client.get[AnyRef](path, Seq.empty[KeyValue])
+  }
 
   /**
    * Update authentication executions of a flow.
@@ -201,31 +201,31 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
     client.putNoContent[AuthenticationExecutionInfo](request, path, Seq.empty[KeyValue])
   }
 
-//  /**
-//   * Add new authentication execution to a flow.
-//   *
-//   * @param flowAlias Name of the existing authentication flow.
-//   * @param realm     Name of the Realm.
-//   * @param provider  //TODO Determine if provider name or id
-//   * @return
-//   */
-//  def addFlowAuthenticationExecution(flowAlias: String, realm: String, provider: String): R[Any] = { //TODO Determine return type, and confirm body
-//    val path = Seq(realm, "authentication", "flows", flowAlias, "executions", "execution")
-//    client.post[Any](Map("provider" -> provider), path)
-//  }
-//
-//  /**
-//   * Add new flow with new execution to existing flow.
-//   *
-//   * @param flowAlias Name of the existing authentication flow.
-//   * @param realm     Name of the Realm.
-//   * @param request   Object describing new authentication flow.
-//   * @return
-//   */
-//  def addNewFlowWithNewExecution(flowAlias: String, realm: String, request: NewAuthenticationFlow): R[Any] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "flows", flowAlias, "executions", "flow")
-//    client.post[NewAuthenticationFlow, Any](request, path)
-//  }
+  /**
+   * Add new authentication execution to a flow.
+   *
+   * @param flowAlias Name of the existing authentication flow.
+   * @param realm     Name of the Realm.
+   * @param provider  //TODO Determine if provider name or id
+   * @return
+   */
+  def addFlowAuthenticationExecution(flowAlias: String, realm: String, provider: String): R[AnyRef] = { //TODO Determine return type, and confirm body
+    val path = Seq(realm, "authentication", "flows", flowAlias, "executions", "execution")
+    client.post[AnyRef](Map("provider" -> provider), path)
+  }
+
+  /**
+   * Add new flow with new execution to existing flow.
+   *
+   * @param flowAlias Name of the existing authentication flow.
+   * @param realm     Name of the Realm.
+   * @param request   Object describing new authentication flow.
+   * @return
+   */
+  def addNewFlowWithNewExecution(flowAlias: String, realm: String, request: NewAuthenticationFlow): R[AnyRef] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "flows", flowAlias, "executions", "flow")
+    client.post[NewAuthenticationFlow, AnyRef](request, path)
+  }
 
   /**
    * Get authentication flow with id.
@@ -261,41 +261,41 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    */
   def deleteAuthenticationFlow(flowId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "flows", flowId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
-//  /**
-//   * Returns a list of form action providers.
-//   *
-//   * @param realm Name of the Realm.
-//   * @return
-//   */
-//  def getFormActionProviders(realm: String): R[Seq[Map[String, Any]]] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "form-action-providers")
-//    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
-//  }
-//
-//  /**
-//   * Returns a list of form providers.
-//   *
-//   * @param realm Name of the Realm.
-//   * @return
-//   */
-//  def getFormProviders(realm: String): R[Seq[Map[String, Any]]] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "form-providers")
-//    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
-//  }
-//
-//  /**
-//   * Get configuration descriptions for all clients.
-//   *
-//   * @param realm Name of the Realm.
-//   * @return
-//   */
-//  def getConfigurationDescriptions(realm: String): R[Seq[Map[String, Any]]] = { //TODO Determine return type.
-//    val path = Seq(realm, "authentication", "per-client-config-description")
-//    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
-//  }
+  /**
+   * Returns a list of form action providers.
+   *
+   * @param realm Name of the Realm.
+   * @return
+   */
+  def getFormActionProviders(realm: String): R[Seq[Map[String, AnyRef]]] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "form-action-providers")
+    client.get[Seq[Map[String, AnyRef]]](path, Seq.empty[KeyValue])
+  }
+
+  /**
+   * Returns a list of form providers.
+   *
+   * @param realm Name of the Realm.
+   * @return
+   */
+  def getFormProviders(realm: String): R[Seq[Map[String, AnyRef]]] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "form-providers")
+    client.get[Seq[Map[String, AnyRef]]](path, Seq.empty[KeyValue])
+  }
+
+  /**
+   * Get configuration descriptions for all clients.
+   *
+   * @param realm Name of the Realm.
+   * @return
+   */
+  def getConfigurationDescriptions(realm: String): R[Seq[Map[String, AnyRef]]] = { //TODO Determine return type.
+    val path = Seq(realm, "authentication", "per-client-config-description")
+    client.get[Seq[Map[String, AnyRef]]](path, Seq.empty[KeyValue])
+  }
 
   /**
    * Register a new required action.
@@ -355,7 +355,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    */
   def deleteRequiredAction(alias: String, realm: String): R[Unit] = {
     val path = Seq(realm, "authentication", "register-actions", alias)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**
@@ -388,8 +388,8 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param realm Name of the Realm.
    * @return
    */
-  def getUnregisteredRequiredActions(realm: String): R[Seq[Map[String, Any]]] = {
+  def getUnregisteredRequiredActions(realm: String): R[Seq[Map[String, AnyRef]]] = {
     val path = Seq(realm, "authentication", "unregistered-required-actions")
-    client.get[Seq[Map[String, Any]]](path, Seq.empty[KeyValue])
+    client.get[Seq[Map[String, AnyRef]]](path, Seq.empty[KeyValue])
   }
 }

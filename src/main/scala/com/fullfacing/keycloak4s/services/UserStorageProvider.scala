@@ -1,12 +1,12 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.Synchronization
 
 import scala.collection.immutable.Seq
 
-class UserStorageProvider[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class UserStorageProvider[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val user_storage = "user-storage"
 
@@ -42,7 +42,7 @@ class UserStorageProvider[R[_]: Effect, S](implicit client: KeycloakClient[R, S]
    */
   def removeImportedUser(realm: String, id: String): R[Unit] = {
     val path = Seq(realm, user_storage, id, "remove-imported-users")
-    client.post[Unit](path)
+    client.postNoContent(path)
   }
 
   /**
@@ -56,7 +56,7 @@ class UserStorageProvider[R[_]: Effect, S](implicit client: KeycloakClient[R, S]
   def sync(realm: String, id: String, action: Option[String]): R[Synchronization] = {
     val path  = Seq(realm, user_storage, id, "sync")
     val query = createQuery(("action", action))
-    client.post[Synchronization](path/*, query*/)
+    client.post[Synchronization](path, query)
   }
 
   /**
@@ -68,7 +68,7 @@ class UserStorageProvider[R[_]: Effect, S](implicit client: KeycloakClient[R, S]
    */
   def unlink(realm: String, id: String): R[Unit] = {
     val path = Seq(realm, user_storage, id, "unlink-users")
-    client.post[Unit](path)
+    client.postNoContent(path)
   }
 
   /**
@@ -83,6 +83,6 @@ class UserStorageProvider[R[_]: Effect, S](implicit client: KeycloakClient[R, S]
   def mapperDataSync(realm: String, id: String, parentId: String, direction: Option[String]): R[Synchronization] = {
     val path  = Seq(realm, user_storage, parentId, "mappers", id, "sync")
     val query = createQuery(("direction", direction))
-    client.post[Synchronization](path/*, query*/)
+    client.post[Synchronization](path, query)
   }
 }

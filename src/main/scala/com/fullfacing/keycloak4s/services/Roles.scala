@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{ManagementPermission, Role, User}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
+class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) {
 
   private val clients_path = "clients"
   private val roles_path   = "roles"
@@ -20,9 +20,9 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def createClientRole(realm: String, id: String, role: Role): R[???] = {
+  def createClientRole(realm: String, id: String, role: Role): R[AnyRef] = {
     val path = Seq(realm, clients_path, id, roles_path)
-    keyCloakClient.post[Role, ???](role, path)
+    keyCloakClient.post[Role, AnyRef](role, path)
   }
 
   /**
@@ -59,9 +59,9 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def updateByName(realm: String, id: String, roleName: String, role: Role): R[???] = {
+  def updateByName(realm: String, id: String, roleName: String, role: Role): R[AnyRef] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    keyCloakClient.put[Role, ???](role, path, Seq.empty[KeyValue])
+    keyCloakClient.put[Role, AnyRef](role, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -74,7 +74,7 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    */
   def removeByName(realm: String, id: String, roleName: String): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    keyCloakClient.delete[Unit](path, Seq.empty[KeyValue])
+    keyCloakClient.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**
@@ -88,7 +88,7 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    */
   def addComposites(realm: String, id: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    keyCloakClient.post[List[Role], Unit](roles, path)
+    keyCloakClient.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -115,7 +115,7 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    */
   def removeCompositeRoles(realm: String, id: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    keyCloakClient.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    keyCloakClient.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -194,9 +194,9 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def createRealmRole(realm: String, role: Role): R[???] = {
+  def createRealmRole(realm: String, role: Role): R[AnyRef] = {
     val path = Seq(realm, roles_path)
-    keyCloakClient.post[???](role, path)
+    keyCloakClient.post[Role, AnyRef](role, path)
   }
 
   /**
@@ -230,9 +230,9 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    * @param role     Updated role
    * @return
    */
-  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[???] = {
+  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[AnyRef] = {
     val path = Seq(realm, roles_path, roleName)
-    keyCloakClient.put[Role, ???](role, path)
+    keyCloakClient.put[Role, AnyRef](role, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -245,7 +245,7 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    */
   def deleteRealmRoleByName(realm: String, roleName: String, role: String): R[Unit] = {
     val path = Seq(realm, roles_path, roleName)
-    keyCloakClient.delete[String, Unit](role, path, Seq.empty[KeyValue])
+    keyCloakClient.deleteNoContent[String](role, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -258,7 +258,7 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    */
   def addCompositeToRealmRole(realm: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    keyCloakClient.post[List[Role], Unit](roles, path)
+    keyCloakClient.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -283,7 +283,7 @@ class Roles[R[_]: Effect, S](implicit keyCloakClient: KeycloakClient[R, S]) {
    */
   def removeRolesFromRolesComposite(realm: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    keyCloakClient.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    keyCloakClient.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**

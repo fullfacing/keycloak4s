@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{Mappings, Role}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class RoleMapper[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
+class RoleMapper[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val groups_path   = "groups"
   private val role_mappings = "role-mappings"
@@ -33,7 +33,7 @@ class RoleMapper[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    */
   def addRealmLevelRoleMappings(realm: String, id: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm")
-    client.post[List[Role], Unit](roles, path)
+    client.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -58,7 +58,7 @@ class RoleMapper[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    */
   def removeRealmRoleMappings(realm: String, id: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm")
-    client.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    client.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -107,7 +107,7 @@ class RoleMapper[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    */
   def addRealmRoleMappingsToUser(realm: String, userId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm")
-    client.post[List[Role], Unit](roles, path)
+    client.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -132,7 +132,7 @@ class RoleMapper[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    */
   def removeUserRealmRoleMappings(realm: String, userId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm")
-    client.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    client.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**

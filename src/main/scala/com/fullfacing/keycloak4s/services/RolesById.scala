@@ -1,13 +1,13 @@
 package com.fullfacing.keycloak4s.services
 
-import cats.effect.Effect
+import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{ManagementPermission, Role}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class RolesById[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, S]) {
+class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]) {
 
   private val resource = "roles-by-id"
 
@@ -33,7 +33,7 @@ class RolesById[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, S]) 
    */
   def update(realm: String, roleId: String, role: Role): R[Unit] = {
     val path = Seq(realm, resource, roleId)
-    keycloakClient.put[Role, Unit](role, path, Seq.empty[KeyValue])
+    keycloakClient.putNoContent[Role](role, path, Seq.empty[KeyValue])
   }
 
   /**
@@ -45,7 +45,7 @@ class RolesById[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, S]) 
    */
   def delete(realm: String, roleId: String): R[Unit] = {
     val path = Seq(realm, resource, roleId)
-    keycloakClient.delete[Unit](path, Seq.empty[KeyValue])
+    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**
@@ -58,7 +58,7 @@ class RolesById[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, S]) 
    */
   def addSubRoles(realm: String, roleId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, roleId, "composites")
-    keycloakClient.post[List[Role], Unit](roles, path)
+    keycloakClient.postNoContent[List[Role]](roles, path)
   }
 
   /**
@@ -83,7 +83,7 @@ class RolesById[R[_]: Effect, S](implicit keycloakClient: KeycloakClient[R, S]) 
    */
   def removeSubRoles(realm: String, roleId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, roleId, "composites")
-    keycloakClient.delete[List[Role], Unit](roles, path, Seq.empty[KeyValue])
+    keycloakClient.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
   }
 
   /**

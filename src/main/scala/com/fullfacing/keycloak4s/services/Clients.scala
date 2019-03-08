@@ -37,7 +37,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     * @return
     */
   def deleteInitialAccessToken(tokenId: String, realm: String): R[Unit] = {
-    client.delete(realm :: "clients-initial-access" :: tokenId :: Nil, Seq.empty[KeyValue])
+    client.deleteNoContent(realm :: "clients-initial-access" :: tokenId :: Nil, Seq.empty[KeyValue])
   }
 
 
@@ -102,7 +102,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteClient(clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId)
-      client.delete(path, Seq.empty[KeyValue])
+      client.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -165,7 +165,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteClientScope(clientScopeId: String, clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "default-client-scopes", clientScopeId)
-      client.delete(path, Seq.empty[KeyValue])
+      client.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -296,7 +296,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def unregisterClusterNode(clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "nodes")
-      client.delete(path, Seq.empty[KeyValue])
+      client.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
 //    /**
@@ -368,7 +368,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteOptionalClientScope(clientScopeId: String, clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "optional-client-scopes", clientScopeId)
-      client.delete(path, Seq.empty[KeyValue])
+      client.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
     /**
