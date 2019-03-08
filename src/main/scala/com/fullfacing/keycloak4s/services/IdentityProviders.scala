@@ -82,7 +82,7 @@ class IdentityProviders[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) 
   def deleteIdentityProvider(alias: String, realm: String): R[IdentityProvider] = {
     val path = Seq(realm, "identity-provider", "instances", alias)
     client.delete[IdentityProvider](path, Seq.empty[KeyValue])
-  } //TODO FIX DELETE
+  }
 
   /**
    * Export public broker configuration for identity provider.
@@ -198,7 +198,7 @@ class IdentityProviders[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) 
    */
   def deleteMapper(alias: String, mapperId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mappers", mapperId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**

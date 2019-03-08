@@ -85,7 +85,7 @@ class ProtocolMappers[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
   def deleteMapperForScope(scopeId: String, mapperId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
     client.deleteNoContent(path, Seq.empty[KeyValue])
-  } //TODO Fix delete.
+  }
 
   /**
    * Get protocol mappers by name for a specific protocol belonging to a client scope.
@@ -175,7 +175,7 @@ class ProtocolMappers[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteMapperForClient(clientId: String, mapperId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
-    client.delete(path, Seq.empty[KeyValue])
+    client.deleteNoContent(path, Seq.empty[KeyValue])
   }
 
   /**

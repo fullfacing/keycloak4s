@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.services
 
+import java.io.File
+
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
@@ -7,7 +9,7 @@ import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]) {
 
   /**
    * Create a new initial access token.
@@ -17,7 +19,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @return
    */
   def createNewInitialAccessToken(realm: String, config: ClientInitialAccessCreate): R[ClientInitialAccess] = {
-    client.post[ClientInitialAccessCreate, ClientInitialAccess](config, realm :: "clients-initial-access" :: Nil)
+    keycloakClient.post[ClientInitialAccessCreate, ClientInitialAccess](config, realm :: "clients-initial-access" :: Nil)
   }
 
   /**
@@ -27,7 +29,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     * @return
     */
   def getInitialAccessTokens(realm: String): R[Seq[ClientInitialAccess]] = {
-    client.get[Seq[ClientInitialAccess]](realm :: "clients-initial-access" :: Nil, Seq.empty[KeyValue])
+    keycloakClient.get[Seq[ClientInitialAccess]](realm :: "clients-initial-access" :: Nil, Seq.empty[KeyValue])
   }
 
   /**
@@ -37,22 +39,22 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     * @return
     */
   def deleteInitialAccessToken(tokenId: String, realm: String): R[Unit] = {
-    client.delete(realm :: "clients-initial-access" :: tokenId :: Nil, Seq.empty[KeyValue])
+    keycloakClient.deleteNoContent(realm :: "clients-initial-access" :: tokenId :: Nil, Seq.empty[KeyValue])
   }
 
 
-//    /**
-//     * Create a new client.
-//     * Client’s client_id must be unique!
-//     *
-//     * @param realm   Name of the Realm.
-//     * @param client  Object representing a Client's details.
-//     * @return
-//     */
-//    def createNewClient(realm: String, client: Client): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "clients")
-//      client.post(client, path)
-//    }
+    /**
+     * Create a new client.
+     * Client’s client_id must be unique!
+     *
+     * @param realm   Name of the Realm.
+     * @param client  Object representing a Client's details.
+     * @return
+     */
+    def createNewClient(realm: String, client: Client): R[AnyRef] = { //TODO Determine return type.
+      val path = Seq(realm, "clients")
+      keycloakClient.post[Client, AnyRef](client, path)
+    }
 
     /**
      * Returns a list of clients belonging to the realm
@@ -65,7 +67,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     def getRealmClients(realm: String, clientId: Option[String] = None, viewableOnly: Boolean = false): R[Seq[Client]] = {
       val query = createQuery(("clientId", clientId), ("viewableOnly", Some(viewableOnly)))
       val path = Seq(realm, "clients")
-      client.get(path, query)
+      keycloakClient.get[Seq[Client]](path, query)
     }
 
     /**
@@ -77,7 +79,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getClient(clientId: String, realm: String): R[Client] = {
       val path = Seq(realm, "clients", clientId)
-      client.get[Client](path, Seq.empty[KeyValue])
+      keycloakClient.get[Client](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -90,7 +92,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def updateClient(clientId: String, realm: String, c: Client): R[Unit] = { //TODO Determine return type.
       val path = Seq(realm, "clients", clientId)
-      client.putNoContent(c, path, Seq.empty[KeyValue])
+      keycloakClient.putNoContent(c, path, Seq.empty[KeyValue])
     }
 
     /**
@@ -102,7 +104,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteClient(clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId)
-      client.delete(path, Seq.empty[KeyValue])
+      keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -114,7 +116,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def generateClientSecret(clientId: String, realm: String): R[Credential] = {
       val path = Seq(realm, "clients", clientId, "client-secret")
-      client.post[Credential](path)
+      keycloakClient.post[Credential](path)
     }
 
     /**
@@ -126,7 +128,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getClientSecret(clientId: String, realm: String): R[Credential] = {
       val path = Seq(realm, "clients", clientId, "client-secret")
-      client.get[Credential](path, Seq.empty[KeyValue])
+      keycloakClient.get[Credential](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -139,7 +141,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getDefaultClientScopes(clientId: String, realm: String): R[List[ClientScope]] = {
       val path = Seq(realm, "clients", clientId, "default-client-scopes")
-      client.get[List[ClientScope]](path, Seq.empty[KeyValue])
+      keycloakClient.get[List[ClientScope]](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -152,7 +154,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def updateClientScope(clientScopeId: String, clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "default-client-scopes", clientScopeId)
-      client.put(path, Seq.empty[KeyValue])
+      keycloakClient.put(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -165,7 +167,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteClientScope(clientScopeId: String, clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "default-client-scopes", clientScopeId)
-      client.delete(path, Seq.empty[KeyValue])
+      keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -184,7 +186,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       )
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "generate-example-access-token")
-      client.get(path, query)
+      keycloakClient.get[AccessToken](path, query)
     }
 
     /**
@@ -199,7 +201,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       val query = createQuery(("scope", scope))
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "protocol-mappers")
-      client.get(path, query)
+      keycloakClient.get(path, query)
     }
 
     /**
@@ -216,7 +218,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       val query = createQuery(("scope", scope))
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "scope-mappings", roleContainerId, "granted")
-      client.get(path, query.to[Seq])
+      keycloakClient.get(path, query)
     }
 
     /**
@@ -232,21 +234,21 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       val query = createQuery(("scope", scope))
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "scope-mappings", roleContainerId, "not-granted")
-      client.get(path, query.to[Seq])
+      keycloakClient.get(path, query)
     }
 
-//    /**
-//     * Returns an installation provider.
-//     *
-//     * @param clientId    ID of client (not client-id).
-//     * @param providerId  ID of provider.
-//     * @param realm       Name of the Realm.
-//     * @return
-//     */
-//    def getClientInstallationProvider(clientId: String, providerId: String, realm: String): R[Unit] = { //TODO Determine return type.
-//      val path = Seq(realm, "clients", clientId, "installation", "providers", providerId)
-//      client.ge(path)
-//    }
+    /**
+     * Returns an installation provider.
+     *
+     * @param clientId    ID of client (not client-id).
+     * @param providerId  ID of provider.
+     * @param realm       Name of the Realm.
+     * @return
+     */
+    def getClientInstallationProvider(clientId: String, providerId: String, realm: String): R[AnyRef] = { //TODO Determine return type.
+      val path = Seq(realm, "clients", clientId, "installation", "providers", providerId)
+      keycloakClient.get[AnyRef](path, Seq.empty[KeyValue])
+    }
 
     /**
      * Return object stating whether client Authorization permissions have been initialized or not and a reference.
@@ -257,7 +259,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getClientAuthorizationPermissions(clientId: String, realm: String): R[ManagementPermission] = {
       val path = Seq(realm, "clients", clientId, "management", "permissions")
-      client.get[ManagementPermission](path, Seq.empty[KeyValue])
+      keycloakClient.get[ManagementPermission](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -270,22 +272,22 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def updateClientAuthorizationPermissions(clientId: String, realm: String, permission: ManagementPermission): R[ManagementPermission] = {
       val path = Seq(realm, "clients", clientId, "management", "permissions")
-      client.put[ManagementPermission, ManagementPermission](permission, path, Seq.empty[KeyValue])
+      keycloakClient.put[ManagementPermission, ManagementPermission](permission, path, Seq.empty[KeyValue])
     }
 
-//    /**
-//     * Register a cluster node with the client.
-//     * Manually register cluster node to this client - usually it’s not needed to call this directly as adapter should handle by sending registration request to Keycloak.
-//     *
-//     * @param clientId    ID of client (not client-id).
-//     * @param realm       Name of the Realm.
-//     * @param formParams
-//     * @return
-//     */
-//    def registerClusterNode(clientId: String, realm: String, formParams: Map[String, Any]): R[Unit] = { //TODO Determine formParams type.
-//      val path = Seq(realm, "clients", clientId, "nodes")
-//      client.post(formParams, path)
-//    }
+    /**
+     * Register a cluster node with the client.
+     * Manually register cluster node to this client - usually it’s not needed to call this directly as adapter should handle by sending registration request to Keycloak.
+     *
+     * @param clientId    ID of client (not client-id).
+     * @param realm       Name of the Realm.
+     * @param formParams
+     * @return
+     */
+    def registerClusterNode(clientId: String, realm: String, formParams: Map[String, Any]): R[AnyRef] = { //TODO Determine formParams type.
+      val path = Seq(realm, "clients", clientId, "nodes")
+      keycloakClient.post[Map[String, Any], AnyRef](formParams, path)
+    }
 
     /**
      * Unregister a cluster node from the client.
@@ -296,21 +298,21 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def unregisterClusterNode(clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "nodes")
-      client.delete(path, Seq.empty[KeyValue])
+      keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
-//    /**
-//     * Get application offline session count.
-//     * Returns a number of offline user sessions associated with this client { "count": number }.
-//     *
-//     * @param clientId ID of client (not client-id).
-//     * @param realm    Name of the Realm.
-//     * @return
-//     */
-//    def getOfflineSessionCount(clientId: String, realm: String): R[Map[String, Any]] = { //TODO Determine return type.
-//      val path = Seq(realm, "clients", clientId, "offline-session-count")
-//      client.get[Map[String, Any]](path, Seq.empty[KeyValue])
-//    }
+    /**
+     * Get application offline session count.
+     * Returns a number of offline user sessions associated with this client { "count": number }.
+     *
+     * @param clientId ID of client (not client-id).
+     * @param realm    Name of the Realm.
+     * @return
+     */
+    def getOfflineSessionCount(clientId: String, realm: String): R[Map[String, Any]] = { //TODO Determine return type.
+      val path = Seq(realm, "clients", clientId, "offline-session-count")
+      keycloakClient.get[Map[String, Any]](path, Seq.empty[KeyValue])
+    }
 
     /**
      * Get application offline sessions.
@@ -329,7 +331,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       )
 
       val path = Seq(realm, "clients", clientId, "offline-sessions")
-      client.get[List[UserSession]](path, query)
+      keycloakClient.get[List[UserSession]](path, query)
     }
 
     /**
@@ -342,7 +344,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getOptionalClientScopes(clientId: String, realm: String): R[List[ClientScope]] = {
       val path = Seq(realm, "clients", clientId, "optional-client-scopes")
-      client.get[List[ClientScope]](path, Seq.empty[KeyValue])
+      keycloakClient.get[List[ClientScope]](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -355,7 +357,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def updateOptionalClientScope(clientScopeId: String, clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "optional-client-scopes", clientScopeId)
-      client.put(path, Seq.empty[KeyValue])
+      keycloakClient.put(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -368,7 +370,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteOptionalClientScope(clientScopeId: String, clientId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "optional-client-scopes", clientScopeId)
-      client.delete(path, Seq.empty[KeyValue])
+      keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
     }
 
     /**
@@ -381,7 +383,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def pushRevocationPolicy(clientId: String, realm: String): R[GlobalRequestResult] = {
       val path = Seq(realm, "clients", clientId, "push-revocation")
-      client.post[GlobalRequestResult](path)
+      keycloakClient.post[GlobalRequestResult](path)
     }
 
     /**
@@ -393,7 +395,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def generateRegistrationAccessToken(clientId: String, realm: String): R[Client] = {
       val path = Seq(realm, "clients", clientId, "registration-access-token")
-      client.post[Client](path)
+      keycloakClient.post[Client](path)
     }
 
     /**
@@ -405,7 +407,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getServiceAccountUser(clientId: String, realm: String): R[User] = {
       val path = Seq(realm, "clients", clientId, "service-account-user")
-      client.get[User](path, Seq.empty[KeyValue])
+      keycloakClient.get[User](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -418,7 +420,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getSessionCount(clientId: String, realm: String): R[Map[String, Any]] = { //TODO Determine return type.
       val path = Seq(realm, "clients", clientId, "session-count")
-      client.get[Map[String, Any]](path, Seq.empty[KeyValue])
+      keycloakClient.get[Map[String, Any]](path, Seq.empty[KeyValue])
     }
 
     /**
@@ -431,7 +433,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def testNodesAvailability(clientId: String, realm: String): R[GlobalRequestResult] = {
       val path = Seq(realm, "clients", clientId, "test-nodes-available")
-      client.get[GlobalRequestResult](path)
+      keycloakClient.get[GlobalRequestResult](path)
     }
 
     /**
@@ -451,7 +453,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       )
 
       val path = Seq(realm, "clients", clientId, "user-sessions")
-      client.get[List[UserSession]](path, query)
+      keycloakClient.get[List[UserSession]](path, query)
     }
 
     /**
@@ -462,7 +464,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getClientRegistrationPolicyProviders(realm: String): R[List[ComponentType]] = {
       val path = Seq(realm, "client-registration-policy", "providers")
-      client.get[List[ComponentType]](path)
+      keycloakClient.get[List[ComponentType]](path)
     }
 
 
@@ -479,7 +481,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def addRolesToGroup(name: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "groups", id, "role-mapping", "clients", name)
-      client.postNoContent(roles, path)
+      keycloakClient.postNoContent(roles, path)
     }
 
     /**
@@ -492,7 +494,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getGroupRoleMappings(name: String, id: String, realm: String): R[Seq[Role]] = {
       val path = Seq(realm, "groups", id, "role-mapping", "clients", name)
-      client.get(path)
+      keycloakClient.get(path)
     }
 
     /**
@@ -506,7 +508,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteGroupRoles(name: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "groups", id, "role-mapping", "clients", name)
-      client.deleteNoContent(roles, path, Seq.empty[KeyValue])
+      keycloakClient.deleteNoContent(roles, path, Seq.empty[KeyValue])
     }
 
     /**
@@ -519,7 +521,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getAvailableGroupRoles(name: String, id: String, realm: String): R[List[Role]] = {
       val path = Seq(realm, "groups", id, "role-mapping", "clients", name, "available")
-      client.get[List[Role]](path)
+      keycloakClient.get[List[Role]](path)
     }
 
     /**
@@ -533,7 +535,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getEffectiveGroupRoles(name: String, id: String, realm: String): R[List[Role]] = {
       val path = Seq(realm, "groups", id, "role-mapping", "clients", name, "composite")
-      client.get[List[Role]](path)
+      keycloakClient.get[List[Role]](path)
     }
 
     /**
@@ -547,7 +549,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def addRolesToUser(name: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "users", id, "role-mapping", "clients", name)
-      client.postNoContent(roles, path)
+      keycloakClient.postNoContent(roles, path)
     }
 
     /**
@@ -560,7 +562,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getUserRoleMappings(name: String, id: String, realm: String): R[List[Role]] = {
       val path = Seq(realm, "users", id, "role-mapping", "clients", name)
-      client.get[List[Role]](path)
+      keycloakClient.get[List[Role]](path)
     }
 
     /**
@@ -574,7 +576,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def deleteUserRoles(name: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "groups", id, "role-mapping", "clients", name)
-      client.deleteNoContent(roles, path, Seq.empty[KeyValue])
+      keycloakClient.deleteNoContent(roles, path, Seq.empty[KeyValue])
     }
 
     /**
@@ -587,7 +589,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getAvailableUserRoles(clientName: String, id: String, realm: String): R[List[Role]] = {
       val path = Seq(realm, "users", id, "role-mapping", "clients", clientName, "available")
-      client.get[List[Role]](path)
+      keycloakClient.get[List[Role]](path)
     }
 
     /**
@@ -601,7 +603,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getEffectiveUserRoles(clientName: String, id: String, realm: String): R[List[Role]] = {
       val path = Seq(realm, "users", id, "role-mapping", "clients", clientName, "composite")
-      client.get[List[Role]](path)
+      keycloakClient.get[List[Role]](path)
     }
 
 
@@ -615,22 +617,22 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getKeyInfo(attribute: String, clientId: String, realm: String): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute)
-      client.get[Certificate](path)
+      keycloakClient.get[Certificate](path)
     }
 
-//    /**
-//     * Get a keystore file for the client, containing private key and public certificate.
-//     *
-//     * @param attribute
-//     * @param clientId  ID of client (not client-id).
-//     * @param realm     Name of the Realm.
-//     * @param config    Keystore configuration.
-//     * @return
-//     */
-//    def getKeystoreFile(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): R[File] = {
-//      val path = Seq(realm, "clients", clientId, "certificates", attribute, "download")
-//      client.post(config, path)
-//    }
+    /**
+     * Get a keystore file for the client, containing private key and public certificate.
+     *
+     * @param attribute
+     * @param clientId  ID of client (not client-id).
+     * @param realm     Name of the Realm.
+     * @param config    Keystore configuration.
+     * @return
+     */
+    def getKeystoreFile(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): R[File] = {
+      val path = Seq(realm, "clients", clientId, "certificates", attribute, "download")
+      keycloakClient.post[KeyStoreConfig, File](config, path)
+    }
 
     /**
      * Generate a new certificate with new key pair
@@ -642,107 +644,93 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def generateNewCertificate(attribute: String, clientId: String, realm: String): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate")
-      client.post[Certificate](path)
+      keycloakClient.post[Certificate](path)
     }
 
-//    /**
-//     * Generates a keypair and certificate and serves the private key in a specified keystore format.
-//     *
-//     * @param attribute
-//     * @param clientId  ID of client (not client-id).
-//     * @param realm     Name of the Realm.
-//     * @param config    Keystore configuration.
-//     * @return
-//     */
-//    def generateAndDownloadNewCertificate(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): R[File] = {
-//      val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate-and-download")
-//      client.post(config, path)
-//    }
+    /**
+     * Generates a keypair and certificate and serves the private key in a specified keystore format.
+     *
+     * @param attribute
+     * @param clientId  ID of client (not client-id).
+     * @param realm     Name of the Realm.
+     * @param config    Keystore configuration.
+     * @return
+     */
+    def generateAndDownloadNewCertificate(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): R[File] = {
+      val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate-and-download")
+      keycloakClient.post[KeyStoreConfig, File](config, path)
+    }
 
-//    /**
-//     * Upload certificate and private key.
-//     *
-//     * @param attribute
-//     * @param clientId    ID of client (not client-id).
-//     * @param realm       Name of the Realm.
-//     * @param file
-//     * @param contentType The file's content type.
-//     * @return
-//     */
-//    def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType): R[Certificate] = {
-//      val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
-//      val multipart = createMultipart(file, contentType)
-//      client.post(multipart, path)
-//    }
+    /**
+     * Upload certificate and private key.
+     *
+     * @param attribute
+     * @param clientId    ID of client (not client-id).
+     * @param realm       Name of the Realm.
+     * @param file
+     * @param contentType The file's content type.
+     * @return
+     */
+    def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: String): R[Certificate] = {
+      val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
+      val multipart = createMultipart(file, contentType)
+      keycloakClient.post[Certificate](multipart, path)
+    }
 
-//    /**
-//     * Upload only certificate, not private key.
-//     *
-//     * @param attribute
-//     * @param clientId    ID of client (not client-id).
-//     * @param realm       Name of the Realm.
-//     * @param file
-//     * @param contentType The file's content type.
-//     * @return
-//     */
-//    def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: ContentType): R[Certificate] = {
-//      val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload-certificate")
-//      val multipart = createMultipart(file, contentType)
-//      client.post(multipart, path)
-//    }
-
-
-//    /**
-//     * Create a new client scope.
-//     * Client Scope’s name must be unique!
-//     *
-//     * @param realm       Name of the Realm.
-//     * @param clientScope Object representing ClientScope details.
-//     * @return
-//     */
-//    def createNewClientScope(realm: String, clientScope: ClientScope): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "client-scopes")
-//      client.post(clientScope, path)
-//    }
-
-//    /**
-//     * Update a client scope.
-//     *
-//     * @param scopeId     ID of the ClientScope.
-//     * @param realm       Name of the Realm.
-//     * @param clientScope Object representing ClientScope details.
-//     * @return
-//     */
-//    def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "client-scopes", scopeId)
-//      client.put(clientScope, path)
-//    }
-
-//    /**
-//     * Delete a client scope.
-//     *
-//     * @param scopeId ID of the ClientScope.
-//     * @param realm   Name of the Realm.
-//     * @return
-//     */
-//    def deleteClientScope(scopeId: String, realm: String): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "client-scopes", scopeId)
-//      client.delete(path)
-//    }
+    /**
+     * Upload only certificate, not private key.
+     *
+     * @param attribute
+     * @param clientId    ID of client (not client-id).
+     * @param realm       Name of the Realm.
+     * @param file
+     * @param contentType The file's content type.
+     * @return
+     */
+    def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: String): R[Certificate] = {
+      val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload-certificate")
+      val multipart = createMultipart(file, contentType)
+      keycloakClient.post[Certificate](multipart, path)
+    }
 
 
-//    /**
-//     * Create a new client scope.
-//     * Client Scope’s name must be unique!
-//     *
-//     * @param realm       Name of the Realm.
-//     * @param clientScope Object representing ClientScope details.
-//     * @return
-//     */
-//    def createNewClientScope(realm: String, clientScope: ClientScope): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "client-scopes")
-//      client.post(clientScope, path)
-//    }
+    /**
+     * Create a new client scope.
+     * Client Scope’s name must be unique!
+     *
+     * @param realm       Name of the Realm.
+     * @param clientScope Object representing ClientScope details.
+     * @return
+     */
+    def createNewClientScope(realm: String, clientScope: ClientScope): R[AnyRef] = { //TODO Determine return type.
+      val path = Seq(realm, "client-scopes")
+      keycloakClient.post[ClientScope, AnyRef](clientScope, path)
+    }
+
+    /**
+     * Update a client scope.
+     *
+     * @param scopeId     ID of the ClientScope.
+     * @param realm       Name of the Realm.
+     * @param clientScope Object representing ClientScope details.
+     * @return
+     */
+    def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): R[AnyRef] = { //TODO Determine return type.
+      val path = Seq(realm, "client-scopes", scopeId)
+      keycloakClient.put[ClientScope, AnyRef](clientScope, path, Seq.empty[KeyValue])
+    }
+
+    /**
+     * Delete a client scope.
+     *
+     * @param scopeId ID of the ClientScope.
+     * @param realm   Name of the Realm.
+     * @return
+     */
+    def deleteClientScope(scopeId: String, realm: String): R[AnyRef] = { //TODO Determine return type.
+      val path = Seq(realm, "client-scopes", scopeId)
+      keycloakClient.delete[AnyRef](path, Seq.empty[KeyValue])
+    }
 
     /**
      * Returns a list of client scopes belonging to the realm.
@@ -752,7 +740,7 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getRealmClientScopes(realm: String): R[List[ClientScope]] = {
       val path = Seq(realm, "client-scopes")
-      client.get[List[ClientScope]](path)
+      keycloakClient.get[List[ClientScope]](path)
     }
 
     /**
@@ -764,31 +752,6 @@ class Clients[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
      */
     def getClientScope(scopeId: String, realm: String): R[ClientScope] = {
       val path = Seq(realm, "client-scopes", scopeId)
-      client.get(path)
+      keycloakClient.get(path)
     }
-
-//    /**
-//     * Update a client scope.
-//     *
-//     * @param scopeId     ID of the ClientScope.
-//     * @param realm       Name of the Realm.
-//     * @param clientScope Object representing ClientScope details.
-//     * @return
-//     */
-//    def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "client-scopes", scopeId)
-//      client.put(clientScope, path)
-//    }
-
-//    /**
-//     * Delete a client scope.
-//     *
-//     * @param scopeId ID of the ClientScope.
-//     * @param realm   Name of the Realm.
-//     * @return
-//     */
-//    def deleteClientScope(scopeId: String, realm: String): R[Any] = { //TODO Determine return type.
-//      val path = Seq(realm, "client-scopes", scopeId)
-//      client.delete(path)
-//    }
 }

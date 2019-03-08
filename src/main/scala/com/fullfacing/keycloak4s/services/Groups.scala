@@ -95,7 +95,7 @@ class Groups[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
   def deleteGroup(groupId: String, realm: String): R[Group] = {
     val path = Seq(realm, "groups", groupId)
     client.delete[Group](path, Seq.empty[KeyValue])
-  } //TODO FIX DELETE
+  }
 
   /**
    * Update group, ignores subgroups.

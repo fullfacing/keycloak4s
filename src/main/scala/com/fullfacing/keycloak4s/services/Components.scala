@@ -61,7 +61,7 @@ class Components[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    * @return
    */
   def deleteComponent(componentId: String, realm: String): R[Unit] = {
-    client.delete(realm :: "components" :: componentId :: Nil, Seq.empty[KeyValue])
+    client.deleteNoContent(realm :: "components" :: componentId :: Nil, Seq.empty[KeyValue])
   }
 
   /**
@@ -74,6 +74,6 @@ class Components[R[_]: Effect, S](implicit client: KeycloakClient[R, S]) {
    */
   def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None): R[Seq[ComponentType]] = {
     val query = createQuery(("type", `type`))
-    client.get[Seq[ComponentType]](realm :: "components" :: componentId :: "sub-component-types", query)
+    client.get[Seq[ComponentType]](realm :: "components" :: componentId :: "sub-component-types" :: Nil, query)
   }
 }
