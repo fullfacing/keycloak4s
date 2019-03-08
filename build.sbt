@@ -64,4 +64,6 @@ val cats: Seq[ModuleID] = Seq(
   "org.typelevel" %% "cats-effect" % "1.2.0"
 )
 
-libraryDependencies ++= sttp ++ cats ++ json4s ++ enumeratum ++ logback
+libraryDependencies ++= sttp ++ cats ++ json4s ++ enumeratum ++ logback ++ Seq(
+  "io.monix" %% "monix" % "3.0.0-RC2"
+)
