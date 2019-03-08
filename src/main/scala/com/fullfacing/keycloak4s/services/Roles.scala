@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.{ManagementPermission, Role, User}
+import com.fullfacing.keycloak4s.models.{ManagementPermission, Response, Role, User}
 
 import scala.collection.immutable.Seq
 
@@ -19,9 +19,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def createClientRole(realm: String, id: String, role: Role): R[AnyRef] = {
+  def createClientRole(realm: String, id: String, role: Role): R[Response] = {
     val path = Seq(realm, clients_path, id, roles_path)
-    keyCloakClient.post[Role, AnyRef](role, path)
+    keyCloakClient.post[Role, Response](role, path)
   }
 
   /**
@@ -58,9 +58,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def updateByName(realm: String, id: String, roleName: String, role: Role): R[AnyRef] = {
+  def updateByName(realm: String, id: String, roleName: String, role: Role): R[Response] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    keyCloakClient.put[Role, AnyRef](role, path)
+    keyCloakClient.put[Role, Response](role, path)
   }
 
   /**
@@ -193,9 +193,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def createRealmRole(realm: String, role: Role): R[AnyRef] = {
+  def createRealmRole(realm: String, role: Role): R[Response] = {
     val path = Seq(realm, roles_path)
-    keyCloakClient.post[Role, AnyRef](role, path)
+    keyCloakClient.post[Role, Response](role, path)
   }
 
   /**
@@ -229,9 +229,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role     Updated role
    * @return
    */
-  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[AnyRef] = {
+  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[Response] = {
     val path = Seq(realm, roles_path, roleName)
-    keyCloakClient.put[Role, AnyRef](role, path)
+    keyCloakClient.put[Role, Response](role, path)
   }
 
   /**

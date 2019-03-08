@@ -14,9 +14,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param realm Representation of the realm.
    * @return
    */
-  def importRealm(realm: RealmRepresentation): R[AnyRef] = { //TODO Determine return type.
+  def importRealm(realm: RealmRepresentation): R[Response] = {
     val path = Seq.empty[String]
-    keycloakClient.post[RealmRepresentation, AnyRef](realm, path)
+    keycloakClient.post[RealmRepresentation, Response](realm, path)
   }
 
   /**
@@ -39,9 +39,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param update  Representation of the realm.
    * @return
    */
-  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[AnyRef] = { //TODO Determine return type.
+  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[Response] = {
     val path = Seq(realm)
-    keycloakClient.put[RealmRepresentation, AnyRef](update, path)
+    keycloakClient.put[RealmRepresentation, Response](update, path)
   }
 
   /**
@@ -400,9 +400,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param rep
    * @return
    */
-  def partialImport(realm: String, rep: PartialImport): R[AnyRef] = {
+  def partialImport(realm: String, rep: PartialImport): R[Response] = {
     val path = Seq(realm, "partialImport")
-    keycloakClient.post[PartialImport, AnyRef](rep, path)
+    keycloakClient.post[PartialImport, Response](rep, path)
   }
 
   /**
@@ -449,7 +449,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
                          componentId: Option[String] = None,
                          connectionTimeout: Option[String] = None,
                          connectionUrl: Option[String] = None,
-                         useTruststoreSpi: Option[String] = None): R[AnyRef] = {
+                         useTruststoreSpi: Option[String] = None): R[Response] = {
 
     val path = Seq(realm, "testLDAPConnection")
     val queries = createQuery(
@@ -462,7 +462,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("useTruststoreSpi", useTruststoreSpi)
     )
 
-    keycloakClient.post[AnyRef](path, queries)
+    keycloakClient.post[Response](path, queries)
   }
 
   /**
@@ -472,9 +472,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param config SMTP server configuration
    * @return
    */
-  def testSmtpConnection(realm: String, config: String): R[AnyRef] = {
+  def testSmtpConnection(realm: String, config: String): R[Response] = {
     val path = Seq(realm, "testSMTPConnection", config)
-    keycloakClient.post[AnyRef](path)
+    keycloakClient.post[Response](path)
   }
 
   /**
