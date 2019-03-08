@@ -29,6 +29,13 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     case Right(rsp) => F.unit(rsp)
   }
 
+  private type HttpForm = Map[String, String]
+
+  private def determineContent[A <: AnyRef](payload: A): String = payload match {
+    case _: HttpForm  => ContentTypes.UrlEncoded
+    case _: Multipart => ContentTypes.Multipart
+    case _            => ContentTypes.Json
+  }
 
   /* REST Protocol Calls **/
   def get[A <: AnyRef : Manifest](path: Seq[String], queries: Seq[KeyValue]): F[A] = {
@@ -38,18 +45,14 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
-  def get[A <: AnyRef : Manifest](path: Seq[String]): F[A] = {
-    val uri = createUri(path, Seq.empty[KeyValue])
-    val response = withAuth(sttp.get(uri).response(asJson[A]))
-
-    F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
-  }
+  def get[A <: AnyRef : Manifest](path: Seq[String]): F[A] =
+    get[A](path, Seq.empty[KeyValue])
 
   // ------------------------------------------------------------- //
   // ---------------------------- PUT ---------------------------- //
   // ------------------------------------------------------------- //
 
-  def putNoContent[A <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
+  def put[A <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
     val uri = createUri(path, queries)
     val response = withAuth(sttp.put(uri).contentType(ContentTypes.Json).body(payload).mapResponse(_ => ()))
 
@@ -78,35 +81,34 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
+  /* Without Query **/
+  def put[A <: AnyRef](payload: A, path: Seq[String]): F[Unit] =
+    put[A](payload, path, Seq.empty[KeyValue])
+
+  def put(path: Seq[String]): F[Unit] =
+    put(path, Seq.empty[KeyValue])
+
+  def put[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String])(implicit mb: Manifest[B]): F[B] =
+    put[A, B](payload, path, Seq.empty[KeyValue])
+
+  def put[A <: AnyRef](path: Seq[String])(implicit mb: Manifest[A]): F[A] =
+    put[A](path, Seq.empty[KeyValue])
+
   // -------------------------------------------------------------- //
   // ---------------------------- POST ---------------------------- //
   // -------------------------------------------------------------- //
 
-  def postNoContent(path: Seq[String]): F[Unit] = {
+  def post(path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
     val uri = createUri(path, Seq.empty[KeyValue])
     val response = withAuth(sttp.post(uri).mapResponse(_ => ()))
 
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
-  def postNoContent[A <: AnyRef](payload: A, path: Seq[String]): F[Unit] = {
+  def post[A <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
     val uri = createUri(path, Seq.empty[KeyValue])
-    val response = withAuth(sttp.post(uri).contentType(ContentTypes.Json).body(payload).mapResponse(_ => ()))
-
-    F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
-  }
-
-  def postNoContent[A <: AnyRef](payload: Map[String, String], path: Seq[String]): F[Unit] = {
-    val uri = createUri(path, Seq.empty[KeyValue])
-    val response = withAuth(sttp.post(uri).contentType(ContentTypes.UrlEncoded).body(payload).mapResponse(_ => ()))
-
-    F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
-  }
-
-
-  def post[A <: AnyRef](path: Seq[String])(implicit mb: Manifest[A]): F[A] = {
-    val uri = createUri(path, Seq.empty[KeyValue])
-    val response = withAuth(sttp.post(uri).response(asJson[A]))
+    val contentType = determineContent(payload)
+    val response = withAuth(sttp.post(uri).contentType(contentType).body(payload).mapResponse(_ => ()))
 
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
@@ -118,8 +120,7 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
-
-  def post[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String])
+  def post[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue])
                                     (implicit mb: Manifest[B]): F[B] = {
     val uri = createUri(path, Seq.empty[KeyValue])
     val response = withAuth(sttp.post(uri).contentType(ContentTypes.Json).body(payload).response(asJson[B]))
@@ -127,21 +128,19 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
-  def post[A <: AnyRef](payload: Map[String, String], path: Seq[String])
-                       (implicit ma: Manifest[A]): F[A] = {
-    val uri = createUri(path, Seq.empty[KeyValue])
-    val response = withAuth(sttp.post(uri).contentType(ContentTypes.UrlEncoded).body(payload).response(asJson[A]))
+  /* Without Query **/
+  def post(path: Seq[String]): F[Unit] =
+    post(path, Seq.empty[KeyValue])
 
-    F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
-  }
+  def post[A <: AnyRef](payload: A, path: Seq[String]): F[Unit] =
+    post[A](payload, path, Seq.empty[KeyValue])
 
-  def post[A <: AnyRef](payload: Multipart, path: Seq[String])
-                       (implicit ma: Manifest[A]): F[A] = {
-    val uri = createUri(path, Seq.empty[KeyValue])
-    val response = withAuth(sttp.post(uri).contentType(ContentTypes.Multipart).body(payload).response(asJson[A]))
+  def post[A <: AnyRef](path: Seq[String])(implicit mb: Manifest[A]): F[A] =
+    post[A](path, Seq.empty[KeyValue])
 
-    F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
-  }
+  def post[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String])(implicit mb: Manifest[B]): F[B] =
+    post[A, B](payload, path, Seq.empty[KeyValue])
+
 
   // ---------------------------------------------------------------- //
   // ---------------------------- DELETE ---------------------------- //
@@ -162,17 +161,30 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
-  def deleteNoContent(path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
+  def delete(path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
     val uri = createUri(path, queries)
     val response = withAuth(sttp.delete(uri).mapResponse(_ => ()))
 
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
 
-  def deleteNoContent[A <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
+  def delete[A <: AnyRef](payload: A, path: Seq[String], queries: Seq[KeyValue]): F[Unit] = {
     val uri = createUri(path, queries)
     val response = withAuth(sttp.delete(uri).body(payload).mapResponse(_ => ()))
 
     F.flatMap(response)(r => F.flatMap(r.send())(rr => liftM(rr.body)))
   }
+
+  /* Without Query **/
+  def delete[A <: AnyRef](path: Seq[String])(implicit mb: Manifest[A]): F[A] =
+    delete[A](path, Seq.empty[KeyValue])
+
+  def delete[A <: AnyRef, B <: AnyRef](payload: A, path: Seq[String])(implicit mb: Manifest[B]): F[B] =
+    delete[A, B](payload, path, Seq.empty[KeyValue])
+
+  def delete(path: Seq[String]): F[Unit] =
+    delete(path, Seq.empty[KeyValue])
+
+  def delete[A <: AnyRef](payload: A, path: Seq[String]): F[Unit] =
+    delete[A](payload, path, Seq.empty[KeyValue])
 }
