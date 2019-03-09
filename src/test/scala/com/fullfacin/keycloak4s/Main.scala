@@ -7,11 +7,11 @@ import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfi
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
 import org.json4s.Formats
 
-import monix.execution.Scheduler.Implicits.global
-
 import scala.concurrent.Future
+import scala.language.postfixOps
 
 object Main extends App {
 
@@ -27,7 +27,7 @@ object Main extends App {
   val clients = Keycloak.Users[Task, Source[ByteString, Any]]
   import scala.concurrent.duration._
   global.scheduleAtFixedRate(0 seconds, 1 second) {
-    clients.getUsers("lessondesk").onErrorHandle(_.printStackTrace()).runToFuture
+    clients.getUsers("lessondesk").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 
