@@ -19,7 +19,7 @@ object Main extends App {
   implicit val formats: Formats = org.json4s.DefaultFormats ++ EnumSerializers.all
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
 
-  val config = KeycloakConfig(authn = KeycloakConfig.Auth("master", "rpeters", "admin", "security-admin-console"))
+  val config = KeycloakConfig(authn = KeycloakConfig.Auth("master", "admin-cli", "fedb554a-f1f6-4b9e-ace8-2e0e5842ceef"))
 
 
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =

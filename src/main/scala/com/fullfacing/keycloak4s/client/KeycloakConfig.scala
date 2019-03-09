@@ -10,8 +10,7 @@ final case class KeycloakConfig(scheme: String = "http",
 object KeycloakConfig {
 
   final case class Auth(realm: String,
-                        username: String,
-                        password: String,
-                        clientId: String)
+                        clientId: String,
+                        clientSecret: String)
 
 }

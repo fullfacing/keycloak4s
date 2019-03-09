@@ -25,10 +25,9 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     uri"http://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/token"
 
   private val password = Map(
-    "username" -> config.authn.username,
-    "password" -> config.authn.password,
+    "grant_type" -> "client_credentials",
     "client_id" -> config.authn.clientId,
-    "grant_type" -> "password"
+    "client_secret" -> config.authn.clientSecret
   )
 
 
@@ -38,6 +37,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
 
   private def refresh(token: Token): Map[String, String] = Map(
     "client_id" -> config.authn.clientId,
+    "client_secret" -> config.authn.clientSecret,
     "refresh_token" -> token.refresh,
     "grant_type" -> "refresh_token"
   )
