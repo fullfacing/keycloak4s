@@ -4,14 +4,12 @@ import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
-import com.softwaremill.sttp.{MonadError, Multipart, SttpBackend, Uri, sttp}
+import com.softwaremill.sttp.{Multipart, SttpBackend, Uri, sttp}
 import org.json4s.Formats
 
 import scala.collection.immutable.Seq
 
 class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) extends TokenManager[F, S](config) {
-
-  private val F: MonadError[F] = client.responseMonad
 
   /* URI Builder **/
   private[client] def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
@@ -24,10 +22,6 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     fragment = None
   )
 
-  private def liftM[A](response: Either[String, A]): F[A] = response match {
-    case Left(err) => F.error(new Throwable(err))
-    case Right(rsp) => F.unit(rsp)
-  }
 
 
   /* REST Protocol Calls **/
