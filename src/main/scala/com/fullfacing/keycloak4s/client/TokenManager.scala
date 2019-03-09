@@ -32,8 +32,6 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
 
 
   val ref: AtomicReference[Token] = new AtomicReference()
-  // Create the MVar and initialise it with an Access Token.
-//  private val ref: F[MVar[F, Token]] = MVar.empty[F, Token]
 
   private def refresh(token: Token): Map[String, String] = Map(
     "client_id" -> config.authn.clientId,
@@ -48,7 +46,6 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     * @return
     */
   private def issueAccessToken(): F[Token] = {
-    println("Issuing Token")
     val a = sttp.post(tokenEndpoint)
       .body(password)
       .response(asJson[TokenResponse])
@@ -59,10 +56,8 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
   }
 
   private def refreshAccessToken(t: Token): F[Token] = {
-    println("Refreshing Token")
     val a = sttp.post(tokenEndpoint)
       .body(refresh(t))
-      .mapResponse({r => println(s"Refresh Token Body $r"); r})
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
