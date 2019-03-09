@@ -45,10 +45,6 @@ val json4s: Seq[ModuleID] = {
   )
 }
 
-val enumeratum: Seq[ModuleID] = Seq(
-  "com.beachape" %% "enumeratum-json4s" % "1.5.14"
-)
-
 val sttp: Seq[ModuleID] = {
   val version = "1.5.11"
   Seq(
@@ -64,6 +60,6 @@ val cats: Seq[ModuleID] = Seq(
   "org.typelevel" %% "cats-effect" % "1.2.0"
 )
 
-libraryDependencies ++= sttp ++ cats ++ json4s ++ enumeratum ++ logback ++ Seq(
+libraryDependencies ++= sttp ++ cats ++ json4s ++ logback ++ Seq(
   "io.monix" %% "monix" % "3.0.0-RC2"
 )

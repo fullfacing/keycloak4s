@@ -48,6 +48,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     * @return
     */
   private def issueAccessToken(): F[Token] = {
+    println("Issuing Token")
     val a = sttp.post(tokenEndpoint)
       .body(password)
       .response(asJson[TokenResponse])
@@ -58,6 +59,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
   }
 
   private def refreshAccessToken(t: Token): F[Token] = {
+    println("Refreshing Token")
     val a = sttp.post(tokenEndpoint)
       .body(refresh(t))
       .response(asJson[TokenResponse])
@@ -94,23 +96,26 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     * @param t
     * @return
     */
-  private def validateToken(ref: F[MVar[F, Token]]): F[Token] = {
-    Concurrent[F].flatMap(ref) { mvar =>
-      Concurrent[F].flatMap(mvar.isEmpty) { isEmpty =>
-        if (isEmpty) issueAccessToken() else {
-          val epoch = Instant.now()
-          Concurrent[F].flatMap(mvar.read) { token =>
-            if (token.authenticateAt.isAfter(epoch)) {
-              Concurrent[F].flatMap(Concurrent[F].flatMap(mvar.take)(_ => issueAccessToken())) { t =>
-                Concurrent[F].map(mvar.put(t))(_ => t)
-              }
-            } else if (token.refreshAt.isAfter(epoch)) {
-              Concurrent[F].flatMap(Concurrent[F].flatMap(mvar.take)(_ => refreshAccessToken(token))) { t =>
-                Concurrent[F].map(mvar.put(t))(_ => t)
-              }
-            } else {
-              Concurrent[F].pure(token)
+  private def validateToken(mvar: MVar[F, Token]): F[Token] = {
+    Concurrent[F].flatMap(mvar.isEmpty) { isEmpty =>
+      if (isEmpty) {
+        Concurrent[F].flatMap(issueAccessToken()) { t =>
+          println("aweness")
+          Concurrent[F].map(mvar.put(t))(_ => t)
+        }
+      } else {
+        val epoch = Instant.now()
+        Concurrent[F].flatMap(mvar.read) { token =>
+          if (epoch.isAfter(token.authenticateAt)) {
+            Concurrent[F].flatMap(Concurrent[F].flatMap(mvar.take)(_ => issueAccessToken())) { t =>
+              Concurrent[F].map(mvar.put(t))(_ => t)
             }
+          } else if (epoch.isAfter(token.refreshAt)) {
+            Concurrent[F].flatMap(Concurrent[F].flatMap(mvar.take)(refreshAccessToken)) { t =>
+              Concurrent[F].map(mvar.put(t))(_ => t)
+            }
+          } else {
+            Concurrent[F].pure(token)
           }
         }
       }
@@ -123,7 +128,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     * @tparam A
     */
   def withAuth[A](request: RequestT[Id, A, Nothing]): F[RequestT[Id, A, Nothing]] = {
-    Concurrent[F].map(validateToken(ref))(a => request.auth.bearer(a.access))
+    Concurrent[F].map(Concurrent[F].flatMap(ref)(validateToken))(a => request.auth.bearer(a.access))
   }
 }
 

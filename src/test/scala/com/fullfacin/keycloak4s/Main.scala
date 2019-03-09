@@ -3,7 +3,6 @@ package com.fullfacin.keycloak4s
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.implicits._
-import com.fullfacing.keycloak4s.EnumSerializers
 import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
@@ -16,7 +15,7 @@ import scala.concurrent.Future
 
 object Main extends App {
 
-  implicit val formats: Formats = org.json4s.DefaultFormats ++ EnumSerializers.all
+  implicit val formats: Formats = org.json4s.DefaultFormats
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
 
   val config = KeycloakConfig(authn = KeycloakConfig.Auth("master", "admin-cli", "fedb554a-f1f6-4b9e-ace8-2e0e5842ceef"))
@@ -26,7 +25,11 @@ object Main extends App {
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
   val clients = Keycloak.Users[Task, Source[ByteString, Any]]
-  clients.getUsers("lessondesk").foreachL(_.foreach(println)).onErrorHandle(_.printStackTrace()).runToFuture
+  import scala.concurrent.duration._
+  global.scheduleAtFixedRate(0 seconds, 1 second) {
+    clients.getUsers("lessondesk").onErrorHandle(_.printStackTrace()).runToFuture
+  }
+
 
 
   Console.readBoolean()
