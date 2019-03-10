@@ -1,13 +1,12 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s.handles.SttpClient
+import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 
 import scala.collection.immutable.Seq
 
-object ProtocolMappers {
+class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Create multiple protocol mappers for a client scope.
@@ -17,9 +16,9 @@ object ProtocolMappers {
    * @param mapper
    * @return
    */
-  def createMulitpleMappersForScope(scopeId: String, realm: String, mapper: Seq[ProtocolMapper])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def createMulitpleMappersForScope(scopeId: String, realm: String, mapper: Seq[ProtocolMapper]): R[Unit] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "add-models")
-    SttpClient.post(mapper, path)
+    client.post[Seq[ProtocolMapper]](mapper, path)
   }
 
   /**
@@ -30,9 +29,9 @@ object ProtocolMappers {
    * @param mapper
    * @return
    */
-  def createMapperForScope(scopeId: String, realm: String, mapper: ProtocolMapper)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def createMapperForScope(scopeId: String, realm: String, mapper: ProtocolMapper): R[Unit] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models")
-    SttpClient.post(mapper, path)
+    client.post[ProtocolMapper](mapper, path)
   }
 
   /**
@@ -42,9 +41,9 @@ object ProtocolMappers {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getMappersForScope(scopeId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ProtocolMapper]] = {
+  def getMappersForScope(scopeId: String, realm: String): R[Seq[ProtocolMapper]] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers")
-    SttpClient.get(path)
+    client.get[Seq[ProtocolMapper]](path)
   }
 
   /**
@@ -55,9 +54,9 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getMapperForScope(scopeId: String, mapperId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[ProtocolMapper] = {
+  def getMapperForScope(scopeId: String, mapperId: String, realm: String): R[ProtocolMapper] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
-    SttpClient.get(path)
+    client.get[ProtocolMapper](path)
   }
 
   /**
@@ -69,9 +68,9 @@ object ProtocolMappers {
    * @param mapper
    * @return
    */
-  def updateMapperForScope(scopeId: String, mapperId: String, realm: String, mapper: ProtocolMapper)(implicit authToken: String): AsyncApolloResponse[ProtocolMapper] = {
+  def updateMapperForScope(scopeId: String, mapperId: String, realm: String, mapper: ProtocolMapper): R[ProtocolMapper] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
-    SttpClient.put(mapper, path)
+    client.put[ProtocolMapper, ProtocolMapper](mapper, path)
   }
 
   /**
@@ -82,9 +81,9 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def deleteMapperForScope(scopeId: String, mapperId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def deleteMapperForScope(scopeId: String, mapperId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
-    SttpClient.delete(path)
+    client.delete(path)
   }
 
   /**
@@ -95,9 +94,9 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getMappersByProtocolForScope(scopeId: String, protocol: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ProtocolMapper]] = {
+  def getMappersByProtocolForScope(scopeId: String, protocol: String, realm: String): R[Seq[ProtocolMapper]] = {
     val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "protocol", protocol)
-    SttpClient.get(path)
+    client.get[Seq[ProtocolMapper]](path)
   }
 
   /**
@@ -108,9 +107,9 @@ object ProtocolMappers {
    * @param mapper
    * @return
    */
-  def createMulitpleMappersForClient(clientId: String, realm: String, mapper: Seq[ProtocolMapper])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def createMulitpleMappersForClient(clientId: String, realm: String, mapper: Seq[ProtocolMapper]): R[Unit] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "add-models")
-    SttpClient.post(mapper, path)
+    client.post[Seq[ProtocolMapper]](mapper, path)
   }
 
   /**
@@ -121,9 +120,9 @@ object ProtocolMappers {
    * @param mapper
    * @return
    */
-  def createMapperForClient(clientId: String, realm: String, mapper: ProtocolMapper)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def createMapperForClient(clientId: String, realm: String, mapper: ProtocolMapper): R[Unit] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models")
-    SttpClient.post(mapper, path)
+    client.post[ProtocolMapper](mapper, path)
   }
 
   /**
@@ -133,9 +132,9 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getMappersForClient(clientId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ProtocolMapper]] = {
+  def getMappersForClient(clientId: String, realm: String): R[Seq[ProtocolMapper]] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers")
-    SttpClient.get(path)
+    client.get[Seq[ProtocolMapper]](path)
   }
 
   /**
@@ -146,9 +145,9 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getMapperForClient(clientId: String, mapperId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[ProtocolMapper] = {
+  def getMapperForClient(clientId: String, mapperId: String, realm: String): R[ProtocolMapper] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
-    SttpClient.get(path)
+    client.get[ProtocolMapper](path)
   }
 
   /**
@@ -160,9 +159,9 @@ object ProtocolMappers {
    * @param mapper
    * @return
    */
-  def updateMapperForClient(clientId: String, mapperId: String, realm: String, mapper: ProtocolMapper)(implicit authToken: String): AsyncApolloResponse[ProtocolMapper] = {
+  def updateMapperForClient(clientId: String, mapperId: String, realm: String, mapper: ProtocolMapper): R[ProtocolMapper] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
-    SttpClient.put(mapper, path)
+    client.put[ProtocolMapper, ProtocolMapper](mapper, path)
   }
 
   /**
@@ -173,9 +172,9 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def deleteMapperForClient(clientId: String, mapperId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def deleteMapperForClient(clientId: String, mapperId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
-    SttpClient.delete(path)
+    client.delete(path)
   }
 
   /**
@@ -186,8 +185,8 @@ object ProtocolMappers {
    * @param realm     Name of the Realm.
    * @return
    */
-  def getMappersByProtocolForClient(clientId: String, protocol: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[ProtocolMapper]] = {
+  def getMappersByProtocolForClient(clientId: String, protocol: String, realm: String): R[Seq[ProtocolMapper]] = {
     val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "protocol", protocol)
-    SttpClient.get(path)
+    client.get[Seq[ProtocolMapper]](path)
   }
 }

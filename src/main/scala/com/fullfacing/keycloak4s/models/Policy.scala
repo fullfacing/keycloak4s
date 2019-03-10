@@ -1,12 +1,10 @@
 package com.fullfacing.keycloak4s.models
 
-import com.fullfacing.keycloak4s.models.enums.{DecisionStrategy, Logic}
-
 case class Policy(config: Option[Map[_, _]],
-                  decisionStrategy: Option[DecisionStrategy],
+                  decisionStrategy: Option[String],
                   description: Option[String],
                   id: Option[String],
-                  logic: Option[Logic],
+                  logic: Option[String],
                   name: Option[String],
                   owner: Option[String],
                   policies: Option[List[String]],

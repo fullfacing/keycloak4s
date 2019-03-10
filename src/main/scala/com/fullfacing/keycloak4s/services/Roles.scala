@@ -1,15 +1,12 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s.handles.SttpClient.UnknownResponse
-import com.fullfacing.keycloak4s.handles.SttpClient
-import com.fullfacing.keycloak4s.models.{ManagementPermission, Role, User}
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
+import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.client.KeycloakClient
+import com.fullfacing.keycloak4s.models.{ManagementPermission, Response, Role, User}
 
 import scala.collection.immutable.Seq
 
-object Roles {
+class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) {
 
   private val clients_path = "clients"
   private val roles_path   = "roles"
@@ -22,9 +19,9 @@ object Roles {
    * @param role
    * @return
    */
-  def createClientRole(realm: String, id: String, role: Role)(implicit authToken: String): AsyncApolloResponse[UnknownResponse] = {
+  def createClientRole(realm: String, id: String, role: Role): R[Response] = {
     val path = Seq(realm, clients_path, id, roles_path)
-    SttpClient.post(role, path)
+    keyCloakClient.post[Role, Response](role, path)
   }
 
   /**
@@ -34,9 +31,9 @@ object Roles {
    * @param id    id of client (not client-id)
    * @return
    */
-  def fetch(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetch(realm: String, id: String): R[List[Role]] = {
     val path = Seq(realm, clients_path, id, roles_path)
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -47,9 +44,9 @@ object Roles {
    * @param roleName  role’s name (not id!)
    * @return
    */
-  def getByName(realm: String, id: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[Role] = {
+  def getByName(realm: String, id: String, roleName: String): R[Role] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    SttpClient.get(path)
+    keyCloakClient.get[Role](path)
   }
 
   /**
@@ -61,9 +58,9 @@ object Roles {
    * @param role
    * @return
    */
-  def updateByName(realm: String, id: String, roleName: String, role: Role)(implicit authToken: String): AsyncApolloResponse[UnknownResponse] = {
+  def updateByName(realm: String, id: String, roleName: String, role: Role): R[Response] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    SttpClient.put(role, path)
+    keyCloakClient.put[Role, Response](role, path)
   }
 
   /**
@@ -74,9 +71,9 @@ object Roles {
    * @param roleName  role’s name (not id!)
    * @return
    */
-  def removeByName(realm: String, id: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def removeByName(realm: String, id: String, roleName: String): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    SttpClient.delete(path)
+    keyCloakClient.delete(path)
   }
 
   /**
@@ -88,9 +85,9 @@ object Roles {
    * @param roles
    * @return
    */
-  def addComposites(realm: String, id: String, roleName: String, roles: List[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def addComposites(realm: String, id: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    SttpClient.post(roles, path)
+    keyCloakClient.post[List[Role]](roles, path)
   }
 
   /**
@@ -101,9 +98,9 @@ object Roles {
    * @param roleName  role’s name (not id!)
    * @return
    */
-  def fetchRoleComposites(realm: String, id: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetchRoleComposites(realm: String, id: String, roleName: String): R[List[Role]] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -115,9 +112,9 @@ object Roles {
    * @param roles    roles to remove
    * @return
    */
-  def removeCompositeRoles(realm: String, id: String, roleName: String, roles: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def removeCompositeRoles(realm: String, id: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    SttpClient.delete(roles, path, Seq.empty[KeyValue])
+    keyCloakClient.delete[List[Role]](roles, path)
   }
 
   /**
@@ -129,9 +126,9 @@ object Roles {
    * @param client
    * @return
    */
-  def fetchCompositesAppLevelRoles(realm: String, id: String, roleName: String, client: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetchCompositesAppLevelRoles(realm: String, id: String, roleName: String, client: String): R[List[Role]] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites", "clients", client)
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -142,9 +139,9 @@ object Roles {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def fetchCompositesRealmLevelRoles(realm: String, id: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetchCompositesRealmLevelRoles(realm: String, id: String, roleName: String): R[List[Role]] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites", "realm")
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -155,9 +152,9 @@ object Roles {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def roleAuthPermissionsInitialised(realm: String, id: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
+  def roleAuthPermissionsInitialised(realm: String, id: String, roleName: String): R[ManagementPermission] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "management", "permissions")
-    SttpClient.get(path)
+    keyCloakClient.get[ManagementPermission](path)
   }
 
   /**
@@ -168,9 +165,9 @@ object Roles {
    * @param ref
    * @return
    */
-  def setAuthPermissions(realm: String, id: String, roleName: String, ref: ManagementPermission)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = { // TODO Determine functionality
+  def setAuthPermissions(realm: String, id: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { // TODO Determine functionality
     val path = Seq(realm, clients_path, id, roles_path, roleName, "management", "permissions")
-    SttpClient.put(ref, path)
+    keyCloakClient.put[ManagementPermission, ManagementPermission](ref, path)
   }
 
   /**
@@ -183,10 +180,10 @@ object Roles {
    * @param max
    * @return
    */
-  def usersByRoleName(realm: String, id: String, roleName: String, first: Option[Int], max: Option[Int])(implicit authToken: String): AsyncApolloResponse[List[User]] = {
+  def usersByRoleName(realm: String, id: String, roleName: String, first: Option[Int], max: Option[Int]): R[List[User]] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    SttpClient.get(path, query)
+    keyCloakClient.get[List[User]](path, query)
   }
 
   /**
@@ -196,9 +193,9 @@ object Roles {
    * @param role
    * @return
    */
-  def createRealmRole(realm: String, role: Role)(implicit authToken: String): AsyncApolloResponse[UnknownResponse] = {
+  def createRealmRole(realm: String, role: Role): R[Response] = {
     val path = Seq(realm, roles_path)
-    SttpClient.post(role, path)
+    keyCloakClient.post[Role, Response](role, path)
   }
 
   /**
@@ -207,9 +204,9 @@ object Roles {
    * @param realm Realm name
    * @return
    */
-  def fetchRealmRoles(realm: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetchRealmRoles(realm: String): R[List[Role]] = {
     val path = Seq(realm, roles_path)
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -219,9 +216,9 @@ object Roles {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getRealmRoleByRoleName(realm: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[Role] = {
+  def getRealmRoleByRoleName(realm: String, roleName: String): R[Role] = {
     val path = Seq(realm, roles_path, roleName)
-    SttpClient.get(path)
+    keyCloakClient.get[Role](path)
   }
 
   /**
@@ -232,9 +229,9 @@ object Roles {
    * @param role     Updated role
    * @return
    */
-  def updateRealmRoleByName(realm: String, roleName: String, role: Role)(implicit authToken: String): AsyncApolloResponse[UnknownResponse] = {
+  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[Response] = {
     val path = Seq(realm, roles_path, roleName)
-    SttpClient.put(role, path)
+    keyCloakClient.put[Role, Response](role, path)
   }
 
   /**
@@ -245,9 +242,9 @@ object Roles {
    * @param role     Role to be deleted
    * @return
    */
-  def deleteRealmRoleByName(realm: String, roleName: String, role: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def deleteRealmRoleByName(realm: String, roleName: String, role: String): R[Unit] = {
     val path = Seq(realm, roles_path, roleName)
-    SttpClient.delete(role, path, Seq.empty[KeyValue])
+    keyCloakClient.delete[String](role, path)
   }
 
   /**
@@ -258,9 +255,9 @@ object Roles {
    * @param roles    Composite roles to be added
    * @return
    */
-  def addCompositeToRealmRole(realm: String, roleName: String, roles: List[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def addCompositeToRealmRole(realm: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    SttpClient.post(roles, path)
+    keyCloakClient.post[List[Role]](roles, path)
   }
 
   /**
@@ -270,9 +267,9 @@ object Roles {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getRealmRoleComposites(realm: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def getRealmRoleComposites(realm: String, roleName: String): R[List[Role]] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -283,9 +280,9 @@ object Roles {
    * @param roles    roles to be removed
    * @return
    */
-  def removeRolesFromRolesComposite(realm: String, roleName: String, roles: List[Role])(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def removeRolesFromRolesComposite(realm: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    SttpClient.delete(roles, path, Seq.empty[KeyValue])
+    keyCloakClient.delete[List[Role]](roles, path)
   }
 
   /**
@@ -296,9 +293,9 @@ object Roles {
    * @param client
    * @return
    */
-  def fetchRolesCompositesAppLevelRoles(realm: String, roleName: String, client: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetchRolesCompositesAppLevelRoles(realm: String, roleName: String, client: String): R[List[Role]] = {
     val path = Seq(realm, roles_path, roleName, "composites", "clients", client)
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -308,9 +305,9 @@ object Roles {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def fetchRolesCompositeRealmLevelRoles(realm: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[List[Role]] = {
+  def fetchRolesCompositeRealmLevelRoles(realm: String, roleName: String): R[List[Role]] = {
     val path = Seq(realm, roles_path, roleName, "composites", "realm")
-    SttpClient.get(path)
+    keyCloakClient.get[List[Role]](path)
   }
 
   /**
@@ -320,23 +317,23 @@ object Roles {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def realmRoleAuthInitialised(realm: String, roleName: String)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
+  def realmRoleAuthInitialised(realm: String, roleName: String): R[ManagementPermission] = {
     val path = Seq(realm, roles_path, roleName, "management", "permissions")
-    SttpClient.get(path)
+    keyCloakClient.get[ManagementPermission](path)
   }
 
-  /**
-   * To be determined
-   *
-   * @param realm    realm name (not id!)
-   * @param roleName role’s name (not id!)
-   * @param ref
-   * @return
-   */
-  def TBD(realm: String, roleName: String, ref: ManagementPermission)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = { //TODO determine functionality
-    val path = Seq(realm, roles_path, roleName, "management", "permissions")
-    SttpClient.put(ref, path)
-  }
+//  /**
+//   * To be determined
+//   *
+//   * @param realm    realm name (not id!)
+//   * @param roleName role’s name (not id!)
+//   * @param ref
+//   * @return
+//   */
+//  def TBD(realm: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { //TODO determine functionality
+//    val path = Seq(realm, roles_path, roleName, "management", "permissions")
+//    keyCloakClient.put[ManagementPermission, ManagementPermission](ref, path)
+//  }
 
   /**
    * Return List of Users that have the specified role name
@@ -347,9 +344,9 @@ object Roles {
    * @param max
    * @return
    */
-  def fetchUsersByRoleName(realm: String, roleName: String, first: Option[Int], max: Option[Int])(implicit authToken: String): AsyncApolloResponse[User] = {
+  def fetchUsersByRoleName(realm: String, roleName: String, first: Option[Int], max: Option[Int]): R[User] = {
     val path  = Seq(realm, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    SttpClient.get(path, query)
+    keyCloakClient.get[User](path, query)
   }
 }

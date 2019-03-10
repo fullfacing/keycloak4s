@@ -1,15 +1,12 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s.handles.SttpClient.UnknownMap
-import com.fullfacing.keycloak4s.handles.SttpClient
+import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.Synchronization
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
-object UserStorageProvider {
+class UserStorageProvider[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val user_storage = "user-storage"
 
@@ -19,9 +16,9 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def clientSimpleProviderName(id: String)(implicit authToken: String): AsyncApolloResponse[UnknownMap] = {
+  def clientSimpleProviderName(id: String): R[Map[String, Any]] = {
     val path = Seq(id, "name")
-    SttpClient.get[UnknownMap](path)
+    client.get[Map[String, Any]](path)
   }
 
   /**
@@ -31,9 +28,9 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def userSimpleProviderName(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[UnknownMap] = { // TODO
+  def userSimpleProviderName(realm: String, id: String): R[Map[String, Any]] = { // TODO
     val path = Seq(realm, user_storage, id, "name")
-    SttpClient.get[UnknownMap](path)
+    client.get[Map[String, Any]](path)
   }
 
   /**
@@ -43,9 +40,9 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def removeImportedUser(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def removeImportedUser(realm: String, id: String): R[Unit] = {
     val path = Seq(realm, user_storage, id, "remove-imported-users")
-    SttpClient.post(path, Seq.empty[KeyValue])
+    client.post(path)
   }
 
   /**
@@ -56,10 +53,10 @@ object UserStorageProvider {
    * @param action
    * @return
    */
-  def sync(realm: String, id: String, action: Option[String])(implicit authToken: String): AsyncApolloResponse[Synchronization] = {
+  def sync(realm: String, id: String, action: Option[String]): R[Synchronization] = {
     val path  = Seq(realm, user_storage, id, "sync")
     val query = createQuery(("action", action))
-    SttpClient.post(path, query)
+    client.post[Synchronization](path, query)
   }
 
   /**
@@ -69,9 +66,9 @@ object UserStorageProvider {
    * @param id
    * @return
    */
-  def unlink(realm: String, id: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
+  def unlink(realm: String, id: String): R[Unit] = {
     val path = Seq(realm, user_storage, id, "unlink-users")
-    SttpClient.post(path, Seq.empty[KeyValue])
+    client.post(path)
   }
 
   /**
@@ -83,9 +80,9 @@ object UserStorageProvider {
    * @param direction
    * @return
    */
-  def mapperDataSync(realm: String, id: String, parentId: String, direction: Option[String])(implicit authToken: String): AsyncApolloResponse[Synchronization] = {
+  def mapperDataSync(realm: String, id: String, parentId: String, direction: Option[String]): R[Synchronization] = {
     val path  = Seq(realm, user_storage, parentId, "mappers", id, "sync")
     val query = createQuery(("direction", direction))
-    SttpClient.post(path, query)
+    client.post[Synchronization](path, query)
   }
 }

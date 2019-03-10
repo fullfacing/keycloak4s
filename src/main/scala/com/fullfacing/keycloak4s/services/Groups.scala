@@ -1,12 +1,12 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.keycloak4s.handles.SttpClient
+import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 
 import scala.collection.immutable.Seq
 
-object Groups {
+class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * This will update the group and set the parent if it exists. Create it and set the parent if the group doesn’t exist.
@@ -15,9 +15,9 @@ object Groups {
    * @param group Object representing the group details.
    * @return
    */
-  def addGroupSet(realm: String, group: Group)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
+  def addGroupSet(realm: String, group: Group): R[Response] = {
     val path = Seq(realm, "groups")
-    SttpClient.post(group, path)
+    client.post[Group, Response](group, path)
   }
 
   /**
@@ -29,7 +29,7 @@ object Groups {
    * @param search
    * @return
    */
-  def getGroups(realm: String, first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None)(implicit authToken: String): AsyncApolloResponse[Seq[Group]] = {
+  def getGroups(realm: String, first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): R[Seq[Group]] = {
     val query = createQuery(
       ("first", first),
       ("max", max),
@@ -37,7 +37,7 @@ object Groups {
     )
 
     val path = Seq(realm, "groups")
-    SttpClient.get(path, query.to[Seq])
+    client.get[Seq[Group]](path, query)
   }
 
   /**
@@ -48,14 +48,14 @@ object Groups {
    * @param top
    * @return
    */
-  def getGroupsCounts(realm: String, search: Option[String] = None, top: Boolean = false)(implicit authToken: String): AsyncApolloResponse[Map[String, Any]] = { //TODO Determine return type.
+  def getGroupsCounts(realm: String, search: Option[String] = None, top: Boolean = false): R[Count] = {
     val query = createQuery(
       ("search", search),
       ("top", Some(top))
     )
 
     val path = Seq(realm, "groups", "count")
-    SttpClient.get(path, query.to[Seq])
+    client.get[Count](path, query)
   }
 
   /**
@@ -65,9 +65,9 @@ object Groups {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getGroup(groupId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Group] = {
+  def getGroup(groupId: String, realm: String): R[Group] = {
     val path = Seq(realm, "groups", groupId)
-    SttpClient.get(path)
+    client.get[Group](path)
   }
 
   /**
@@ -78,9 +78,9 @@ object Groups {
    * @param group   Object representing the group details.
    * @return
    */
-  def getGroup(groupId: String, realm: String, group: Group)(implicit authToken: String): AsyncApolloResponse[Group] = {
+  def getGroup(groupId: String, realm: String, group: Group): R[Group] = {
     val path = Seq(realm, "groups", groupId)
-    SttpClient.put(group, path)
+    client.put[Group, Group](group, path)
   }
 
   /**
@@ -90,9 +90,9 @@ object Groups {
    * @param realm   Name of the Realm.
    * @return
    */
-  def deleteGroup(groupId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Group] = {
+  def deleteGroup(groupId: String, realm: String): R[Group] = {
     val path = Seq(realm, "groups", groupId)
-    SttpClient.delete(path)
+    client.delete[Group](path)
   }
 
   /**
@@ -103,9 +103,9 @@ object Groups {
    * @param group   Object representing the group details.
    * @return
    */
-  def setChild(groupId: String, realm: String, group: Group)(implicit authToken: String): AsyncApolloResponse[Group] = {
+  def setChild(groupId: String, realm: String, group: Group): R[Group] = {
     val path = Seq(realm, "groups", groupId, "children")
-    SttpClient.post(group, path)
+    client.post[Group, Group](group, path)
   }
 
   /**
@@ -115,9 +115,9 @@ object Groups {
    * @param realm   Name of the Realm.
    * @return
    */
-  def getManagementPermissions(groupId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
+  def getManagementPermissions(groupId: String, realm: String): R[ManagementPermission] = {
     val path = Seq(realm, "groups", groupId, "management", "permissions")
-    SttpClient.get(path)
+    client.get[ManagementPermission](path)
   }
 
   /**
@@ -128,9 +128,9 @@ object Groups {
    * @param permissions
    * @return
    */
-  def updateManagementPermissions(groupId: String, realm: String, permissions: ManagementPermission)(implicit authToken: String): AsyncApolloResponse[ManagementPermission] = {
+  def updateManagementPermissions(groupId: String, realm: String, permissions: ManagementPermission): R[ManagementPermission] = {
     val path = Seq(realm, "groups", groupId, "management", "permissions")
-    SttpClient.put(permissions, path)
+    client.put[ManagementPermission, ManagementPermission](permissions, path)
   }
 
   /**
@@ -139,16 +139,15 @@ object Groups {
    * @param realm   Name of the Realm.
    * @param first
    * @param max
-   * @param search
    * @return
    */
-  def getUsers(groupId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None)(implicit authToken: String): AsyncApolloResponse[Seq[Group]] = {
+  def getUsers(groupId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None): R[Seq[Group]] = {
     val query = createQuery(
       ("first", first),
       ("max", max)
     )
 
     val path = Seq(realm, "groups", groupId, "members")
-    SttpClient.get(path, query.to[Seq])
+    client.get[Seq[Group]](path, query)
   }
 }
