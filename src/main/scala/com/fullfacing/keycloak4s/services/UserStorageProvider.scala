@@ -42,7 +42,7 @@ class UserStorageProvider[R[_]: Concurrent, S](implicit client: KeycloakClient[R
    */
   def removeImportedUser(realm: String, id: String): R[Unit] = {
     val path = Seq(realm, user_storage, id, "remove-imported-users")
-    client.postNoContent(path)
+    client.post(path)
   }
 
   /**
@@ -68,7 +68,7 @@ class UserStorageProvider[R[_]: Concurrent, S](implicit client: KeycloakClient[R
    */
   def unlink(realm: String, id: String): R[Unit] = {
     val path = Seq(realm, user_storage, id, "unlink-users")
-    client.postNoContent(path)
+    client.post(path)
   }
 
   /**

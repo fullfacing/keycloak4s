@@ -3,7 +3,6 @@ package com.fullfacing.keycloak4s.services
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{ManagementPermission, Role}
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq
 
@@ -33,7 +32,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def update(realm: String, roleId: String, role: Role): R[Unit] = {
     val path = Seq(realm, resource, roleId)
-    keycloakClient.putNoContent[Role](role, path, Seq.empty[KeyValue])
+    keycloakClient.put[Role](role, path)
   }
 
   /**
@@ -45,7 +44,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def delete(realm: String, roleId: String): R[Unit] = {
     val path = Seq(realm, resource, roleId)
-    keycloakClient.deleteNoContent(path, Seq.empty[KeyValue])
+    keycloakClient.delete(path)
   }
 
   /**
@@ -58,7 +57,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def addSubRoles(realm: String, roleId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, roleId, "composites")
-    keycloakClient.postNoContent[List[Role]](roles, path)
+    keycloakClient.post[List[Role]](roles, path)
   }
 
   /**
@@ -83,7 +82,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def removeSubRoles(realm: String, roleId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, roleId, "composites")
-    keycloakClient.deleteNoContent[List[Role]](roles, path, Seq.empty[KeyValue])
+    keycloakClient.delete[List[Role]](roles, path)
   }
 
   /**
@@ -133,6 +132,6 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def initialiseRoleAuthPermissions(realm: String, roleId: String, ref: ManagementPermission): R[ManagementPermission] = {
     val path = Seq(realm, resource, roleId, "management", "permissions")
-    keycloakClient.put[ManagementPermission, ManagementPermission](ref, path, Seq.empty[KeyValue])
+    keycloakClient.put[ManagementPermission, ManagementPermission](ref, path)
   }
 }
