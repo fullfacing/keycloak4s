@@ -1,13 +1,10 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s.handles.SttpClient
+import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.BruteForceResponse
 
-import scala.collection.immutable.Seq
-
-object AttackDetection {
+class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Clear any user login failures for all users.
@@ -16,9 +13,8 @@ object AttackDetection {
    * @param realm Name of the Realm
    * @return
    */
-  def clearAllLoginFailures(realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
-    val path = Seq(realm, "attack-detection", "brute-force", "users")
-    SttpClient.delete(path)
+  def clearAllLoginFailures(realm: String): R[Unit] = {
+    client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: Nil)
   }
 
   /**
@@ -28,9 +24,8 @@ object AttackDetection {
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String)(implicit authToken: String): AsyncApolloResponse[BruteForceResponse] = {
-    val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
-    SttpClient.get[BruteForceResponse](path)
+  def getUserStatus(realm: String, userId: String): R[BruteForceResponse] = {
+    client.get[BruteForceResponse](realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 
   /**
@@ -40,8 +35,7 @@ object AttackDetection {
    * @param realm Name of the Realm.
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure(realm: String, userId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
-    val path = Seq(realm, "attack-detection", "brute-force", "users", userId)
-    SttpClient.delete(path)
+  def clearUserLoginFailure(realm: String, userId: String): R[Unit] = {
+    client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 }

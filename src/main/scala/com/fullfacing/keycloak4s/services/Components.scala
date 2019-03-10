@@ -1,13 +1,12 @@
 package com.fullfacing.keycloak4s.services
 
-import com.fullfacing.apollo.core.Predef.AsyncApolloResponse
-import com.fullfacing.apollo.core.protocol.NoContent
-import com.fullfacing.keycloak4s.handles.SttpClient
+import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 
 import scala.collection.immutable.Seq
 
-object Components {
+class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Create a component.
@@ -16,9 +15,8 @@ object Components {
    * @param component Object representing a component's details.
    * @return
    */
-  def createComponent(realm: String, component: Component)(implicit authToken: String): AsyncApolloResponse[Any] = { //TODO Determine return type.
-    val path = Seq(realm, "components")
-    SttpClient.post(component, path)
+  def createComponent(realm: String, component: Component): R[Response] = {
+    client.post[Component, Response](component, realm :: "components" :: Nil)
   }
 
   /**
@@ -27,9 +25,8 @@ object Components {
    * @param realm Name of the Realm.
    * @return
    */
-  def getComponents(realm: String)(implicit authToken: String): AsyncApolloResponse[Seq[Component]] = {
-    val path = Seq(realm, "components")
-    SttpClient.get(path)
+  def getComponents(realm: String): R[Seq[Component]] = {
+    client.get[Seq[Component]](realm :: "components" :: Nil)
   }
 
   /**
@@ -39,9 +36,8 @@ object Components {
    * @param realm       Name of the Realm.
    * @return
    */
-  def getComponent(componentId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[Component] = {
-    val path = Seq(realm, "components", componentId)
-    SttpClient.get(path)
+  def getComponent(componentId: String, realm: String): R[Component] = {
+    client.get[Component](realm :: "components" :: componentId :: Nil)
   }
 
   /**
@@ -52,9 +48,8 @@ object Components {
    * @param component   Object representing a component's details.
    * @return
    */
-  def updateComponent(componentId: String, realm: String, component: Component)(implicit authToken: String): AsyncApolloResponse[Component] = {
-    val path = Seq(realm, "components", componentId)
-    SttpClient.put(component, path)
+  def updateComponent(componentId: String, realm: String, component: Component): R[Component] = {
+    client.put[Component, Component](component, realm :: "components" :: componentId :: Nil)
   }
 
   /**
@@ -64,9 +59,8 @@ object Components {
    * @param realm       Name of the Realm.
    * @return
    */
-  def deleteComponent(componentId: String, realm: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = {
-    val path = Seq(realm, "components", componentId)
-    SttpClient.delete(path)
+  def deleteComponent(componentId: String, realm: String): R[Unit] = {
+    client.delete(realm :: "components" :: componentId :: Nil)
   }
 
   /**
@@ -77,10 +71,8 @@ object Components {
    * @param `type`
    * @return
    */
-  def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None)(implicit authToken: String): AsyncApolloResponse[Seq[ComponentType]] = {
+  def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None): R[Seq[ComponentType]] = {
     val query = createQuery(("type", `type`))
-
-    val path = Seq(realm, "components", componentId, "sub-component-types")
-    SttpClient.get(path, query.to[Seq])
+    client.get[Seq[ComponentType]](realm :: "components" :: componentId :: "sub-component-types" :: Nil, query)
   }
 }
