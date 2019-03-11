@@ -443,7 +443,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param useTruststoreSpi
    * @return
    */
-  def testLdapConnection(realm: String, // TODO Figure out how queries should be sent - FormData
+  def testLdapConnection(realm: String,
                          action: Option[String] = None,
                          bindCredential: Option[String] = None,
                          bindDn: Option[String] = None,
