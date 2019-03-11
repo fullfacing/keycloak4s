@@ -18,9 +18,9 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param contentType The file's content type.
    * @return
    */
-  def importIdentityProvider(realm: String, config: File, contentType: String): R[Map[String, Any]] = { //TODO Determine return type
+  def importIdentityProvider(realm: String, config: File): R[Map[String, Any]] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "import-config")
-    val multipart = createMultipart(config, contentType)
+    val multipart = createMultipart(config)
     client.post(multipart, path)
   }
 

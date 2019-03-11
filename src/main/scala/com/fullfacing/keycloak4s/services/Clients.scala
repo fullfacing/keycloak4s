@@ -668,12 +668,11 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param clientId    ID of client (not client-id).
      * @param realm       Name of the Realm.
      * @param file
-     * @param contentType The file's content type.
      * @return
      */
-    def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: String): R[Certificate] = {
+    def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
-      val multipart = createMultipart(file, contentType)
+      val multipart = createMultipart(file)
       keycloakClient.post[Multipart, Certificate](multipart, path)
     }
 
@@ -684,12 +683,11 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param clientId    ID of client (not client-id).
      * @param realm       Name of the Realm.
      * @param file
-     * @param contentType The file's content type.
      * @return
      */
-    def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File, contentType: String): R[Certificate] = {
+    def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload-certificate")
-      val multipart = createMultipart(file, contentType)
+      val multipart = createMultipart(file)
       keycloakClient.post[Multipart, Certificate](multipart, path)
     }
 
