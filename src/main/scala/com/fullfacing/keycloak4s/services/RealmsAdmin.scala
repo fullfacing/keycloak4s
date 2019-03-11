@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
+import com.softwaremill.sttp.Multipart
 
 import scala.collection.immutable.Seq
 
@@ -452,7 +453,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
                          useTruststoreSpi: Option[String] = None): R[Response] = {
 
     val path = Seq(realm, "testLDAPConnection")
-    val queries = createQuery(
+    val queries = createdUrlEncodedMap(
       ("action", action),
       ("bindCredential", bindCredential),
       ("bindDn", bindDn),
@@ -462,7 +463,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("useTruststoreSpi", useTruststoreSpi)
     )
 
-    keycloakClient.post[Response](path, queries)
+    val mp = createMultipart(queries)
+
+    keycloakClient.post[Multipart, Response](mp, path)
   }
 
   /**
