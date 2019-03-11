@@ -452,7 +452,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
                          useTruststoreSpi: Option[String] = None): R[Response] = {
 
     val path = Seq(realm, "testLDAPConnection")
-    val queries = createQuery(
+    val queries = createdUrlEncodedMap(
       ("action", action),
       ("bindCredential", bindCredential),
       ("bindDn", bindDn),
@@ -462,7 +462,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("useTruststoreSpi", useTruststoreSpi)
     )
 
-    keycloakClient.post[Response](path, queries)
+    keycloakClient.post[Map[String, String], Response](path, queries)
   }
 
   /**

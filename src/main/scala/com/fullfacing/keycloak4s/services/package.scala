@@ -16,6 +16,13 @@ package object services {
     }.to[iSeq]
   }
 
+  def createdUrlEncodedMap(queries: (String, Option[Any])*): Map[String, String] = {
+    queries.flatMap { case (key, value) =>
+      value.map(v => Map(key -> v.toString))
+    }.headOption
+      .getOrElse(Map.empty[String, String])
+  }
+
   def createMultipart(file: File): Multipart = {
     val byteArray = Files.readAllBytes(file.toPath)
     multipart("file-part", byteArray)
