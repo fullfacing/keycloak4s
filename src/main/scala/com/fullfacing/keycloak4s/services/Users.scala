@@ -11,7 +11,8 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   private val users_path = "users"
 
   /**
-   * Create a new user Username must be unique
+   * Create a new user
+   * Username must be unique
    *
    * @param realm
    * @param user
@@ -166,7 +167,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
                           clientId: Option[String] = None,
                           lifespan: Option[Int] = None,
                           redirectUri: Option[String],
-                          actions: List[String]): R[Response] = { // Unknown Return Type
+                          actions: List[String]): R[Response] = {
 
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
 
