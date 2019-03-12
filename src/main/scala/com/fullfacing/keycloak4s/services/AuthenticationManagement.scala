@@ -299,14 +299,14 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
   /**
    * Register a new required action.
    *
-   * @param realm       Name of the Realm.
-   * @param providerId  ID of the Provider.
-   * @param name        Name of the required action //TODO Confirm.
+   * @param realm           Name of the Realm.
+   * @param providerId      ID of the Provider.
+   * @param requiredAction  Details of the required action
    * @return
    */
-  def registerRequiredAction(realm: String, providerId: String, name: String): R[AnyRef] = { //TODO Determine return type.
+  def registerRequiredAction(realm: String, providerId: String, requiredAction: RequiredAction): R[AnyRef] = { //TODO Determine return type.
     val path = Seq(realm, "authentication", "register-required-action")
-    client.post[Map[String, String], AnyRef](Map("providerId" -> providerId, "name" -> name), path)
+    client.post[RequiredAction, AnyRef](requiredAction, path)
   }
 
   /**

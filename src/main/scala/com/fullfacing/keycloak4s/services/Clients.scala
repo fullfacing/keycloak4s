@@ -473,54 +473,54 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
     /**
      * Add client-level roles to the group role mapping.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param groupId
      * @param realm   Name of the Realm.
      * @param roles
      * @return
      */
-    def addRolesToGroup(client: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
-      val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
+    def addRolesToGroup(clientId: String, groupId: String, realm: String, roles: Seq[Role]): R[Unit] = {
+      val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
       keycloakClient.post(roles, path)
     }
 
     /**
      * Get client-level role mappings for the group.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param groupId
      * @param realm   Name of the Realm.
      * @return
      */
-    def getGroupRoleMappings(client: String, id: String, realm: String): R[Seq[Role]] = {
-      val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
+    def getGroupRoleMappings(clientId: String, groupId: String, realm: String): R[Seq[Role]] = {
+      val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
       keycloakClient.get(path)
     }
 
     /**
      * Delete client-level roles from group role mapping.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param groupId
      * @param realm   Name of the Realm.
      * @param roles
      * @return
      */
-    def deleteGroupRoles(client: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
-      val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
+    def deleteGroupRoles(clientId: String, groupId: String, realm: String, roles: Seq[Role]): R[Unit] = {
+      val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
       keycloakClient.delete(roles, path)
     }
 
     /**
      * Get available client-level roles that can be mapped to the group.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param groupId
      * @param realm   Name of the Realm.
      * @return
      */
-    def getAvailableGroupRoles(client: String, id: String, realm: String): R[List[Role]] = {
-      val path = Seq(realm, "groups", id, "role-mapping", "clients", client, "available")
+    def getAvailableGroupRoles(clientId: String, groupId: String, realm: String): R[List[Role]] = {
+      val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId, "available")
       keycloakClient.get[List[Role]](path)
     }
 
@@ -528,67 +528,67 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * Get effective client-level group role mappings.
      * This recurses any composite roles.
      *
-     * @param name
-     * @param id
+     * @param clientId
+     * @param groupId
      * @param realm   Name of the Realm.
      * @return
      */
-    def getEffectiveGroupRoles(name: String, id: String, realm: String): R[List[Role]] = {
-      val path = Seq(realm, "groups", id, "role-mapping", "clients", name, "composite")
+    def getEffectiveGroupRoles(clientId: String, groupId: String, realm: String): R[List[Role]] = {
+      val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId, "composite")
       keycloakClient.get[List[Role]](path)
     }
 
     /**
      * Add client-level roles to the user role mapping.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param userId
      * @param realm   Name of the Realm.
      * @param roles
      * @return
      */
-    def addRolesToUser(client: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
-      val path = Seq(realm, "users", id, "role-mapping", "clients", client)
+    def addRolesToUser(clientId: String, userId: String, realm: String, roles: Seq[Role]): R[Unit] = {
+      val path = Seq(realm, "users", userId, "role-mappings", "clients", clientId)
       keycloakClient.post(roles, path)
     }
 
     /**
      * Get client-level role mappings for the user.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param userId
      * @param realm   Name of the Realm.
      * @return
      */
-    def getUserRoleMappings(client: String, id: String, realm: String): R[List[Role]] = {
-      val path = Seq(realm, "users", id, "role-mapping", "clients", client)
+    def getUserRoleMappings(clientId: String, userId: String, realm: String): R[List[Role]] = {
+      val path = Seq(realm, "users", userId, "role-mappings", "clients", clientId)
       keycloakClient.get[List[Role]](path)
     }
 
     /**
      * Delete client-level roles from user role mapping.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param groupId
      * @param realm   Name of the Realm.
      * @param roles
      * @return
      */
-    def deleteUserRoles(client: String, id: String, realm: String, roles: Seq[Role]): R[Unit] = {
-      val path = Seq(realm, "groups", id, "role-mapping", "clients", client)
+    def deleteUserRoles(clientId: String, groupId: String, realm: String, roles: Seq[Role]): R[Unit] = {
+      val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
       keycloakClient.delete(roles, path)
     }
 
     /**
      * Get available client-level roles that can be mapped to the user.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param userId
      * @param realm   Name of the Realm.
      * @return
      */
-    def getAvailableUserRoles(client: String, id: String, realm: String): R[List[Role]] = {
-      val path = Seq(realm, "users", id, "role-mapping", "clients", client, "available")
+    def getAvailableUserRoles(clientId: String, userId: String, realm: String): R[List[Role]] = {
+      val path = Seq(realm, "users", userId, "role-mappings", "clients", clientId, "available")
       keycloakClient.get[List[Role]](path)
     }
 
@@ -596,13 +596,13 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * Get effective client-level user role mappings.
      * This recurses any composite roles.
      *
-     * @param client
-     * @param id
+     * @param clientId
+     * @param userId
      * @param realm   Name of the Realm.
      * @return
      */
-    def getEffectiveUserRoles(client: String, id: String, realm: String): R[List[Role]] = {
-      val path = Seq(realm, "users", id, "role-mapping", "clients", client, "composite")
+    def getEffectiveUserRoles(clientId: String, userId: String, realm: String): R[List[Role]] = {
+      val path = Seq(realm, "users", userId, "role-mappings", "clients", clientId, "composite")
       keycloakClient.get[List[Role]](path)
     }
 
