@@ -13,13 +13,13 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
 
   /* URI Builder **/
   private[client] def createUri(path: Seq[String], queries: Seq[KeyValue]) = Uri(
-    scheme = config.scheme,
-    userInfo = None,
-    host = config.host,
-    port = Some(config.port),
-    path = Seq("auth", "admin", "realms") ++ path,
+    scheme         = config.scheme,
+    userInfo       = None,
+    host           = config.host,
+    port           = Some(config.port),
+    path           = Seq("auth", "admin", "realms") ++ path,
     queryFragments = queries,
-    fragment = None
+    fragment       = None
   )
 
   private def determineContent[A <: AnyRef](payload: A): String = payload match {

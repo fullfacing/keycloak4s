@@ -245,22 +245,32 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[GroupCount](path)
   }
 
-//  /**
-//   *
-//   * @param realm
-//   * @param userId
-//   * @param groupId
-//   * @return
-//   */
-//  def unknown(realm: String, userId: String, groupId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = { //TODO try to figure out what this is
-//    val path = Seq(realm, users_path, userId, "groups", groupId)
-//    SttpClient.put(path)
-//  }
-//
-//  def `removeFromGroup???`(realm: String, userId: String, groupId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = { // TODO confirm what this does
-//    val path = Seq(realm, users_path, userId, "groups", groupId)
-//    SttpClient.delete(path)
-//  }
+  /**
+   * Add user to specified group
+   *
+   * @param realm     Name of the realm
+   * @param userId    Id of user to add to the group
+   * @param groupId   Id of the group the user is to be added to
+   * @return
+   */
+  def joinGroup(realm: String, userId: String, groupId: String): R[Unit] = {
+    val path = Seq(realm, users_path, userId, "groups", groupId)
+    client.put(path)
+  }
+
+
+  /**
+   * removeMembership
+   *
+   * @param realm     Name of the realm.
+   * @param userId    Id of user to remove from the group.
+   * @param groupId   Id of the group from which the user is to be removed.
+   * @return
+   */
+  def removeFromGroup(realm: String, userId: String, groupId: String): R[Unit] = {
+    val path = Seq(realm, users_path, userId, "groups", groupId)
+    client.delete(path)
+  }
 
   /**
    * Impersonate the user
