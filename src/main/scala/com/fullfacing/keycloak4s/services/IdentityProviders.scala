@@ -15,7 +15,6 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    *
    * @param realm   Name of the Realm.
    * @param config
-   * @param contentType The file's content type.
    * @return
    */
   def importIdentityProvider(realm: String, config: File): R[Map[String, Any]] = { //TODO Determine return type
@@ -207,7 +206,7 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param realm       Name of the Realm.
    * @return
    */
-  def getIdentityProviders(providerId: String, realm: String): R[Response] = { //TODO Determine return type
+  def getIdentityProviders(providerId: String, realm: String): R[Response] = {
     val path = Seq(realm, "identity-provider", "providers", providerId)
     client.get[Response](path)
   }

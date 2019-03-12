@@ -322,18 +322,18 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
     keyCloakClient.get[ManagementPermission](path)
   }
 
-//  /**
-//   * To be determined
-//   *
-//   * @param realm    realm name (not id!)
-//   * @param roleName role’s name (not id!)
-//   * @param ref
-//   * @return
-//   */
-//  def TBD(realm: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { //TODO determine functionality
-//    val path = Seq(realm, roles_path, roleName, "management", "permissions")
-//    keyCloakClient.put[ManagementPermission, ManagementPermission](ref, path)
-//  }
+  /**
+   * To be determined
+   *
+   * @param realm    realm name (not id!)
+   * @param roleName role’s name (not id!)
+   * @param ref
+   * @return
+   */
+  def TBD(realm: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { //TODO determine functionality
+    val path = Seq(realm, roles_path, roleName, "management", "permissions")
+    keyCloakClient.put[ManagementPermission, ManagementPermission](ref, path)
+  }
 
   /**
    * Return List of Users that have the specified role name

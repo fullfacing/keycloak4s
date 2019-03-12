@@ -169,7 +169,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param realm Name of the realm.
    * @return
    */
-  def getClientSessionStats(realm: String): R[Seq[ClientSessionStatistics]] = { //TODO Determine return type.
+  def getClientSessionStats(realm: String): R[Seq[ClientSessionStatistics]] = {
     val path = Seq(realm, "client-session-stats")
     keycloakClient.get[Seq[ClientSessionStatistics]](path)
   }
