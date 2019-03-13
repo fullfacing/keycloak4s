@@ -41,7 +41,7 @@ val logback: Seq[ModuleID] = {
 val json4s: Seq[ModuleID] = {
   val version = "3.6.5"
   Seq(
-    "org.json4s" %% "json4s-native" % version
+    "org.json4s" %% "json4s-jackson" % version
   )
 }
 

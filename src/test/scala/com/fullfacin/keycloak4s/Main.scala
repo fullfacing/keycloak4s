@@ -4,7 +4,6 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
-import com.fullfacing.keycloak4s.models.User
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
@@ -25,10 +24,10 @@ object Main extends App {
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.AuthenticationManagement[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Users[Task, Source[ByteString, Any]]
   import scala.concurrent.duration._
   global.scheduleOnce(0 seconds) {
-    clients.getConfigurationDescriptions("demo").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.getUsers("demo").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 

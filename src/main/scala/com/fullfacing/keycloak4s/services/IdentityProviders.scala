@@ -5,6 +5,7 @@ import java.io.File
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
+import com.softwaremill.sttp.Multipart
 
 import scala.collection.immutable.Seq
 
@@ -17,10 +18,10 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param config
    * @return
    */
-  def importIdentityProvider(realm: String, config: File): R[Map[String, Any]] = { //TODO Determine return type
+  def importIdentityProvider(realm: String, config: File): R[Map[String, String]] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "import-config")
     val multipart = createMultipart(config)
-    client.post(multipart, path)
+    client.post[Multipart, Map[String, String]](multipart, path)
   }
 
   /**
@@ -129,9 +130,9 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param realm Name of the Realm.
    * @return
    */
-  def getMapperTypes(alias: String, realm: String): R[Map[String, Any]] = { //TODO Determine return type
+  def getMapperTypes(alias: String, realm: String): R[Map[String, IdentityProviderMapper]] = { //TODO Determine return type
     val path = Seq(realm, "identity-provider", "instances", alias, "mapper-types")
-    client.get[Map[String, Any]](path)
+    client.get[Map[String, IdentityProviderMapper]](path)
   }
 
   /**

@@ -289,7 +289,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * Get configuration descriptions for all clients.
    *
    * @param realm Name of the Realm.
-   * @return
+   * @return Map of the realm's client auth types and their configurations
    */
   def getConfigurationDescriptions(realm: String): R[Map[String, List[ConfigProperty]]] = {
     val path = Seq(realm, "authentication", "per-client-config-description")

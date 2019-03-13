@@ -67,9 +67,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param realm
    * @return
    */
-  def getUsersCount(realm: String): R[String] = { //TODO
+  def getUsersCount(realm: String): R[Int] = {
     val path = Seq(realm, users_path, "count")
-    client.get[String](path)
+    client.get[Int](path)
   }
 
   /**
@@ -116,9 +116,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def getUserConsents(realm: String, userId: String): R[List[Map[String, String]]] = { // Don't know return type
+  def getUserConsents(realm: String, userId: String): R[List[UserConsent]] = {
     val path = Seq(realm, users_path, userId, "consents")
-    client.get[List[Map[String, String]]](path)
+    client.get[List[UserConsent]](path)
   }
 
   /**
@@ -280,9 +280,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def impersonate(realm: String, userId: String): R[Map[String, Any]] = { // TODO: Figure out return type
+  def impersonate(realm: String, userId: String): R[ImpersonationResponse] = {
     val path = Seq(realm, users_path, userId, "impersonation")
-    client.post[Map[String, Any]](path)
+    client.post[ImpersonationResponse](path)
   }
 
   /**
