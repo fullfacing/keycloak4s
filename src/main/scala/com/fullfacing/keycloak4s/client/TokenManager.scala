@@ -10,11 +10,11 @@ import com.fullfacing.keycloak4s.models.ErrorDump
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import org.json4s.Formats
-import org.json4s.native.Serialization
+import org.json4s.jackson.Serialization
 
 abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) {
 
-  protected implicit val serialization: Serialization.type = org.json4s.native.Serialization
+  protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
   protected val F: MonadError[F] = client.responseMonad
 

@@ -269,9 +269,9 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param realm Name of the Realm.
    * @return
    */
-  def getFormActionProviders(realm: String): R[Seq[Map[String, AnyRef]]] = { //TODO Determine return type.
+  def getFormActionProviders(realm: String): R[Seq[FormProvider]] = {
     val path = Seq(realm, "authentication", "form-action-providers")
-    client.get[Seq[Map[String, AnyRef]]](path)
+    client.get[Seq[FormProvider]](path)
   }
 
   /**
@@ -280,20 +280,20 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param realm Name of the Realm.
    * @return
    */
-  def getFormProviders(realm: String): R[Seq[Map[String, AnyRef]]] = { //TODO Determine return type.
+  def getFormProviders(realm: String): R[Seq[FormProvider]] = {
     val path = Seq(realm, "authentication", "form-providers")
-    client.get[Seq[Map[String, AnyRef]]](path)
+    client.get[Seq[FormProvider]](path)
   }
 
   /**
    * Get configuration descriptions for all clients.
    *
    * @param realm Name of the Realm.
-   * @return
+   * @return Map of the realm's client auth types and their configurations
    */
-  def getConfigurationDescriptions(realm: String): R[Seq[Map[String, AnyRef]]] = { //TODO Determine return type.
+  def getConfigurationDescriptions(realm: String): R[Map[String, List[ConfigProperty]]] = {
     val path = Seq(realm, "authentication", "per-client-config-description")
-    client.get[Seq[Map[String, AnyRef]]](path)
+    client.get[Map[String, List[ConfigProperty]]](path)
   }
 
   /**
