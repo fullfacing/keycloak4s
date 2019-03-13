@@ -128,9 +128,9 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    *
    * @param alias
    * @param realm Name of the Realm.
-   * @return
+   * @return Map of provider Ids and corresponding IdentityProviderMapper object
    */
-  def getMapperTypes(alias: String, realm: String): R[Map[String, IdentityProviderMapper]] = { //TODO Determine return type
+  def getMapperTypes(alias: String, realm: String): R[Map[String, IdentityProviderMapper]] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mapper-types")
     client.get[Map[String, IdentityProviderMapper]](path)
   }

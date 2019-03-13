@@ -27,8 +27,8 @@ val scalacOpts = Seq(
 
 scalaVersion := "2.12.8"
 scalacOptions ++= scalacOpts
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.9")
-addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.2.4")
+addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
+addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.2.4")
 
 val logback: Seq[ModuleID] = {
   val version = "1.2.3"
@@ -48,10 +48,10 @@ val json4s: Seq[ModuleID] = {
 val sttp: Seq[ModuleID] = {
   val version = "1.5.11"
   Seq(
-    "com.softwaremill.sttp" %% "core"   % version,
+    "com.softwaremill.sttp" %% "core"              % version,
     "com.softwaremill.sttp" %% "akka-http-backend" % version,
-    "com.typesafe.akka" %% "akka-stream" % "2.5.21",
-    "com.softwaremill.sttp" %% "json4s" % version
+    "com.typesafe.akka"     %% "akka-stream"       % "2.5.21",
+    "com.softwaremill.sttp" %% "json4s"            % version
   )
 }
 
