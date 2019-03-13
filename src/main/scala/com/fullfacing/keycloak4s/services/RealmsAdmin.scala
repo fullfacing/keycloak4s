@@ -147,8 +147,6 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
     keycloakClient.post(path)
   }
 
-  //TODO Determine what exactly this route does, as the description does not correlate well with the route name.
-  // As well determine the input, for consumers they list not only application/json, but application/xml and text/plain as well.
   /**
    * Base path for importing clients under this realm.
    *
@@ -156,9 +154,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param description
    * @return
    */
-  def convertClientDescription(realm: String, description: String): R[Client] = {
+  def importClientViaDescription(realm: String, description: String): R[Client] = {
     val path = Seq(realm, "client-description-converter")
-    keycloakClient.post(description, path)
+    keycloakClient.post[String, Client](description, path)
   }
 
   /**
@@ -463,8 +461,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("useTruststoreSpi", useTruststoreSpi)
     )
 
+    //Documentation does not specify which content type this endpoint consumes, multipart/form-data and application/json are equally likely.
+    //Therefor, in case the endpoint returns an error, it may be required to build a case class from the query parameters instead of a multipart.
     val mp = createMultipart(queries)
-
     keycloakClient.post[Multipart, Response](mp, path)
   }
 

@@ -281,12 +281,12 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      *
      * @param clientId    ID of client (not client-id).
      * @param realm       Name of the Realm.
-     * @param formParams
+     * @param node
      * @return
      */
-    def registerClusterNode(clientId: String, realm: String, formParams: Map[String, Any]): R[AnyRef] = { //TODO Determine formParams type.
+    def registerClusterNode(clientId: String, realm: String, node: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "nodes")
-      keycloakClient.post[Map[String, Any], AnyRef](formParams, path)
+      keycloakClient.post[Map[String, String]](Map("node" -> node), path) //If Sttp throws an error, then the node String needs to be wraooed in a case class instead of a Map.
     }
 
     /**

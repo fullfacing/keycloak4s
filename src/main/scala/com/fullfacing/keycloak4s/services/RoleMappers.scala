@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.models.{Mappings, Role}
 
 import scala.collection.immutable.Seq
 
-class RoleMapper[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val groups_path   = "groups"
   private val role_mappings = "role-mappings"

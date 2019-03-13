@@ -205,7 +205,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @param flowAlias Name of the existing authentication flow.
    * @param realm     Name of the Realm.
-   * @param provider  //TODO Determine if provider name or id
+   * @param provider  Provider ID
    * @return
    */
   def addFlowAuthenticationExecution(flowAlias: String, realm: String, provider: String): R[Response] = {
@@ -304,9 +304,9 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param requiredAction  Details of the required action
    * @return
    */
-  def registerRequiredAction(realm: String, providerId: String, requiredAction: RequiredAction): R[AnyRef] = { //TODO Determine return type.
+  def registerRequiredAction(realm: String, providerId: String, requiredAction: RequiredAction): R[Unit] = {
     val path = Seq(realm, "authentication", "register-required-action")
-    client.post[RequiredAction, AnyRef](requiredAction, path)
+    client.post[RequiredAction](requiredAction, path)
   }
 
   /**

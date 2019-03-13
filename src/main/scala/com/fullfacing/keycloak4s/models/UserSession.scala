@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.models
 
-case class UserSession(clients: Option[Map[_, _]],
+case class UserSession(clients: Option[Map[String, String]],
                        id: Option[String],
                        ipAddress: Option[String],
                        lastAccess: Option[String],

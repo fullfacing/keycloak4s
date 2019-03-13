@@ -1,9 +1,9 @@
 package com.fullfacing.keycloak4s.models
 
-case class User(access: Option[Map[_, _]] = None,
-                attributes: Option[Map[_, _]] = None,
+case class User(access: Option[UserAccess] = None,
+                attributes: Option[Map[String, String]] = None,
                 clientConsents: Option[List[UserConsent]] = None,
-                clientRoles: Option[Map[_, _]] = None,
+                clientRoles: Option[Map[String, Any]] = None,
                 createdTimestamp: Option[Long] = None,
                 credentials: Option[List[Credential]] = None,
                 disableableCredentialTypes: Option[List[String]] = None,
@@ -23,3 +23,9 @@ case class User(access: Option[Map[_, _]] = None,
                 self: Option[String] = None,
                 serviceAccountClientId: Option[String] = None,
                 username: Option[String])
+
+case class UserAccess(manage: Boolean,
+                      impersonate: Boolean,
+                      manageGroupMembership: Boolean,
+                      mapRoles: Boolean,
+                      view: Boolean)

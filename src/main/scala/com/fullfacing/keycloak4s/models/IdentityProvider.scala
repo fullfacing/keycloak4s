@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.models
 
 case class IdentityProvider(addReadTokenRoleOnCreate: Option[Boolean],
                             alias: Option[String],
-                            config: Option[Map[_, _]],
+                            config: Option[Map[String, String]],
                             displayName: Option[String],
                             enabled: Option[Boolean],
                             firstBrokerLoginFlowAlias: Option[String],

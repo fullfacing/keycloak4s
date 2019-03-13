@@ -138,12 +138,12 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    *
    * @param realm
    * @param userId
-   * @param credTypes credentialTypes, required  -- TODO figure out what credential types there are
+   * @param credentialTypes See User model field 'disableableCredentialTypes'.
    * @return
    */
-  def disableUserCredentials(realm: String, userId: String, credTypes: List[String]): R[Unit] = {
+  def disableUserCredentials(realm: String, userId: String, credentialTypes: List[String]): R[Unit] = {
     val path = Seq(realm, users_path, userId, "disable-credential-types")
-    client.put[List[String]](credTypes, path)
+    client.put[List[String]](credentialTypes, path)
   }
 
   /**
@@ -241,9 +241,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def groupCount(realm: String, userId: String): R[GroupCount] = {
+  def groupCount(realm: String, userId: String): R[Count] = {
     val path = Seq(realm, users_path, userId, "groups", "count")
-    client.get[GroupCount](path)
+    client.get[Count](path)
   }
 
   /**

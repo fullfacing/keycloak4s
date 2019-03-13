@@ -1,8 +1,8 @@
 package com.fullfacing.keycloak4s.models
 
-case class Group(access: Option[Map[_, _]],
-                 attributes: Option[Map[_, _]],
-                 clientRoles: Option[Map[_, _]],
+case class Group(access: Option[Map[String, Boolean]],
+                 attributes: Option[Map[String, Seq[String]]],
+                 clientRoles: Option[Map[String, Seq[String]]],
                  id: Option[String],
                  name: Option[String],
                  path: Option[String],

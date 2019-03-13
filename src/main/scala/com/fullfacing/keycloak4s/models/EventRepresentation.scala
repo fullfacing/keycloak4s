@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.models
 
 case class EventRepresentation(clientId: Option[String],
-                               details: Option[Map[_, _]],
+                               details: Option[Map[String, String]],
                                error: Option[String],
                                ipAddress: Option[String],
                                realmId: Option[String],
