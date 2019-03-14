@@ -26,7 +26,7 @@ case class AccessToken(acr: Option[String],
                        name: Option[String],
                        nickname: Option[String],
                        nonce: Option[String],
-                       otherClaims: Option[Map[_, _]],
+                       otherClaims: Option[Map[String, AnyRef]], //The value's type in the Java API is Object.
                        phone_number: Option[String],
                        phone_number_verified: Option[Boolean],
                        picture: Option[String],

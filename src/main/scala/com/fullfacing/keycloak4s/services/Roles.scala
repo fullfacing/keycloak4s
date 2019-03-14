@@ -19,9 +19,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def createClientRole(realm: String, id: String, role: Role): R[Response] = {
+  def createClientRole(realm: String, id: String, role: Role): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path)
-    keyCloakClient.post[Role, Response](role, path)
+    keyCloakClient.post[Role, Unit](path, role)
   }
 
   /**
@@ -58,9 +58,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def updateByName(realm: String, id: String, roleName: String, role: Role): R[Response] = {
+  def updateByName(realm: String, id: String, roleName: String, role: Role): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName)
-    keyCloakClient.put[Role, Response](role, path)
+    keyCloakClient.put[Role, Unit](path, role)
   }
 
   /**
@@ -87,7 +87,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    */
   def addComposites(realm: String, id: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    keyCloakClient.post[List[Role]](roles, path)
+    keyCloakClient.post[List[Role], Unit](path, roles)
   }
 
   /**
@@ -114,7 +114,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    */
   def removeCompositeRoles(realm: String, id: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "composites")
-    keyCloakClient.delete[List[Role]](roles, path)
+    keyCloakClient.delete[List[Role], Unit](path, roles)
   }
 
   /**
@@ -167,7 +167,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    */
   def setAuthPermissions(realm: String, id: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { // TODO Determine functionality
     val path = Seq(realm, clients_path, id, roles_path, roleName, "management", "permissions")
-    keyCloakClient.put[ManagementPermission, ManagementPermission](ref, path)
+    keyCloakClient.put[ManagementPermission, ManagementPermission](path, ref)
   }
 
   /**
@@ -183,7 +183,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
   def usersByRoleName(realm: String, id: String, roleName: String, first: Option[Int], max: Option[Int]): R[List[User]] = {
     val path = Seq(realm, clients_path, id, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    keyCloakClient.get[List[User]](path, query)
+    keyCloakClient.get[List[User]](path, query = query)
   }
 
   /**
@@ -193,9 +193,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def createRealmRole(realm: String, role: Role): R[Response] = {
+  def createRealmRole(realm: String, role: Role): R[Unit] = {
     val path = Seq(realm, roles_path)
-    keyCloakClient.post[Role, Response](role, path)
+    keyCloakClient.post[Role, Unit](path, role)
   }
 
   /**
@@ -229,9 +229,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role     Updated role
    * @return
    */
-  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[Response] = {
+  def updateRealmRoleByName(realm: String, roleName: String, role: Role): R[Unit] = {
     val path = Seq(realm, roles_path, roleName)
-    keyCloakClient.put[Role, Response](role, path)
+    keyCloakClient.put[Role, Unit](path, role)
   }
 
   /**
@@ -244,7 +244,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    */
   def deleteRealmRoleByName(realm: String, roleName: String, role: String): R[Unit] = {
     val path = Seq(realm, roles_path, roleName)
-    keyCloakClient.delete[String](role, path)
+    keyCloakClient.delete[String, Unit](path, role)
   }
 
   /**
@@ -257,7 +257,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    */
   def addCompositeToRealmRole(realm: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    keyCloakClient.post[List[Role]](roles, path)
+    keyCloakClient.post[List[Role], Unit](path, roles)
   }
 
   /**
@@ -282,7 +282,7 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    */
   def removeRolesFromRolesComposite(realm: String, roleName: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, roles_path, roleName, "composites")
-    keyCloakClient.delete[List[Role]](roles, path)
+    keyCloakClient.delete[List[Role], Unit](path, roles)
   }
 
   /**
@@ -322,18 +322,18 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
     keyCloakClient.get[ManagementPermission](path)
   }
 
-//  /**
-//   * To be determined
-//   *
-//   * @param realm    realm name (not id!)
-//   * @param roleName role’s name (not id!)
-//   * @param ref
-//   * @return
-//   */
-//  def TBD(realm: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { //TODO determine functionality
-//    val path = Seq(realm, roles_path, roleName, "management", "permissions")
-//    keyCloakClient.put[ManagementPermission, ManagementPermission](ref, path)
-//  }
+  /**
+   * To be determined
+   *
+   * @param realm    realm name (not id!)
+   * @param roleName role’s name (not id!)
+   * @param ref
+   * @return
+   */
+  def TBD(realm: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = { //TODO determine functionality
+    val path = Seq(realm, roles_path, roleName, "management", "permissions")
+    keyCloakClient.put[ManagementPermission, ManagementPermission](path, ref)
+  }
 
   /**
    * Return List of Users that have the specified role name
@@ -347,6 +347,6 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
   def fetchUsersByRoleName(realm: String, roleName: String, first: Option[Int], max: Option[Int]): R[User] = {
     val path  = Seq(realm, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    keyCloakClient.get[User](path, query)
+    keyCloakClient.get[User](path, query = query)
   }
 }

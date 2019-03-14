@@ -15,9 +15,9 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param group Object representing the group details.
    * @return
    */
-  def addGroupSet(realm: String, group: Group): R[Response] = {
+  def addGroupSet(realm: String, group: Group): R[Unit] = {
     val path = Seq(realm, "groups")
-    client.post[Group, Response](group, path)
+    client.post[Group, Unit](path, group)
   }
 
   /**
@@ -37,7 +37,7 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     )
 
     val path = Seq(realm, "groups")
-    client.get[Seq[Group]](path, query)
+    client.get[Seq[Group]](path, query = query)
   }
 
   /**
@@ -55,7 +55,7 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     )
 
     val path = Seq(realm, "groups", "count")
-    client.get[Count](path, query)
+    client.get[Count](path, query = query)
   }
 
   /**
@@ -78,9 +78,9 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param group   Object representing the group details.
    * @return
    */
-  def getGroup(groupId: String, realm: String, group: Group): R[Group] = {
+  def updateGroup(groupId: String, realm: String, group: Group): R[Unit] = {
     val path = Seq(realm, "groups", groupId)
-    client.put[Group, Group](group, path)
+    client.put[Group, Unit](path, group)
   }
 
   /**
@@ -90,22 +90,23 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param realm   Name of the Realm.
    * @return
    */
-  def deleteGroup(groupId: String, realm: String): R[Group] = {
+  def deleteGroup(groupId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "groups", groupId)
-    client.delete[Group](path)
+    client.delete(path)
   }
 
   /**
-   * Update group, ignores subgroups.
+   * Set or create child.
+   * This will just set the parent if it exists. Create it and set the parent if the group doesn’t exist.
    *
    * @param groupId ID of the group.
    * @param realm   Name of the Realm.
    * @param group   Object representing the group details.
    * @return
    */
-  def setChild(groupId: String, realm: String, group: Group): R[Group] = {
+  def setChild(groupId: String, realm: String, group: Group): R[Unit] = {
     val path = Seq(realm, "groups", groupId, "children")
-    client.post[Group, Group](group, path)
+    client.post[Group, Unit](path, group)
   }
 
   /**
@@ -130,7 +131,7 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateManagementPermissions(groupId: String, realm: String, permissions: ManagementPermission): R[ManagementPermission] = {
     val path = Seq(realm, "groups", groupId, "management", "permissions")
-    client.put[ManagementPermission, ManagementPermission](permissions, path)
+    client.put[ManagementPermission, ManagementPermission](path, permissions)
   }
 
   /**
@@ -141,13 +142,13 @@ class Groups[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param max
    * @return
    */
-  def getUsers(groupId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None): R[Seq[Group]] = {
+  def getUsers(groupId: String, realm: String, first: Option[Int] = None, max: Option[Int] = None): R[Seq[User]] = {
     val query = createQuery(
       ("first", first),
       ("max", max)
     )
 
     val path = Seq(realm, "groups", groupId, "members")
-    client.get[Seq[Group]](path, query)
+    client.get[Seq[User]](path, query = query)
   }
 }

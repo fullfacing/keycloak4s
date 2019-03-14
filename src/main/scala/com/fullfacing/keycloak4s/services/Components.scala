@@ -15,8 +15,8 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param component Object representing a component's details.
    * @return
    */
-  def createComponent(realm: String, component: Component): R[Response] = {
-    client.post[Component, Response](component, realm :: "components" :: Nil)
+  def createComponent(realm: String, component: Component): R[Unit] = {
+    client.post[Component, Unit](realm :: "components" :: Nil, component)
   }
 
   /**
@@ -49,7 +49,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @return
    */
   def updateComponent(componentId: String, realm: String, component: Component): R[Component] = {
-    client.put[Component, Component](component, realm :: "components" :: componentId :: Nil)
+    client.put[Component, Component](realm :: "components" :: componentId :: Nil, component)
   }
 
   /**
@@ -73,6 +73,6 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None): R[Seq[ComponentType]] = {
     val query = createQuery(("type", `type`))
-    client.get[Seq[ComponentType]](realm :: "components" :: componentId :: "sub-component-types" :: Nil, query)
+    client.get[Seq[ComponentType]](realm :: "components" :: componentId :: "sub-component-types" :: Nil, query = query)
   }
 }

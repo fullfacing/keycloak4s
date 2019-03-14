@@ -11,15 +11,16 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   private val users_path = "users"
 
   /**
-   * Create a new user Username must be unique
+   * Create a new user
+   * Username must be unique
    *
    * @param realm
    * @param user
    * @return
    */
-  def createUser(realm: String, user: User): R[Response] = {
+  def createUser(realm: String, user: User): R[Unit] = {
     val path = Seq(realm, users_path)
-    client.post[User, Response](user, path)
+    client.post(path, user)
   }
 
   /**
@@ -58,7 +59,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     )
 
     val path = Seq(realm, users_path)
-    client.get[List[User]](path, query)
+    client.get[List[User]](path, query = query)
   }
 
   /**
@@ -66,9 +67,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param realm
    * @return
    */
-  def getUsersCount(realm: String): R[String] = { //TODO
+  def getUsersCount(realm: String): R[Int] = {
     val path = Seq(realm, users_path, "count")
-    client.get[String](path)
+    client.get[Int](path)
   }
 
   /**
@@ -91,9 +92,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param updated
    * @return
    */
-  def updateUser(realm: String, userId: String, updated: User): R[Response] = {
+  def updateUser(realm: String, userId: String, updated: User): R[Unit] = {
     val path = Seq(realm, users_path, userId)
-    client.put[User, Response](updated, path)
+    client.put(path, updated)
   }
 
   /**
@@ -103,9 +104,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def deleteUser(realm: String, userId: String): R[Response] = {
+  def deleteUser(realm: String, userId: String): R[Unit] = {
     val path = Seq(realm, users_path, userId)
-    client.delete[Response](path)
+    client.delete(path)
   }
 
   /**
@@ -115,9 +116,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def getUserConsents(realm: String, userId: String): R[List[Map[String, String]]] = { // Don't know return type
+  def getUserConsents(realm: String, userId: String): R[List[UserConsent]] = {
     val path = Seq(realm, users_path, userId, "consents")
-    client.get[List[Map[String, String]]](path)
+    client.get[List[UserConsent]](path)
   }
 
   /**
@@ -137,12 +138,12 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    *
    * @param realm
    * @param userId
-   * @param credTypes credentialTypes, required  -- TODO figure out what credential types there are
+   * @param credentialTypes See User model field 'disableableCredentialTypes'.
    * @return
    */
-  def disableUserCredentials(realm: String, userId: String, credTypes: List[String]): R[Unit] = {
+  def disableUserCredentials(realm: String, userId: String, credentialTypes: List[String]): R[Unit] = {
     val path = Seq(realm, users_path, userId, "disable-credential-types")
-    client.put[List[String]](credTypes, path)
+    client.put[List[String], Unit](path, credentialTypes)
   }
 
   /**
@@ -166,12 +167,12 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
                           clientId: Option[String] = None,
                           lifespan: Option[Int] = None,
                           redirectUri: Option[String],
-                          actions: List[String]): R[Response] = { // Unknown Return Type
+                          actions: List[String]): R[Unit] = {
 
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
 
     val path = Seq(realm, users_path, userId, "execute-actions-email")
-    client.put[List[String], Response](actions, path, query)
+    client.put[List[String], Unit](path, actions, query)
   }
 
   /**
@@ -195,9 +196,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param rep
    * @return
    */
-  def addUserSocialLoginProvider(realm: String, userId: String, provider: String, rep: FederatedIdentity): R[Response] = { // Unknown Return Type
+  def addUserSocialLoginProvider(realm: String, userId: String, provider: String, rep: FederatedIdentity): R[Unit] = { // Unknown Return Type
     val path = Seq(realm, users_path, userId, "federated-identity", provider)
-    client.post[FederatedIdentity, Response](rep, path)
+    client.post[FederatedIdentity, Unit](path, rep)
   }
 
   /**
@@ -231,7 +232,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     val query = createQuery(("first", first), ("max", max), ("search", search))
 
     val path = Seq(realm, users_path, userId, "groups")
-    client.get[List[Group]](path, query)
+    client.get[List[Group]](path, query = query)
   }
 
   /**
@@ -240,27 +241,37 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def groupCount(realm: String, userId: String): R[GroupCount] = {
+  def groupCount(realm: String, userId: String): R[Count] = {
     val path = Seq(realm, users_path, userId, "groups", "count")
-    client.get[GroupCount](path)
+    client.get[Count](path)
   }
 
-//  /**
-//   *
-//   * @param realm
-//   * @param userId
-//   * @param groupId
-//   * @return
-//   */
-//  def unknown(realm: String, userId: String, groupId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = { //TODO try to figure out what this is
-//    val path = Seq(realm, users_path, userId, "groups", groupId)
-//    SttpClient.put(path)
-//  }
-//
-//  def `removeFromGroup???`(realm: String, userId: String, groupId: String)(implicit authToken: String): AsyncApolloResponse[NoContent] = { // TODO confirm what this does
-//    val path = Seq(realm, users_path, userId, "groups", groupId)
-//    SttpClient.delete(path)
-//  }
+  /**
+   * Add user to specified group
+   *
+   * @param realm     Name of the realm
+   * @param userId    Id of user to add to the group
+   * @param groupId   Id of the group the user is to be added to
+   * @return
+   */
+  def joinGroup(realm: String, userId: String, groupId: String): R[Unit] = {
+    val path = Seq(realm, users_path, userId, "groups", groupId)
+    client.put(path)
+  }
+
+
+  /**
+   * removeMembership
+   *
+   * @param realm     Name of the realm.
+   * @param userId    Id of user to remove from the group.
+   * @param groupId   Id of the group from which the user is to be removed.
+   * @return
+   */
+  def removeFromGroup(realm: String, userId: String, groupId: String): R[Unit] = {
+    val path = Seq(realm, users_path, userId, "groups", groupId)
+    client.delete(path)
+  }
 
   /**
    * Impersonate the user
@@ -269,9 +280,9 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId
    * @return
    */
-  def impersonate(realm: String, userId: String): R[Map[String, Any]] = { // TODO: Figure out return type
+  def impersonate(realm: String, userId: String): R[ImpersonationResponse] = {
     val path = Seq(realm, users_path, userId, "impersonation")
-    client.post[Map[String, Any]](path)
+    client.post[Unit, ImpersonationResponse](path)
   }
 
   /**
@@ -320,7 +331,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def resetPassword(realm: String, userId: String, pass: Credential): R[Unit] = {
     val path = Seq(realm, users_path, userId, "reset-password")
-    client.put(pass, path)
+    client.put(path, pass)
   }
 
   /** Send an email-verification email to the user.
@@ -337,12 +348,12 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   def sendVerificationEmail(realm: String,
                             userId: String,
                             clientId: Option[String] = None,
-                            redirectUri: Option[String] = None): R[Response] = {
+                            redirectUri: Option[String] = None): R[Unit] = {
 
     val query = createQuery(("client_id", clientId), ("redirect_uri",redirectUri))
 
     val path = Seq(realm, users_path, userId, "send-verify-email")
-    client.put[Response](path, query)
+    client.put(path, query = query)
   }
 
   /**

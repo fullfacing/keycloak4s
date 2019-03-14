@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.services
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
+import com.softwaremill.sttp.Multipart
 
 import scala.collection.immutable.Seq
 
@@ -14,9 +15,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param realm Representation of the realm.
    * @return
    */
-  def importRealm(realm: RealmRepresentation): R[Response] = {
+  def importRealm(realm: RealmRepresentation): R[Unit] = {
     val path = Seq.empty[String]
-    keycloakClient.post[RealmRepresentation, Response](realm, path)
+    keycloakClient.post[RealmRepresentation, Unit](path, realm)
   }
 
   /**
@@ -39,9 +40,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param update  Representation of the realm.
    * @return
    */
-  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[Response] = {
+  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[Unit] = {
     val path = Seq(realm)
-    keycloakClient.put[RealmRepresentation, Response](update, path)
+    keycloakClient.put[RealmRepresentation, Unit](path, update)
   }
 
   /**
@@ -99,7 +100,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
     )
 
     val path = Seq(realm, "admin-events")
-    keycloakClient.get[AdminEvent](path, query)
+    keycloakClient.get[AdminEvent](path, query = query)
   }
 
   /**
@@ -146,8 +147,6 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
     keycloakClient.post(path)
   }
 
-  //TODO Determine what exactly this route does, as the description does not correlate well with the route name.
-  // As well determine the input, for consumers they list not only application/json, but application/xml and text/plain as well.
   /**
    * Base path for importing clients under this realm.
    *
@@ -155,9 +154,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param description
    * @return
    */
-  def convertClientDescription(realm: String, description: String): R[Client] = {
+  def importClientViaDescription(realm: String, description: String): R[Client] = {
     val path = Seq(realm, "client-description-converter")
-    keycloakClient.post(description, path)
+    keycloakClient.post[String, Client](path, description)
   }
 
   /**
@@ -168,7 +167,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param realm Name of the realm.
    * @return
    */
-  def getClientSessionStats(realm: String): R[Seq[ClientSessionStatistics]] = { //TODO Determine return type.
+  def getClientSessionStats(realm: String): R[Seq[ClientSessionStatistics]] = {
     val path = Seq(realm, "client-session-stats")
     keycloakClient.get[Seq[ClientSessionStatistics]](path)
   }
@@ -314,7 +313,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
     )
 
     val path = Seq(realm, "events")
-    keycloakClient.get[Seq[EventRepresentation]](path, query)
+    keycloakClient.get[Seq[EventRepresentation]](path, query = query)
   }
 
   /**
@@ -350,7 +349,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateEventsConfig(realm: String, config: RealmEventsConfig): R[Unit] = {
     val path = Seq(realm, "events", "config")
-    keycloakClient.put(config, path)
+    keycloakClient.put(path, config)
   }
 
   /**
@@ -373,7 +372,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def logoutAll(realm: String): R[GlobalRequestResult] = {
     val path = Seq(realm, "logout-all")
-    keycloakClient.post[GlobalRequestResult](path)
+    keycloakClient.post[Unit, GlobalRequestResult](path)
   }
 
   /**
@@ -390,7 +389,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
     val path    = Seq(realm, "partial-export")
     val queries = createQuery(("exportClients", exportClients), ("exportGroupsAndRoles", exportGroupsAndRoles))
 
-    keycloakClient.post[RealmRepresentation](path, queries)
+    keycloakClient.post[Unit, RealmRepresentation](path, query = queries)
   }
 
   /**
@@ -400,9 +399,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param rep
    * @return
    */
-  def partialImport(realm: String, rep: PartialImport): R[Response] = {
+  def partialImport(realm: String, rep: PartialImport): R[Unit] = {
     val path = Seq(realm, "partialImport")
-    keycloakClient.post[PartialImport, Response](rep, path)
+    keycloakClient.post[PartialImport, Unit](path, rep)
   }
 
   /**
@@ -413,7 +412,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def pushRevocation(realm: String): R[GlobalRequestResult] = {
     val path = Seq(realm, "push-revocation")
-    keycloakClient.post[GlobalRequestResult](path)
+    keycloakClient.post[Unit, GlobalRequestResult](path)
   }
 
   /**
@@ -442,17 +441,17 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param useTruststoreSpi
    * @return
    */
-  def testLdapConnection(realm: String, // TODO Figure out how queries should be sent - FormData
+  def testLdapConnection(realm: String,
                          action: Option[String] = None,
                          bindCredential: Option[String] = None,
                          bindDn: Option[String] = None,
                          componentId: Option[String] = None,
                          connectionTimeout: Option[String] = None,
                          connectionUrl: Option[String] = None,
-                         useTruststoreSpi: Option[String] = None): R[Response] = {
+                         useTruststoreSpi: Option[String] = None): R[Unit] = {
 
     val path = Seq(realm, "testLDAPConnection")
-    val queries = createQuery(
+    val queries = createdUrlEncodedMap(
       ("action", action),
       ("bindCredential", bindCredential),
       ("bindDn", bindDn),
@@ -462,7 +461,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("useTruststoreSpi", useTruststoreSpi)
     )
 
-    keycloakClient.post[Response](path, queries)
+    //Documentation does not specify which content type this endpoint consumes, multipart/form-data and application/json are equally likely.
+    //Therefor, in case the endpoint returns an error, it may be required to build a case class from the query parameters instead of a multipart.
+    val mp = createMultipart(queries)
+    keycloakClient.post[Multipart, Unit](path, mp)
   }
 
   /**
@@ -472,9 +474,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param config SMTP server configuration
    * @return
    */
-  def testSmtpConnection(realm: String, config: String): R[Response] = {
+  def testSmtpConnection(realm: String, config: String): R[Unit] = {
     val path = Seq(realm, "testSMTPConnection", config)
-    keycloakClient.post[Response](path)
+    keycloakClient.post(path)
   }
 
   /**
@@ -497,6 +499,6 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    */
   def updateUsersManagementPermissions(realm: String, ref: ManagementPermission): R[ManagementPermission] = {
     val path = Seq(realm, "users-management-permissions")
-    keycloakClient.put[ManagementPermission, ManagementPermission](ref, path)
+    keycloakClient.put[ManagementPermission, ManagementPermission](path, ref)
   }
 }

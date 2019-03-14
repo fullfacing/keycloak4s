@@ -1,23 +1,35 @@
 package com.fullfacing.keycloak4s.client
 
+import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.TokenManager.{Token, TokenResponse}
+import com.fullfacing.keycloak4s.models.ErrorDump
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import org.json4s.Formats
-import org.json4s.native.Serialization
+import org.json4s.jackson.Serialization
 
 abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) {
 
-  protected implicit val serialization: Serialization.type = org.json4s.native.Serialization
+  protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
   protected val F: MonadError[F] = client.responseMonad
 
-  protected def liftM[A](response: Either[String, A]): F[A] = response match {
-    case Left(err) => F.error(new Throwable(err))
+  protected def buildError(response: Response[_]): ErrorDump = {
+    ErrorDump(
+      code        = response.code,
+      body        = response.body.fold(e => e, _ => "N/A"),
+      headers     = response.headers,
+      rawBody     = response.rawErrorBody.fold(new String(_, StandardCharsets.UTF_8), _ => "N/A"),
+      statusText  = response.statusText
+    )
+  }
+
+  protected def liftM[A](response: Response[A]): F[A] = response.body match {
+    case Left(_)    => F.error(buildError(response))
     case Right(rsp) => F.unit(rsp)
   }
 
@@ -52,7 +64,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
       .mapResponse(mapToToken)
       .send()
 
-    Concurrent[F].flatMap(a)(aa => liftM(aa.body))
+    Concurrent[F].flatMap(a)(liftM)
   }
 
   private def refreshAccessToken(t: Token): F[Token] = {
@@ -62,7 +74,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
       .mapResponse(mapToToken)
       .send()
 
-    Concurrent[F].flatMap(a)(aa => liftM(aa.body))
+    Concurrent[F].flatMap(a)(liftM)
   }
 
 

@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.models
 
 case class UserFederationProvider(changedSyncPeriod: Option[Int],
-                                  config: Option[Map[_, _]],
+                                  config: Option[Map[String, String]],
                                   displayName: Option[String],
                                   fullSyncPeriod: Option[Int],
                                   id: Option[String],

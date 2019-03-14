@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.models.KeysMetadata
 
 import scala.collection.immutable.Seq
 
-class Key[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Keys[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val resource: String = "keys"
 

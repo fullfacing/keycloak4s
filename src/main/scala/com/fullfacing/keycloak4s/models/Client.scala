@@ -1,9 +1,9 @@
 package com.fullfacing.keycloak4s.models
 
-case class Client(access: Option[Map[_, _]],
+case class Client(access: Option[ClientAccess],
                   adminUrl: Option[String],
-                  attributes: Option[Map[_, _]],
-                  authenticationFlowBindingOverrides: Option[Map[_, _]],
+                  attributes: Option[Map[String, String]],
+                  authenticationFlowBindingOverrides: Option[Map[String, AnyRef]], //Potential for stronger typing, requires example.
                   authorizationServicesEnabled: Option[Boolean],
                   authorizationSettings: Option[ResourceServer],
                   baseUrl: Option[String],
@@ -29,7 +29,7 @@ case class Client(access: Option[Map[_, _]],
                   protocolMappers: Option[List[ProtocolMapper]],
                   publicClient: Option[Boolean],
                   redirectUris: List[String],
-                  registeredNodes: List[Map[_, _]],
+                  registeredNodes: List[Map[String, AnyRef]], //Potential for stronger typing, requires example.
                   registrationAccessToken: Option[String],
                   rootUrl: Option[String],
                   secret: Option[String],
@@ -37,3 +37,7 @@ case class Client(access: Option[Map[_, _]],
                   standardFlowEnabled: Option[Boolean],
                   surrogateAuthRequired: Option[Boolean],
                   webOrigins: Option[List[String]])
+
+case class ClientAccess(view: Boolean,
+                        configure: Boolean,
+                        manage: Boolean)

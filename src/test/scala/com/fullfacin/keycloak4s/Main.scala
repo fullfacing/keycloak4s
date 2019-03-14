@@ -18,7 +18,7 @@ object Main extends App {
   implicit val formats: Formats = org.json4s.DefaultFormats
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
 
-  val config = KeycloakConfig(authn = KeycloakConfig.Auth("master", "admin-cli", "fedb554a-f1f6-4b9e-ace8-2e0e5842ceef"))
+  val config = KeycloakConfig(realm = "master", authn = KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
 
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
@@ -26,8 +26,8 @@ object Main extends App {
 
   val clients = Keycloak.Users[Task, Source[ByteString, Any]]
   import scala.concurrent.duration._
-  global.scheduleAtFixedRate(0 seconds, 1 second) {
-    clients.getUsers("lessondesk").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
+  global.scheduleOnce(0 seconds) {
+    clients.getUsers("demo").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 
