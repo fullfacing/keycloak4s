@@ -16,7 +16,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @return
    */
   def createComponent(realm: String, component: Component): R[Response] = {
-    client.post[Component, Response](component, realm :: "components" :: Nil)
+    client.post[Component, Response](realm :: "components" :: Nil, component)
   }
 
   /**
@@ -49,7 +49,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @return
    */
   def updateComponent(componentId: String, realm: String, component: Component): R[Component] = {
-    client.put[Component, Component](component, realm :: "components" :: componentId :: Nil)
+    client.put[Component, Component](realm :: "components" :: componentId :: Nil, component)
   }
 
   /**

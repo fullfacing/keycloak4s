@@ -32,7 +32,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def update(realm: String, roleId: String, role: Role): R[Unit] = {
     val path = Seq(realm, resource, roleId)
-    keycloakClient.put[Role](role, path)
+    keycloakClient.put[Role, Unit](path, role)
   }
 
   /**
@@ -57,7 +57,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def addSubRoles(realm: String, roleId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, roleId, "composites")
-    keycloakClient.post[List[Role]](roles, path)
+    keycloakClient.post[List[Role], Unit](path, roles)
   }
 
   /**
@@ -82,7 +82,7 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def removeSubRoles(realm: String, roleId: String, roles: List[Role]): R[Unit] = {
     val path = Seq(realm, resource, roleId, "composites")
-    keycloakClient.delete[List[Role]](roles, path)
+    keycloakClient.delete[List[Role], Unit](path, roles)
   }
 
   /**
@@ -132,6 +132,6 @@ class RolesById[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, 
    */
   def initialiseRoleAuthPermissions(realm: String, roleId: String, ref: ManagementPermission): R[ManagementPermission] = {
     val path = Seq(realm, resource, roleId, "management", "permissions")
-    keycloakClient.put[ManagementPermission, ManagementPermission](ref, path)
+    keycloakClient.put[ManagementPermission, ManagementPermission](path, ref)
   }
 }

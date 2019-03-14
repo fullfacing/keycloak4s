@@ -20,7 +20,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def createUser(realm: String, user: User): R[Response] = {
     val path = Seq(realm, users_path)
-    client.post[User, Response](user, path)
+    client.post[User, Response](path, user)
   }
 
   /**
@@ -83,7 +83,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     val path = Seq(realm, users_path, userId)
     client.get[User](path)
   }
-
+/*
   /**
    * Update the user
    *
@@ -366,5 +366,5 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   def getSessions(realm: String, userId: String): R[List[UserSession]] = {
     val path = Seq(realm, users_path, userId, "sessions")
     client.get[List[UserSession]](path)
-  }
+  }*/
 }

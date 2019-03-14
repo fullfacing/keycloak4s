@@ -19,7 +19,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
    * @return
    */
   def createNewInitialAccessToken(realm: String, config: ClientInitialAccessCreate): R[ClientInitialAccess] = {
-    keycloakClient.post[ClientInitialAccessCreate, ClientInitialAccess](config, realm :: "clients-initial-access" :: Nil)
+    keycloakClient.post[ClientInitialAccessCreate, ClientInitialAccess](realm :: "clients-initial-access" :: Nil, config)
   }
 
   /**
@@ -53,7 +53,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def createNewClient(realm: String, client: Client): R[Response] = {
       val path = Seq(realm, "clients")
-      keycloakClient.post[Client, Response](client, path)
+      keycloakClient.post[Client, Response](path, client)
     }
 
     /**
@@ -67,7 +67,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
     def getRealmClients(realm: String, clientId: Option[String] = None, viewableOnly: Boolean = false): R[Seq[Client]] = {
       val query = createQuery(("clientId", clientId), ("viewableOnly", Some(viewableOnly)))
       val path = Seq(realm, "clients")
-      keycloakClient.get[Seq[Client]](path, query)
+      keycloakClient.get[Seq[Client]](path, query = query)
     }
 
     /**
@@ -92,7 +92,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def updateClient(clientId: String, realm: String, c: Client): R[Response] = {
       val path = Seq(realm, "clients", clientId)
-      keycloakClient.put[Client, Response](c, path)
+      keycloakClient.put[Client, Response](path, c)
     }
 
     /**
@@ -116,7 +116,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def generateClientSecret(clientId: String, realm: String): R[Credential] = {
       val path = Seq(realm, "clients", clientId, "client-secret")
-      keycloakClient.post[Credential](path)
+      keycloakClient.post[Unit, Credential](path)
     }
 
     /**
@@ -272,7 +272,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def updateClientAuthorizationPermissions(clientId: String, realm: String, permission: ManagementPermission): R[ManagementPermission] = {
       val path = Seq(realm, "clients", clientId, "management", "permissions")
-      keycloakClient.put[ManagementPermission, ManagementPermission](permission, path)
+      keycloakClient.put[ManagementPermission, ManagementPermission](path, permission)
     }
 
     /**
@@ -286,7 +286,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def registerClusterNode(clientId: String, realm: String, node: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "nodes")
-      keycloakClient.post[Map[String, String]](Map("node" -> node), path) //If Sttp throws an error, then the node String needs to be wraooed in a case class instead of a Map.
+      keycloakClient.post[Map[String, String], Unit](path, Map("node" -> node)) //If Sttp throws an error, then the node String needs to be wraooed in a case class instead of a Map.
     }
 
     /**
@@ -383,7 +383,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def pushRevocationPolicy(clientId: String, realm: String): R[GlobalRequestResult] = {
       val path = Seq(realm, "clients", clientId, "push-revocation")
-      keycloakClient.post[GlobalRequestResult](path)
+      keycloakClient.post[Unit, GlobalRequestResult](path)
     }
 
     /**
@@ -395,7 +395,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def generateRegistrationAccessToken(clientId: String, realm: String): R[Client] = {
       val path = Seq(realm, "clients", clientId, "registration-access-token")
-      keycloakClient.post[Client](path)
+      keycloakClient.post[Unit, Client](path)
     }
 
     /**
@@ -481,7 +481,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def addRolesToGroup(clientId: String, groupId: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
-      keycloakClient.post(roles, path)
+      keycloakClient.post(path, roles)
     }
 
     /**
@@ -508,7 +508,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def deleteGroupRoles(clientId: String, groupId: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
-      keycloakClient.delete(roles, path)
+      keycloakClient.delete(path, roles)
     }
 
     /**
@@ -549,7 +549,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def addRolesToUser(clientId: String, userId: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "users", userId, "role-mappings", "clients", clientId)
-      keycloakClient.post(roles, path)
+      keycloakClient.post(path, roles)
     }
 
     /**
@@ -576,7 +576,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def deleteUserRoles(clientId: String, groupId: String, realm: String, roles: Seq[Role]): R[Unit] = {
       val path = Seq(realm, "groups", groupId, "role-mappings", "clients", clientId)
-      keycloakClient.delete(roles, path)
+      keycloakClient.delete(path, roles)
     }
 
     /**
@@ -631,7 +631,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def getKeystoreFile(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): R[File] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "download")
-      keycloakClient.post[KeyStoreConfig, File](config, path)
+      keycloakClient.post[KeyStoreConfig, File](path, config)
     }
 
     /**
@@ -644,7 +644,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def generateNewCertificate(attribute: String, clientId: String, realm: String): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate")
-      keycloakClient.post[Certificate](path)
+      keycloakClient.post[Unit, Certificate](path)
     }
 
     /**
@@ -658,7 +658,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def generateAndDownloadNewCertificate(attribute: String, clientId: String, realm: String, config: KeyStoreConfig): R[File] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "generate-and-download")
-      keycloakClient.post[KeyStoreConfig, File](config, path)
+      keycloakClient.post[KeyStoreConfig, File](path, config)
     }
 
     /**
@@ -673,7 +673,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
     def uploadCertificateWithPrivateKey(attribute: String, clientId: String, realm: String, file: File): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload")
       val multipart = createMultipart(file)
-      keycloakClient.post[Multipart, Certificate](multipart, path)
+      keycloakClient.post[Multipart, Certificate](path, multipart)
     }
 
     /**
@@ -688,7 +688,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
     def uploadCertificateWithoutPrivateKey(attribute: String, clientId: String, realm: String, file: File): R[Certificate] = {
       val path = Seq(realm, "clients", clientId, "certificates", attribute, "upload-certificate")
       val multipart = createMultipart(file)
-      keycloakClient.post[Multipart, Certificate](multipart, path)
+      keycloakClient.post[Multipart, Certificate](path, multipart)
     }
 
 
@@ -702,7 +702,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def createNewClientScope(realm: String, clientScope: ClientScope): R[Response] = {
       val path = Seq(realm, "client-scopes")
-      keycloakClient.post[ClientScope, Response](clientScope, path)
+      keycloakClient.post[ClientScope, Response](path, clientScope)
     }
 
     /**
@@ -715,7 +715,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): R[Response] = {
       val path = Seq(realm, "client-scopes", scopeId)
-      keycloakClient.put[ClientScope, Response](clientScope, path)
+      keycloakClient.put[ClientScope, Response](path, clientScope)
     }
 
     /**
@@ -727,7 +727,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      */
     def deleteClientScope(scopeId: String, realm: String): R[Response] = {
       val path = Seq(realm, "client-scopes", scopeId)
-      keycloakClient.delete[Response](path)
+      keycloakClient.delete[Unit, Response](path)
     }
 
     /**

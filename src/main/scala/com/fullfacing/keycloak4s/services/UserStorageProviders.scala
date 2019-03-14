@@ -59,7 +59,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
   def syncUsers(realm: String, userStorageId: String, action: Option[String]): R[Synchronization] = {
     val path  = Seq(realm, user_storage, userStorageId, "sync")
     val query = createQuery(("action", action))
-    client.post[Synchronization](path, query)
+    client.post[Unit, Synchronization](path, query = query)
   }
 
   /**
@@ -87,6 +87,6 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
   def syncMapperData(realm: String, mapperId: String, userStorageId: String, direction: Option[String]): R[Synchronization] = {
     val path  = Seq(realm, user_storage, userStorageId, "mappers", mapperId, "sync")
     val query = createQuery(("direction", direction))
-    client.post[Synchronization](path, query)
+    client.post[Unit, Synchronization](path, query = query)
   }
 }
