@@ -51,9 +51,9 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param client  Object representing a Client's details.
      * @return
      */
-    def createNewClient(realm: String, client: Client): R[Response] = {
+    def createNewClient(realm: String, client: Client): R[Unit] = {
       val path = Seq(realm, "clients")
-      keycloakClient.post[Client, Response](path, client)
+      keycloakClient.post[Client, Unit](path, client)
     }
 
     /**
@@ -90,9 +90,9 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param c         Object representing a Client's details.
      * @return
      */
-    def updateClient(clientId: String, realm: String, c: Client): R[Response] = {
+    def updateClient(clientId: String, realm: String, c: Client): R[Unit] = {
       val path = Seq(realm, "clients", clientId)
-      keycloakClient.put[Client, Response](path, c)
+      keycloakClient.put[Client, Unit](path, c)
     }
 
     /**
@@ -186,7 +186,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       )
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "generate-example-access-token")
-      keycloakClient.get[AccessToken](path, query)
+      keycloakClient.get[AccessToken](path, query = query)
     }
 
     /**
@@ -201,7 +201,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       val query = createQuery(("scope", scope))
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "protocol-mappers")
-      keycloakClient.get(path, query)
+      keycloakClient.get(path, query = query)
     }
 
     /**
@@ -218,7 +218,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       val query = createQuery(("scope", scope))
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "scope-mappings", roleContainerId, "granted")
-      keycloakClient.get(path, query)
+      keycloakClient.get(path, query = query)
     }
 
     /**
@@ -234,7 +234,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       val query = createQuery(("scope", scope))
 
       val path = Seq(realm, "clients", clientId, "evaluate-scopes", "scope-mappings", roleContainerId, "not-granted")
-      keycloakClient.get(path, query)
+      keycloakClient.get(path, query = query)
     }
 
     /**
@@ -245,9 +245,9 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param realm       Name of the Realm.
      * @return
      */
-    def getClientInstallationProvider(clientId: String, providerId: String, realm: String): R[Response] = {
+    def getClientInstallationProvider(clientId: String, providerId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "clients", clientId, "installation", "providers", providerId)
-      keycloakClient.get[Response](path)
+      keycloakClient.get(path)
     }
 
     /**
@@ -331,7 +331,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       )
 
       val path = Seq(realm, "clients", clientId, "offline-sessions")
-      keycloakClient.get[List[UserSession]](path, query)
+      keycloakClient.get[List[UserSession]](path, query = query)
     }
 
     /**
@@ -453,7 +453,7 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       )
 
       val path = Seq(realm, "clients", clientId, "user-sessions")
-      keycloakClient.get[List[UserSession]](path, query)
+      keycloakClient.get[List[UserSession]](path, query = query)
     }
 
     /**
@@ -466,9 +466,6 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       val path = Seq(realm, "client-registration-policy", "providers")
       keycloakClient.get[List[ComponentType]](path)
     }
-
-
-    //TODO Official documentation for ClientRoleMappings is lacking in detail and does not specify which "id" is required and if "client" is an ID or name.
 
     /**
      * Add client-level roles to the group role mapping.
@@ -606,7 +603,6 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       keycloakClient.get[List[Role]](path)
     }
 
-
     /**
      * Get key info.
      *
@@ -691,7 +687,6 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
       keycloakClient.post[Multipart, Certificate](path, multipart)
     }
 
-
     /**
      * Create a new client scope.
      * Client Scope’s name must be unique!
@@ -700,9 +695,9 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param clientScope Object representing ClientScope details.
      * @return
      */
-    def createNewClientScope(realm: String, clientScope: ClientScope): R[Response] = {
+    def createNewClientScope(realm: String, clientScope: ClientScope): R[Unit] = {
       val path = Seq(realm, "client-scopes")
-      keycloakClient.post[ClientScope, Response](path, clientScope)
+      keycloakClient.post[ClientScope, Unit](path, clientScope)
     }
 
     /**
@@ -713,9 +708,9 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param clientScope Object representing ClientScope details.
      * @return
      */
-    def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): R[Response] = {
+    def updateClientScope(scopeId: String, realm: String, clientScope: ClientScope): R[Unit] = {
       val path = Seq(realm, "client-scopes", scopeId)
-      keycloakClient.put[ClientScope, Response](path, clientScope)
+      keycloakClient.put[ClientScope, Unit](path, clientScope)
     }
 
     /**
@@ -725,9 +720,9 @@ class Clients[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]
      * @param realm   Name of the Realm.
      * @return
      */
-    def deleteClientScope(scopeId: String, realm: String): R[Response] = {
+    def deleteClientScope(scopeId: String, realm: String): R[Unit] = {
       val path = Seq(realm, "client-scopes", scopeId)
-      keycloakClient.delete[Unit, Response](path)
+      keycloakClient.delete(path)
     }
 
     /**

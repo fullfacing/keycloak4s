@@ -15,9 +15,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param realm Representation of the realm.
    * @return
    */
-  def importRealm(realm: RealmRepresentation): R[Response] = {
+  def importRealm(realm: RealmRepresentation): R[Unit] = {
     val path = Seq.empty[String]
-    keycloakClient.post[RealmRepresentation, Response](path, realm)
+    keycloakClient.post[RealmRepresentation, Unit](path, realm)
   }
 
   /**
@@ -40,9 +40,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param update  Representation of the realm.
    * @return
    */
-  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[Response] = {
+  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[Unit] = {
     val path = Seq(realm)
-    keycloakClient.put[RealmRepresentation, Response](path, update)
+    keycloakClient.put[RealmRepresentation, Unit](path, update)
   }
 
   /**
@@ -399,9 +399,9 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param rep
    * @return
    */
-  def partialImport(realm: String, rep: PartialImport): R[Response] = {
+  def partialImport(realm: String, rep: PartialImport): R[Unit] = {
     val path = Seq(realm, "partialImport")
-    keycloakClient.post[PartialImport, Response](path, rep)
+    keycloakClient.post[PartialImport, Unit](path, rep)
   }
 
   /**
@@ -448,7 +448,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
                          componentId: Option[String] = None,
                          connectionTimeout: Option[String] = None,
                          connectionUrl: Option[String] = None,
-                         useTruststoreSpi: Option[String] = None): R[Response] = {
+                         useTruststoreSpi: Option[String] = None): R[Unit] = {
 
     val path = Seq(realm, "testLDAPConnection")
     val queries = createdUrlEncodedMap(
@@ -464,7 +464,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
     //Documentation does not specify which content type this endpoint consumes, multipart/form-data and application/json are equally likely.
     //Therefor, in case the endpoint returns an error, it may be required to build a case class from the query parameters instead of a multipart.
     val mp = createMultipart(queries)
-    keycloakClient.post[Multipart, Response](path, mp)
+    keycloakClient.post[Multipart, Unit](path, mp)
   }
 
   /**

@@ -193,9 +193,9 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
    * @param role
    * @return
    */
-  def createRealmRole(realm: String, role: Role): R[Response] = {
+  def createRealmRole(realm: String, role: Role): R[Unit] = {
     val path = Seq(realm, roles_path)
-    keyCloakClient.post[Role, Response](path, role)
+    keyCloakClient.post[Role, Unit](path, role)
   }
 
   /**
@@ -347,6 +347,6 @@ class Roles[R[_]: Concurrent, S](implicit keyCloakClient: KeycloakClient[R, S]) 
   def fetchUsersByRoleName(realm: String, roleName: String, first: Option[Int], max: Option[Int]): R[User] = {
     val path  = Seq(realm, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
-    keyCloakClient.get[User](path, query)
+    keyCloakClient.get[User](path, query = query)
   }
 }

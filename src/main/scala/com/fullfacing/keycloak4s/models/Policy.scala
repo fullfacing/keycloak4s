@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.models
 
-case class Policy(config: Option[Map[_, _]],
+case class Policy(config: Option[Map[String, AnyRef]],
                   decisionStrategy: Option[String],
                   description: Option[String],
                   id: Option[String],

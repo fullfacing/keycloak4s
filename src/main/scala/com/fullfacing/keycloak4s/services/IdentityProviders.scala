@@ -18,7 +18,7 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param config
    * @return
    */
-  def importIdentityProvider(realm: String, config: File): R[Map[String, String]] = { //TODO Determine return type
+  def importIdentityProvider(realm: String, config: File): R[Map[String, String]] = {
     val path = Seq(realm, "identity-provider", "import-config")
     val multipart = createMultipart(config)
     client.post[Multipart, Map[String, String]](path, multipart)
@@ -31,9 +31,9 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param identityProvider  Object representing IdentityProvider details.
    * @return
    */
-  def createIdentityProvider(realm: String, identityProvider: IdentityProvider): R[Response] = {
+  def createIdentityProvider(realm: String, identityProvider: IdentityProvider): R[Unit] = {
     val path = Seq(realm, "identity-provider", "instances")
-    client.post[IdentityProvider, Response](path, identityProvider)
+    client.post[IdentityProvider, Unit](path, identityProvider)
   }
 
   /**
@@ -91,11 +91,11 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param format  Optional format to use.
    * @return
    */
-  def exportIdentityProviderBrokerConfig(alias: String, realm: String, format: Option[String] = None): R[Response] = {
+  def exportIdentityProviderBrokerConfig(alias: String, realm: String, format: Option[String] = None): R[Unit] = {
     val query = createQuery(("format", format))
 
     val path = Seq(realm, "identity-provider", "instances", alias, "export")
-    client.get[Response](path, query)
+    client.get(path, query = query)
   }
 
   /**
@@ -143,9 +143,9 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param mapper
    * @return
    */
-  def addMapperTypes(alias: String, realm: String, mapper: IdentityProviderMapper): R[Response] = {
+  def addMapperTypes(alias: String, realm: String, mapper: IdentityProviderMapper): R[Unit] = {
     val path = Seq(realm, "identity-provider", "instances", alias, "mapper")
-    client.post[IdentityProviderMapper, Response](path, mapper)
+    client.post[IdentityProviderMapper, Unit](path, mapper)
   }
 
   /**
@@ -207,8 +207,8 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param realm       Name of the Realm.
    * @return
    */
-  def getIdentityProviders(providerId: String, realm: String): R[Response] = {
+  def getIdentityProviders(providerId: String, realm: String): R[Unit] = {
     val path = Seq(realm, "identity-provider", "providers", providerId)
-    client.get[Response](path)
+    client.get(path)
   }
 }
