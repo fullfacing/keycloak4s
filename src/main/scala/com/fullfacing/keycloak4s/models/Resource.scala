@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.models
 
 case class Resource(id: Option[String],
-                    attributes: Option[Map[_, _]],
+                    attributes: Option[Map[String, String]],
                     displayName: Option[String],
                     icon_uri: Option[String],
                     name: Option[String],

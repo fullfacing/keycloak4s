@@ -66,9 +66,9 @@ class IdentityProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, 
    * @param realm Name of the Realm.
    * @return
    */
-  def updateIdentityProvider(alias: String, realm: String, identityProvider: IdentityProvider): R[IdentityProvider] = {
+  def updateIdentityProvider(alias: String, realm: String, identityProvider: IdentityProvider): R[Unit] = {
     val path = Seq(realm, "identity-provider", "instances", alias)
-    client.put[IdentityProvider, IdentityProvider](identityProvider, path)
+    client.put[IdentityProvider](identityProvider, path)
   }
 
   /**
