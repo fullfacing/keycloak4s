@@ -1,6 +1,14 @@
-name         := "keycloak4s"
-version      := "0.2.1-SNAPSHOT"
+name         := "project-keycloak4s"
 organization := "com.fullfacing"
+
+lazy val global = {
+  Seq(
+    version       := "0.2.1-SNAPSHOT",
+    scalaVersion  := "2.12.8",
+    organization  := "com.fullfacing",
+    scalacOptions ++= scalacOpts
+  )
+}
 
 val scalacOpts = Seq(
   "-Ywarn-unused:implicits",
@@ -25,8 +33,7 @@ val scalacOpts = Seq(
   "-Xfuture"
 )
 
-scalaVersion := "2.12.8"
-scalacOptions ++= scalacOpts
+
 addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
 addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.2.4")
 
@@ -60,6 +67,40 @@ val cats: Seq[ModuleID] = Seq(
   "org.typelevel" %% "cats-effect" % "1.2.0"
 )
 
-libraryDependencies ++= sttp ++ cats ++ json4s ++ logback ++ Seq(
+val monix: Seq[ModuleID] = Seq(
   "io.monix" %% "monix" % "3.0.0-RC2"
 )
+
+// ----------------------------------------------- //
+// Project and configuration for keycloak-monix    //
+// ----------------------------------------------- //
+lazy val `keycloak-dependencies`: Seq[ModuleID] = sttp ++ cats ++ json4s ++ logback ++ monix
+
+lazy val keycloak4s = (project in file("./keycloak4s"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= `keycloak-dependencies`)
+  .settings(name := "keycloak4s", publishArtifact := true)
+
+
+// ----------------------------------------------- //
+// Project and configuration for keycloak-monix    //
+// ----------------------------------------------- //
+lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = monix
+
+lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= `keycloak-monix-dependencies`)
+  .settings(name := "keycloak4s-monix", publishArtifact := true)
+  .dependsOn(keycloak4s)
+
+
+// ---------------------------------------------- //
+// Project and configuration for the root project //
+// ---------------------------------------------- //
+lazy val root = (project in file("."))
+  .settings(global: _*)
+  .settings(publishArtifact := false)
+  .aggregate(
+    keycloak4s, 
+    `keycloak4s-monix`
+  )

@@ -451,19 +451,19 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
                          useTruststoreSpi: Option[String] = None): R[Unit] = {
 
     val path = Seq(realm, "testLDAPConnection")
-    val queries = createdUrlEncodedMap(
-      ("action", action),
-      ("bindCredential", bindCredential),
-      ("bindDn", bindDn),
-      ("componentId", componentId),
-      ("connectionTimeout", connectionTimeout),
-      ("connectionUrl", connectionUrl),
-      ("useTruststoreSpi", useTruststoreSpi)
+    val queries = Map(
+      "action"            -> action,
+      "bindCredential"    -> bindCredential,
+      "bindDn"            -> bindDn,
+      "componentId"       -> componentId,
+      "connectionTimeout" -> connectionTimeout,
+      "connectionUrl"     -> connectionUrl,
+      "useTruststoreSpi"  -> useTruststoreSpi
     )
 
     //Documentation does not specify which content type this endpoint consumes, multipart/form-data and application/json are equally likely.
     //Therefor, in case the endpoint returns an error, it may be required to build a case class from the query parameters instead of a multipart.
-    val mp = createMultipart(queries)
+    val mp = createMultipart(flattenOptionMap(queries))
     keycloakClient.post[Multipart, Unit](path, mp)
   }
 
