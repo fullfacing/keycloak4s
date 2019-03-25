@@ -14,6 +14,8 @@ import scala.reflect.runtime.universe.{TypeTag, typeTag}
 
 class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) extends TokenManager[F, S](config) {
 
+  val realm: String = config.realm
+
   /* URI Builder **/
   private[client] def createUri(path: Seq[String], query: Seq[KeyValue]) = Uri(
     scheme         = config.scheme,

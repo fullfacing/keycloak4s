@@ -10,32 +10,29 @@ class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Clear any user login failures for all users.
    * This can release temporary disabled users.
    *
-   * @param realm Name of the Realm
    * @return
    */
-  def clearAllLoginFailures(realm: String): R[Unit] = {
-    client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: Nil)
+  def clearAllLoginFailures(): R[Unit] = {
+    client.delete(client.realm :: "attack-detection" :: "brute-force" :: "users" :: Nil)
   }
 
   /**
    * Get status of a username in brute force detection.
    *
-   * @param realm   Name of the Realm.
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String): R[BruteForceResponse] = {
-    client.get[BruteForceResponse](realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
+  def getUserStatus(userId: String): R[BruteForceResponse] = {
+    client.get[BruteForceResponse](client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 
   /**
    * Clear any user login failures for the user.
    * This can release temporary disabled user.
    *
-   * @param realm Name of the Realm.
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure(realm: String, userId: String): R[Unit] = {
-    client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
+  def clearUserLoginFailure(userId: String): R[Unit] = {
+    client.delete(client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 }

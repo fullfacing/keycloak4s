@@ -85,13 +85,12 @@ lazy val keycloak4s = (project in file("./keycloak4s"))
 // ----------------------------------------------- //
 // Project and configuration for keycloak-monix    //
 // ----------------------------------------------- //
-lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = monix
+lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = sttp ++ cats ++ json4s ++ logback ++ monix
 
 lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `keycloak-monix-dependencies`)
   .settings(name := "keycloak4s-monix", publishArtifact := true)
-  .dependsOn(keycloak4s)
 
 
 // ---------------------------------------------- //
@@ -100,7 +99,4 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
-  .aggregate(
-    keycloak4s, 
-    `keycloak4s-monix`
-  )
+  .aggregate(keycloak4s, `keycloak4s-monix`)
