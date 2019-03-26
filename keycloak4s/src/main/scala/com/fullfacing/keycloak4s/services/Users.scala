@@ -24,7 +24,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Get users Returns a list of users, filtered according to query parameters
-   *   realm name (not id!)
+   *
    * @param briefRep
    * @param email
    * @param first
@@ -143,7 +143,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * The redirectUri and clientId parameters are optional.
    * If no redirect is given, then there will be no link back to click after actions have completed.
    * Redirect uri must be a valid uri for the particular clientId.
-   *   Realm name (not id!)
+   *
    * @param userId      User id
    * @param clientId    Client id
    * @param lifespan    Number of seconds after which the generated token expires
@@ -230,7 +230,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Add user to specified group
-   *   Name of the realm
+   *
    * @param userId    Id of user to add to the group
    * @param groupId   Id of the group the user is to be added to
    * @return
@@ -243,7 +243,7 @@ class Users[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * removeMembership
-   *   Name of the realm.
+   *
    * @param userId    Id of user to remove from the group.
    * @param groupId   Id of the group from which the user is to be removed.
    * @return
