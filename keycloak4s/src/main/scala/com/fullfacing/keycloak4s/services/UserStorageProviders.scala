@@ -26,24 +26,21 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
   /**
    * Need this for admin console to display simple name of provider when displaying user detail
    *
-   * @param realm
    * @param userStorageId
    * @return
    */
-  def userSimpleProviderName(realm: String, userStorageId: String): R[SimpleNameResponse] = {
-    val path = Seq(realm, user_storage, userStorageId, "name")
+  def userSimpleProviderName(userStorageId: String): R[SimpleNameResponse] = {
+    val path = Seq(client.realm, user_storage, userStorageId, "name")
     client.get[SimpleNameResponse](path)
   }
 
   /**
    * Remove imported users
-   *
-   * @param realm realm name (not id!)
    * @param userStorageId
    * @return
    */
-  def removeImportedUsers(realm: String, userStorageId: String): R[Unit] = {
-    val path = Seq(realm, user_storage, userStorageId, "remove-imported-users")
+  def removeImportedUsers(userStorageId: String): R[Unit] = {
+    val path = Seq(client.realm, user_storage, userStorageId, "remove-imported-users")
     client.post(path)
   }
 
@@ -51,13 +48,12 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * Trigger sync of users
    * Action can be "triggerFullSync" or "triggerChangedUsersSync"
    *
-   * @param realm
    * @param userStorageId
    * @param action  com.fullfacing.keycloak4s.models.enums.TriggerSyncActions
    * @return
    */
-  def syncUsers(realm: String, userStorageId: String, action: Option[String]): R[Synchronization] = {
-    val path  = Seq(realm, user_storage, userStorageId, "sync")
+  def syncUsers(userStorageId: String, action: Option[String]): R[Synchronization] = {
+    val path  = Seq(client.realm, user_storage, userStorageId, "sync")
     val query = createQuery(("action", action))
     client.post[Unit, Synchronization](path, query = query)
   }
@@ -65,12 +61,11 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
   /**
    * Unlink imported users from a storage provider
    *
-   * @param realm
    * @param userStorageId
    * @return
    */
-  def unlink(realm: String, userStorageId: String): R[Unit] = {
-    val path = Seq(realm, user_storage, userStorageId, "unlink-users")
+  def unlink(userStorageId: String): R[Unit] = {
+    val path = Seq(client.realm, user_storage, userStorageId, "unlink-users")
     client.post(path)
   }
 
@@ -78,14 +73,13 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * Trigger sync of mapper data related to ldap mapper (roles, groups, …​)
    * Direction is "fedToKeycloak" or "keycloakToFed"
    *
-   * @param realm
    * @param mapperId
    * @param userStorageId
    * @param direction com.fullfacing.keycloak4s.models.enums.MapperSyncDirections
    * @return
    */
-  def syncMapperData(realm: String, mapperId: String, userStorageId: String, direction: Option[String]): R[Synchronization] = {
-    val path  = Seq(realm, user_storage, userStorageId, "mappers", mapperId, "sync")
+  def syncMapperData(mapperId: String, userStorageId: String, direction: Option[String]): R[Synchronization] = {
+    val path  = Seq(client.realm, user_storage, userStorageId, "mappers", mapperId, "sync")
     val query = createQuery(("direction", direction))
     client.post[Unit, Synchronization](path, query = query)
   }

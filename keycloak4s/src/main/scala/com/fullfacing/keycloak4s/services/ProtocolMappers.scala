@@ -12,12 +12,11 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Create multiple protocol mappers for a client scope.
    *
    * @param scopeId ID of client scope (not name).
-   * @param realm   Name of the Realm.
    * @param mapper
    * @return
    */
-  def createMulitpleMappersForScope(scopeId: String, realm: String, mapper: Seq[ProtocolMapper]): R[Unit] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "add-models")
+  def createMulitpleMappersForScope(scopeId: String, mapper: Seq[ProtocolMapper]): R[Unit] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "add-models")
     client.post[Seq[ProtocolMapper], Unit](path, mapper)
   }
 
@@ -25,12 +24,11 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Create a protocol mapper for a client scope.
    *
    * @param scopeId ID of client scope (not name).
-   * @param realm   Name of the Realm.
    * @param mapper
    * @return
    */
-  def createMapperForScope(scopeId: String, realm: String, mapper: ProtocolMapper): R[Unit] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models")
+  def createMapperForScope(scopeId: String, mapper: ProtocolMapper): R[Unit] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models")
     client.post[ProtocolMapper, Unit](path, mapper)
   }
 
@@ -38,11 +36,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Get protocol mappers belonging to a client scope.
    *
    * @param scopeId ID of client scope (not name).
-   * @param realm   Name of the Realm.
    * @return
    */
-  def getMappersForScope(scopeId: String, realm: String): R[Seq[ProtocolMapper]] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers")
+  def getMappersForScope(scopeId: String): R[Seq[ProtocolMapper]] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers")
     client.get[Seq[ProtocolMapper]](path)
   }
 
@@ -51,11 +48,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param scopeId   ID of client scope (not name).
    * @param mapperId
-   * @param realm     Name of the Realm.
    * @return
    */
-  def getMapperForScope(scopeId: String, mapperId: String, realm: String): R[ProtocolMapper] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
+  def getMapperForScope(scopeId: String, mapperId: String): R[ProtocolMapper] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
     client.get[ProtocolMapper](path)
   }
 
@@ -64,12 +60,11 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param scopeId   ID of client scope (not name).
    * @param mapperId
-   * @param realm     Name of the Realm.
    * @param mapper
    * @return
    */
-  def updateMapperForScope(scopeId: String, mapperId: String, realm: String, mapper: ProtocolMapper): R[ProtocolMapper] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
+  def updateMapperForScope(scopeId: String, mapperId: String, mapper: ProtocolMapper): R[ProtocolMapper] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
     client.put[ProtocolMapper, ProtocolMapper](path, mapper)
   }
 
@@ -78,11 +73,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param scopeId   ID of client scope (not name).
    * @param mapperId
-   * @param realm     Name of the Realm.
    * @return
    */
-  def deleteMapperForScope(scopeId: String, mapperId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
+  def deleteMapperForScope(scopeId: String, mapperId: String): R[Unit] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
     client.delete(path)
   }
 
@@ -91,11 +85,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param scopeId   ID of client scope (not name).
    * @param protocol
-   * @param realm     Name of the Realm.
    * @return
    */
-  def getMappersByProtocolForScope(scopeId: String, protocol: String, realm: String): R[Seq[ProtocolMapper]] = {
-    val path = Seq(realm, "client-scopes", scopeId, "protocol-mappers", "protocol", protocol)
+  def getMappersByProtocolForScope(scopeId: String, protocol: String): R[Seq[ProtocolMapper]] = {
+    val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "protocol", protocol)
     client.get[Seq[ProtocolMapper]](path)
   }
 
@@ -103,12 +96,11 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Create multiple protocol mappers for a client.
    *
    * @param clientId  ID of client (not client-id).
-   * @param realm     Name of the Realm.
    * @param mapper
    * @return
    */
-  def createMulitpleMappersForClient(clientId: String, realm: String, mapper: Seq[ProtocolMapper]): R[Unit] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "add-models")
+  def createMulitpleMappersForClient(clientId: String, mapper: Seq[ProtocolMapper]): R[Unit] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "add-models")
     client.post[Seq[ProtocolMapper], Unit](path, mapper)
   }
 
@@ -116,12 +108,11 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Create a protocol mapper for a client.
    *
    * @param clientId  ID of client (not client-id).
-   * @param realm     Name of the Realm.
    * @param mapper
    * @return
    */
-  def createMapperForClient(clientId: String, realm: String, mapper: ProtocolMapper): R[Unit] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models")
+  def createMapperForClient(clientId: String, mapper: ProtocolMapper): R[Unit] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models")
     client.post[ProtocolMapper, Unit](path, mapper)
   }
 
@@ -129,11 +120,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * Get protocol mappers belonging to a client.
    *
    * @param clientId  ID of client (not client-id).
-   * @param realm     Name of the Realm.
    * @return
    */
-  def getMappersForClient(clientId: String, realm: String): R[Seq[ProtocolMapper]] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers")
+  def getMappersForClient(clientId: String): R[Seq[ProtocolMapper]] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers")
     client.get[Seq[ProtocolMapper]](path)
   }
 
@@ -142,11 +132,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param clientId  ID of client (not client-id).
    * @param mapperId
-   * @param realm     Name of the Realm.
    * @return
    */
-  def getMapperForClient(clientId: String, mapperId: String, realm: String): R[ProtocolMapper] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
+  def getMapperForClient(clientId: String, mapperId: String): R[ProtocolMapper] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
     client.get[ProtocolMapper](path)
   }
 
@@ -155,12 +144,11 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param clientId  ID of client (not client-id).
    * @param mapperId
-   * @param realm     Name of the Realm.
    * @param mapper
    * @return
    */
-  def updateMapperForClient(clientId: String, mapperId: String, realm: String, mapper: ProtocolMapper): R[ProtocolMapper] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
+  def updateMapperForClient(clientId: String, mapperId: String, mapper: ProtocolMapper): R[ProtocolMapper] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
     client.put[ProtocolMapper, ProtocolMapper](path, mapper)
   }
 
@@ -169,11 +157,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param clientId  ID of client (not client-id).
    * @param mapperId
-   * @param realm     Name of the Realm.
    * @return
    */
-  def deleteMapperForClient(clientId: String, mapperId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
+  def deleteMapperForClient(clientId: String, mapperId: String): R[Unit] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
     client.delete(path)
   }
 
@@ -182,11 +169,10 @@ class ProtocolMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    *
    * @param clientId  ID of client (not client-id).
    * @param protocol
-   * @param realm     Name of the Realm.
    * @return
    */
-  def getMappersByProtocolForClient(clientId: String, protocol: String, realm: String): R[Seq[ProtocolMapper]] = {
-    val path = Seq(realm, "client-scopes", clientId, "protocol-mappers", "protocol", protocol)
+  def getMappersByProtocolForClient(clientId: String, protocol: String): R[Seq[ProtocolMapper]] = {
+    val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "protocol", protocol)
     client.get[Seq[ProtocolMapper]](path)
   }
 }

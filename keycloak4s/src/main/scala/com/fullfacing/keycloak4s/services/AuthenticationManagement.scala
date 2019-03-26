@@ -275,11 +275,10 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
   /**
    * Register a new required action.
    *
-   * @param providerId      ID of the Provider.
    * @param requiredAction  Details of the required action
    * @return
    */
-  def registerRequiredAction(providerId: String, requiredAction: RequiredAction): R[Unit] = {
+  def registerRequiredAction(requiredAction: RequiredAction): R[Unit] = {
     val path = Seq(client.realm, "authentication", "register-required-action")
     client.post[RequiredAction, Unit](path, requiredAction)
   }

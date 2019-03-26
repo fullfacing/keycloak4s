@@ -8,15 +8,11 @@ import scala.collection.immutable.Seq
 
 class Keys[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  private val resource: String = "keys"
-
   /**
    *
-   * @param realm
-   * @return
    */
-  def getRealmKeys(realm: String): R[KeysMetadata] = {
-    val path = Seq(realm, resource)
+  def getRealmKeys(): R[KeysMetadata] = {
+    val path = Seq(client.realm, "keys")
     client.get[KeysMetadata](path)
   }
 }

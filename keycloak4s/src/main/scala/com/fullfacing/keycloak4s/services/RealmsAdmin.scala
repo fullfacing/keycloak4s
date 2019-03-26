@@ -11,9 +11,6 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
 
   /**
    * Imports a realm from a full representation of that realm.
-   *
-   * @param realm Representation of the realm.
-   * @return
    */
   def importRealm(realm: RealmRepresentation): R[Unit] = {
     val path = Seq.empty[String]
@@ -24,11 +21,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Get the top-level representation of the realm.
    * It will not include nested information like User and Client representations.
    *
-   * @param realm Name of the Realm.
    * @return
    */
-  def getTopLevelRepresentation(realm: String): R[RealmRepresentation] = {
-    val path = Seq(realm)
+  def getTopLevelRepresentation(): R[RealmRepresentation] = {
+    val path = Seq(keycloakClient.realm)
     keycloakClient.get[RealmRepresentation](path)
   }
 
@@ -36,30 +32,25 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Update the top-level representation of the realm.
    * Any user, roles or client information in the representation will be ignored.
    *
-   * @param realm   Name of the Realm.
    * @param update  Representation of the realm.
    * @return
    */
-  def updateTopLevelRepresentation(realm: String, update: RealmRepresentation): R[Unit] = {
-    val path = Seq(realm)
+  def updateTopLevelRepresentation(update: RealmRepresentation): R[Unit] = {
+    val path = Seq(keycloakClient.realm)
     keycloakClient.put[RealmRepresentation, Unit](path, update)
   }
 
   /**
    * Delete the realm.
-   *
-   * @param realm Name of the Realm.
-   * @return
    */
-  def deleteRealm(realm: String): R[Unit] = {
-    val path = Seq(realm)
+  def deleteRealm(): R[Unit] = {
+    val path = Seq(keycloakClient.realm)
     keycloakClient.delete(path)
   }
 
   /**
    * Returns all admin events, or filters events based on URL query parameters listed here.
    *
-   * @param realm           Name of the Realm.
    * @param authClient
    * @param authIpAddress
    * @param authRealm
@@ -73,8 +64,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param resourceTypes
    * @return
    */
-  def getAdminEvents(realm: String,
-                     authClient: Option[String] = None,
+  def getAdminEvents(authClient: Option[String] = None,
                      authIpAddress: Option[String] = None,
                      authRealm: Option[String] = None,
                      authUser: Option[String] = None,
@@ -99,63 +89,58 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("resourceTypes", resourceTypes)
     )
 
-    val path = Seq(realm, "admin-events")
+    val path = Seq(keycloakClient.realm, "admin-events")
     keycloakClient.get[AdminEvent](path, query = query)
   }
 
   /**
    * Delete all admin events.
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def deleteAdminEvents(realm: String): R[Unit] = {
-    val path = Seq(realm, "admin-events")
+  def deleteAdminEvents(): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "admin-events")
     keycloakClient.delete(path)
   }
 
   /**
    * Clear cache of external public keys (Public keys of clients or Identity providers).
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def clearKeysCache(realm: String): R[Unit] = {
-    val path = Seq(realm, "clear-keys-cache")
+  def clearKeysCache(): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "clear-keys-cache")
     keycloakClient.post(path)
   }
 
   /**
    * Clears realm cache.
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def clearRealmCache(realm: String): R[Unit] = {
-    val path = Seq(realm, "clear-realm-cache")
+  def clearRealmCache(): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "clear-realm-cache")
     keycloakClient.post(path)
   }
 
   /**
    * Clears user cache.
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def clearUserCache(realm: String): R[Unit] = {
-    val path = Seq(realm, "clear-user-cache")
+  def clearUserCache(): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "clear-user-cache")
     keycloakClient.post(path)
   }
 
   /**
    * Base path for importing clients under this realm.
    *
-   * @param realm       Name of the realm.
    * @param description
    * @return
    */
-  def importClientViaDescription(realm: String, description: String): R[Client] = {
-    val path = Seq(realm, "client-description-converter")
+  def importClientViaDescription(description: String): R[Client] = {
+    val path = Seq(keycloakClient.realm, "client-description-converter")
     keycloakClient.post[String, Client](path, description)
   }
 
@@ -164,22 +149,20 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * The key is the client id, the value is the number of sessions that currently are active with that client.
    * Only clients that actually have a session associated with them will be in this map.
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def getClientSessionStats(realm: String): R[Seq[ClientSessionStatistics]] = {
-    val path = Seq(realm, "client-session-stats")
+  def getClientSessionStats(): R[Seq[ClientSessionStatistics]] = {
+    val path = Seq(keycloakClient.realm, "client-session-stats")
     keycloakClient.get[Seq[ClientSessionStatistics]](path)
   }
 
   /**
    * Get realm default client scopes.
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def getDefaultClientScopes(realm: String): R[Seq[ClientScope]] = {
-    val path = Seq(realm, "default-default-client-scopes")
+  def getDefaultClientScopes(): R[Seq[ClientScope]] = {
+    val path = Seq(keycloakClient.realm, "default-default-client-scopes")
     keycloakClient.get[Seq[ClientScope]](path)
   }
 
@@ -187,11 +170,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Update a default client scope.
    *
    * @param scopeId
-   * @param realm   Name of the realm.
    * @return
    */
-  def updateDefaultClientScope(scopeId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "default-default-client-scopes", scopeId)
+  def updateDefaultClientScope(scopeId: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "default-default-client-scopes", scopeId)
     keycloakClient.put(path)
   }
 
@@ -199,11 +181,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Deletes a default client scope.
    *
    * @param scopeId
-   * @param realm   Name of the realm.
    * @return
    */
-  def deleteDefaultClientScope(scopeId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "default-default-client-scopes", scopeId)
+  def deleteDefaultClientScope(scopeId: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "default-default-client-scopes", scopeId)
     keycloakClient.delete(path)
   }
 
@@ -211,11 +192,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Get group hierarchy.
    * Only name and ids are returned.
    *
-   * @param realm Name of the realm.
    * @return
    */
-  def getGroupHierarchy(realm: String): R[Seq[Group]] = {
-    val path = Seq(realm, "default-groups")
+  def getGroupHierarchy(): R[Seq[Group]] = {
+    val path = Seq(keycloakClient.realm, "default-groups")
     keycloakClient.get[Seq[Group]](path)
   }
 
@@ -223,11 +203,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Updates group hierarchy.
    *
    * @param groupId
-   * @param realm   Name of the realm.
    * @return
    */
-  def updateGroupHierarchy(groupId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "default-groups", groupId)
+  def updateGroupHierarchy(groupId: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "default-groups", groupId)
     keycloakClient.put(path)
   }
 
@@ -235,22 +214,18 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Deletes group hierarchy.
    *
    * @param groupId
-   * @param realm   Name of the realm.
    * @return
    */
-  def deleteGroupHierarchy(groupId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "default-groups", groupId)
+  def deleteGroupHierarchy(groupId: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "default-groups", groupId)
     keycloakClient.delete(path)
   }
 
   /**
    * Get realm optional client scopes.
-   *
-   * @param realm Name of the realm.
-   * @return
    */
-  def getOptionalClientScopes(realm: String): R[Seq[ClientScope]] = {
-    val path = Seq(realm, "default-Optional-client-scopes")
+  def getOptionalClientScopes(): R[Seq[ClientScope]] = {
+    val path = Seq(keycloakClient.realm, "default-Optional-client-scopes")
     keycloakClient.get[Seq[ClientScope]](path)
   }
 
@@ -258,11 +233,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Update a optional client scope.
    *
    * @param scopeId
-   * @param realm   Name of the realm.
    * @return
    */
-  def updateOptionalClientScope(scopeId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "default-Optional-client-scopes", scopeId)
+  def updateOptionalClientScope(scopeId: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "default-Optional-client-scopes", scopeId)
     keycloakClient.put(path)
   }
 
@@ -270,18 +244,16 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Deletes a optional client scope.
    *
    * @param scopeId
-   * @param realm   Name of the realm.
    * @return
    */
-  def deleteOptionalClientScope(scopeId: String, realm: String): R[Unit] = {
-    val path = Seq(realm, "default-Optional-client-scopes", scopeId)
+  def deleteOptionalClientScope(scopeId: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "default-Optional-client-scopes", scopeId)
     keycloakClient.delete(path)
   }
 
   /**
    * Returns all events, or filters them based on URL query parameters listed here.
    *
-   * @param realm     Name of the realm.
    * @param client    App or oauth client name.
    * @param dateFrom  From date.
    * @param dateTo    To Date.
@@ -292,8 +264,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param user      User id.
    * @return
    */
-  def getEvents(realm: String,
-                client: Option[String] = None,
+  def getEvents(client: Option[String] = None,
                 dateFrom: Option[String] = None,
                 dateTo: Option[String] = None,
                 first: Option[Int] = None,
@@ -312,18 +283,17 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
       ("user", user)
     )
 
-    val path = Seq(realm, "events")
+    val path = Seq(keycloakClient.realm, "events")
     keycloakClient.get[Seq[EventRepresentation]](path, query = query)
   }
 
   /**
    * Delete all events
    *
-   * @param realm realm name (not id!)
    * @return
    */
-  def deleteAllEvents(realm: String): R[Unit] = {
-    val path = Seq(realm, "events")
+  def deleteAllEvents(): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "events")
     keycloakClient.delete(path)
   }
 
@@ -331,11 +301,10 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Get the events provider configuration
    * Returns JSON object with events provider configuration
    *
-   * @param realm realm name (not id!)
    * @return
    */
-  def getEventsConfig(realm: String): R[RealmEventsConfig] = {
-    val path = Seq(realm, "events", "config")
+  def getEventsConfig(): R[RealmEventsConfig] = {
+    val path = Seq(keycloakClient.realm, "events", "config")
     keycloakClient.get[RealmEventsConfig](path)
   }
 
@@ -343,50 +312,45 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Update the events provider.
    * Change the events provider and/or its configuration
    *
-   * @param realm realm name (not id!)
    * @param config
    * @return
    */
-  def updateEventsConfig(realm: String, config: RealmEventsConfig): R[Unit] = {
-    val path = Seq(realm, "events", "config")
+  def updateEventsConfig(config: RealmEventsConfig): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "events", "config")
     keycloakClient.put(path, config)
   }
 
   /**
    * GET /{realm}/group-by-path/{path}
    *
-   * @param realm realm name (not id!)
    * @param path
    * @return
    */
-  def getGroupByPath(realm: String, path: String): R[Group] = {
-    keycloakClient.get[Group](Seq(realm, "group-by-path", path))
+  def getGroupByPath(path: String): R[Group] = {
+    keycloakClient.get[Group](Seq(keycloakClient.realm, "group-by-path", path))
   }
 
   /**
    * Removes all user sessions.
    * Any client that has an admin url will also be told to invalidate any sessions they have.
    *
-   * @param realm realm name (not id!)
    * @return
    */
-  def logoutAll(realm: String): R[GlobalRequestResult] = {
-    val path = Seq(realm, "logout-all")
+  def logoutAll(): R[GlobalRequestResult] = {
+    val path = Seq(keycloakClient.realm, "logout-all")
     keycloakClient.post[Unit, GlobalRequestResult](path)
   }
 
   /**
    * Partial export of existing realm into a JSON file.
    *
-   * @param realm realm name (not id!)
    * @param exportClients
    * @param exportGroupsAndRoles
    * @return
    */
-  def partialExport(realm: String,
-                    exportClients: Option[Boolean] = None,
+  def partialExport(exportClients: Option[Boolean] = None,
                     exportGroupsAndRoles: Option[Boolean] = None): R[RealmRepresentation] = {
-    val path    = Seq(realm, "partial-export")
+    val path    = Seq(keycloakClient.realm, "partial-export")
     val queries = createQuery(("exportClients", exportClients), ("exportGroupsAndRoles", exportGroupsAndRoles))
 
     keycloakClient.post[Unit, RealmRepresentation](path, query = queries)
@@ -395,23 +359,21 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
   /**
    * Partial import from a JSON file to an existing realm.
    *
-   * @param realm realm name (not id!)
    * @param rep
    * @return
    */
-  def partialImport(realm: String, rep: PartialImport): R[Unit] = {
-    val path = Seq(realm, "partialImport")
+  def partialImport(rep: PartialImport): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "partialImport")
     keycloakClient.post[PartialImport, Unit](path, rep)
   }
 
   /**
    * Push the realm’s revocation policy to any client that has an admin url associated with it.
    *
-   * @param realm realm name (not id!)
    * @return
    */
-  def pushRevocation(realm: String): R[GlobalRequestResult] = {
-    val path = Seq(realm, "push-revocation")
+  def pushRevocation(): R[GlobalRequestResult] = {
+    val path = Seq(keycloakClient.realm, "push-revocation")
     keycloakClient.post[Unit, GlobalRequestResult](path)
   }
 
@@ -419,19 +381,17 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * Remove a specific user session.
    * Any client that has an admin url will also be told to invalidate this particular session.
    *
-   * @param realm   realm name (not id!)
    * @param session
    * @return
    */
-  def removeUserSession(realm: String, session: String): R[Unit] = {
-    val path = Seq(realm, "sessions", session)
+  def removeUserSession(session: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "sessions", session)
     keycloakClient.delete(path)
   }
 
   /**
    * Test LDAP connection
    *
-   * @param realm             realm name (not id!)
    * @param action
    * @param bindCredential
    * @param bindDn
@@ -441,8 +401,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
    * @param useTruststoreSpi
    * @return
    */
-  def testLdapConnection(realm: String,
-                         action: Option[String] = None,
+  def testLdapConnection(action: Option[String] = None,
                          bindCredential: Option[String] = None,
                          bindDn: Option[String] = None,
                          componentId: Option[String] = None,
@@ -450,7 +409,7 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
                          connectionUrl: Option[String] = None,
                          useTruststoreSpi: Option[String] = None): R[Unit] = {
 
-    val path = Seq(realm, "testLDAPConnection")
+    val path = Seq(keycloakClient.realm, "testLDAPConnection")
     val queries = Map(
       "action"            -> action,
       "bindCredential"    -> bindCredential,
@@ -470,35 +429,30 @@ class RealmsAdmin[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R
   /**
    * Test SMTP connection with current logged in user
    *
-   * @param realm  realm name (not id!)
    * @param config SMTP server configuration
    * @return
    */
-  def testSmtpConnection(realm: String, config: String): R[Unit] = {
-    val path = Seq(realm, "testSMTPConnection", config)
+  def testSmtpConnection(config: String): R[Unit] = {
+    val path = Seq(keycloakClient.realm, "testSMTPConnection", config)
     keycloakClient.post(path)
   }
 
   /**
    * GET /{realm}/users-management-permissions
-   *
-   * @param realm realm name (not id!)
-   * @return
    */
-  def getUsersManagementPermissions(realm: String): R[ManagementPermission] = {
-    val path = Seq(realm, "users-management-permissions")
+  def getUsersManagementPermissions(): R[ManagementPermission] = {
+    val path = Seq(keycloakClient.realm, "users-management-permissions")
     keycloakClient.get[ManagementPermission](path)
   }
 
   /**
    * PUT /{realm}/users-management-permissions
    *
-   * @param realm realm name (not id!)
    * @param ref
    * @return
    */
-  def updateUsersManagementPermissions(realm: String, ref: ManagementPermission): R[ManagementPermission] = {
-    val path = Seq(realm, "users-management-permissions")
+  def updateUsersManagementPermissions(ref: ManagementPermission): R[ManagementPermission] = {
+    val path = Seq(keycloakClient.realm, "users-management-permissions")
     keycloakClient.put[ManagementPermission, ManagementPermission](path, ref)
   }
 }
