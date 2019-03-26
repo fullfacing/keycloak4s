@@ -52,7 +52,7 @@ val json4s: Seq[ModuleID] = {
   )
 }
 
-val sttp: Seq[ModuleID] = {
+val `sttp-akka`: Seq[ModuleID] = {
   val version = "1.5.11"
   Seq(
     "com.softwaremill.sttp" %% "core"              % version,
@@ -71,10 +71,19 @@ val monix: Seq[ModuleID] = Seq(
   "io.monix" %% "monix" % "3.0.0-RC2"
 )
 
+val `sttp-monix`: Seq[ModuleID] = {
+  val version = "1.5.11"
+  Seq(
+    "com.softwaremill.sttp" %% "core"                            % version,
+    "com.softwaremill.sttp" %% "async-http-client-backend-monix" % "1.5.11",
+    "com.softwaremill.sttp" %% "json4s"                          % version
+  )
+}
+
 // ----------------------------------------------- //
 // Project and configuration for keycloak-monix    //
 // ----------------------------------------------- //
-lazy val `keycloak-dependencies`: Seq[ModuleID] = sttp ++ cats ++ json4s ++ logback ++ monix
+lazy val `keycloak-dependencies`: Seq[ModuleID] = `sttp-akka` ++ cats ++ json4s ++ logback ++ monix
 
 lazy val keycloak4s = (project in file("./keycloak4s"))
   .settings(global: _*)
@@ -85,13 +94,13 @@ lazy val keycloak4s = (project in file("./keycloak4s"))
 // ----------------------------------------------- //
 // Project and configuration for keycloak-monix    //
 // ----------------------------------------------- //
-lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = sttp ++ cats ++ json4s ++ logback ++ monix
+lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = `sttp-monix` ++ cats ++ json4s ++ logback ++ monix
 
 lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `keycloak-monix-dependencies`)
   .settings(name := "keycloak4s-monix", publishArtifact := true)
-
+  .dependsOn(keycloak4s)
 
 // ---------------------------------------------- //
 // Project and configuration for the root project //

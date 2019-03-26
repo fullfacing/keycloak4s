@@ -1,34 +1,36 @@
-package com.fullfacin.keycloak4s
+package com.fullfacing.keycloak4s.monix
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
+import java.nio.ByteBuffer
+
 import cats.implicits._
-import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
-import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
+import com.fullfacing.keycloak4s.client.KeycloakConfig
+import com.fullfacing.keycloak4s.monix.client.{Keycloak, KeycloakClient}
+import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
+import monix.reactive.Observable
+import org.json4s.jackson.Serialization.writePretty
 import org.json4s.Formats
 
-import scala.concurrent.Future
 import scala.language.postfixOps
 
-object Main extends App {
+object MainMonix extends App {
 
   implicit val formats: Formats = org.json4s.DefaultFormats
-  implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
+  implicit val sttpBackend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
 
   val config = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
 
+  implicit val client: KeycloakClient =
+    new KeycloakClient(config)
 
-  implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
-    new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Users[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Keys
   import scala.concurrent.duration._
   global.scheduleOnce(0 seconds) {
-    clients.getUsers().foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 
@@ -36,9 +38,9 @@ object Main extends App {
   Console.readBoolean()
 }
 
-class AkkaHttpBackendL(delegate: SttpBackend[Future, Source[ByteString, Any]]) extends SttpBackend[Task, Source[ByteString, Any]] {
-  override def send[T](request: Request[T, Source[ByteString, Any]]): Task[Response[T]] =
-    Task.fromFuture(delegate.send(request))
+class MonixHttpBackendL(delegate: SttpBackend[Task, Observable[ByteBuffer]]) extends SttpBackend[Task, Observable[ByteBuffer]] {
+  override def send[T](request: Request[T, Observable[ByteBuffer]]): Task[Response[T]] =
+    delegate.send(request)
 
   override def close(): Unit = delegate.close()
 

@@ -1,9 +1,9 @@
 package com.fullfacing.keycloak4s.client
 
-final case class KeycloakConfig(scheme: String = "http",
-                                host: String = "localhost",
-                                port: Int = 8080,
-                                realm: String = "admin",
+final case class KeycloakConfig(scheme: String,
+                                host: String,
+                                port: Int,
+                                realm: String,
                                 authn: KeycloakConfig.Auth)
 
 
