@@ -10,8 +10,8 @@ import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
-import org.json4s.jackson.Serialization.writePretty
 import org.json4s.Formats
+import org.json4s.jackson.Serialization.writePretty
 
 import scala.language.postfixOps
 

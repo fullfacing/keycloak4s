@@ -18,17 +18,17 @@ object Main extends App {
   implicit val formats: Formats = org.json4s.DefaultFormats
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
 
-  val config = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
+  val config = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
 
 
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Users[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Roles[Task, Source[ByteString, Any]]
   import scala.concurrent.duration._
   global.scheduleOnce(0 seconds) {
-    clients.getUsers().foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.getRolePermissions("4a89a463-4156-459f-85b4-bf85a5dcbf07").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 

@@ -8,8 +8,8 @@ import scala.collection.immutable.Seq
 
 class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient[R, S]) {
 
-  private val resource = "client-scopes"
-  private val mappings = "scope-mappings"
+  private val `client-scopes` = "client-scopes"
+  private val `scope-mappings` = "scope-mappings"
 
   /**
    * Get all scope mappings for the client
@@ -18,7 +18,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def fetchMappings(id: String): R[Mappings] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings)
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`)
     keycloakClient.get[Mappings](path)
   }
 
@@ -31,7 +31,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def addClientRoles(id: String, client: String, roles: List[Role]): R[Unit] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "clients", client)
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "clients", client)
     keycloakClient.post[List[Role], Unit](path, roles)
   }
 
@@ -43,7 +43,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def getClientRoles(id: String, client: String): R[List[Role]] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "clients", client)
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "clients", client)
     keycloakClient.get[List[Role]](path)
   }
 
@@ -55,7 +55,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def removeClientRoles(id: String, client: String, roles: List[Role]): R[Unit] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "clients", client)
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "clients", client)
     keycloakClient.delete[List[Role], Unit](path, roles)
   }
 
@@ -68,7 +68,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def getAvailableClientRoles(id: String, client: String): R[Role] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "clients", client, "available")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "clients", client, "available")
     keycloakClient.get[Role](path)
   }
 
@@ -81,7 +81,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def getEffectiveClientRoles(id: String, client: String): R[Role] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "clients", client, "composite")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "clients", client, "composite")
     keycloakClient.get[Role](path)
   }
 
@@ -93,7 +93,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def addRealmRolesToClientScope(id: String, roles: List[Role]): R[Unit] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "realm")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "realm")
     keycloakClient.post[List[Role], Unit](path, roles)
   }
 
@@ -104,7 +104,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def getClientScopeRealmRoles(id: String): R[List[Role]] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "realm")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "realm")
     keycloakClient.get[List[Role]](path)
   }
 
@@ -116,7 +116,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def removeRealmRolesFromClientScope(id: String, roles: List[Role]): R[Unit] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "realm")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "realm")
     keycloakClient.delete[List[Role], Unit](path, roles)
   }
 
@@ -127,7 +127,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def getAvailableRealmLevelRoles(id: String): R[List[Role]] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "realm", "available")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "realm", "available")
     keycloakClient.get[List[Role]](path)
   }
 
@@ -141,7 +141,7 @@ class ScopeMappings[R[_]: Concurrent, S](implicit keycloakClient: KeycloakClient
    * @return
    */
   def getEffectiveRealmLevelRoles(id: String): R[List[Role]] = {
-    val path = Seq(keycloakClient.realm, resource, id, mappings, "realm", "composite")
+    val path = Seq(keycloakClient.realm, `client-scopes`, id, `scope-mappings`, "realm", "composite")
     keycloakClient.get[List[Role]](path)
   }
 }
