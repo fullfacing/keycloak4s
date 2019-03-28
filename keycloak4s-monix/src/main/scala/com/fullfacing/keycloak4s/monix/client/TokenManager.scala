@@ -1,5 +1,6 @@
 package com.fullfacing.keycloak4s.monix.client
 
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
@@ -10,10 +11,11 @@ import com.fullfacing.keycloak4s.monix.client.TokenManager.{Token, TokenResponse
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import monix.eval.Task
+import monix.reactive.Observable
 import org.json4s.Formats
 import org.json4s.jackson.Serialization
 
-abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend[Task, Nothing], formats: Formats) {
+abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend[Task, Observable[ByteBuffer]], formats: Formats) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 

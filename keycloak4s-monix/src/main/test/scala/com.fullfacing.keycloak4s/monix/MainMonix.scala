@@ -4,7 +4,10 @@ import java.nio.ByteBuffer
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.KeycloakConfig
+import com.fullfacing.keycloak4s.models.User
 import com.fullfacing.keycloak4s.monix.client.{Keycloak, KeycloakClient}
+import com.fullfacing.keycloak4s.monix.utilities.ObservableUtils
+import com.fullfacing.keycloak4s.monix.utilities.ObservableUtils._
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
@@ -20,20 +23,16 @@ object MainMonix extends App {
   implicit val formats: Formats = org.json4s.DefaultFormats
   implicit val sttpBackend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
 
-  val config = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
+  val config: KeycloakConfig = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
 
-  implicit val client: KeycloakClient =
-    new KeycloakClient(config)
+  implicit val client: KeycloakClient = new KeycloakClient(config)
 
 
   val clients = Keycloak.Keys
-  import scala.concurrent.duration._
-  global.scheduleOnce(0 seconds) {
-    clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
-  }
+  clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
 
-
+  obs.walk[State, Seq[User]](State.Init)(ObservableUtils.fetchResources(i => Keycloak.Users.getUsers(first = Some(i)))).toListL.foreach(r => println(writePretty(r.flatten)))
 
   Console.readBoolean()
 }

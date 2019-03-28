@@ -1,4 +1,4 @@
-package com.fullfacin.keycloak4s
+package com.fullfacing.keycloak4s
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString

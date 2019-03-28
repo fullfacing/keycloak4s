@@ -1,11 +1,14 @@
 package com.fullfacing.keycloak4s.monix.client
 
+import java.nio.ByteBuffer
+
 import com.fullfacing.keycloak4s.client.KeycloakConfig
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
 import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, SttpBackend, Uri, sttp}
 import monix.eval.Task
+import monix.reactive.Observable
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
 
@@ -13,7 +16,7 @@ import scala.collection.immutable.Seq
 import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
 
-class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, Nothing], formats: Formats) extends TokenManager(config) {
+class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, Observable[ByteBuffer]], formats: Formats) extends TokenManager(config) {
 
   val realm: String = config.realm
 
