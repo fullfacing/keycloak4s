@@ -16,6 +16,7 @@ import monix.reactive.Observable
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.writePretty
 
+import scala.io.StdIn
 import scala.language.postfixOps
 
 object MainMonix extends App {
@@ -34,7 +35,7 @@ object MainMonix extends App {
 
   obs.walk[State, Seq[User]](State.Init)(ObservableUtils.fetchResources(i => Keycloak.Users.getUsers(first = Some(i)))).toListL.foreach(r => println(writePretty(r.flatten)))
 
-  Console.readBoolean()
+  StdIn.readLine()
 }
 
 class MonixHttpBackendL(delegate: SttpBackend[Task, Observable[ByteBuffer]]) extends SttpBackend[Task, Observable[ByteBuffer]] {
