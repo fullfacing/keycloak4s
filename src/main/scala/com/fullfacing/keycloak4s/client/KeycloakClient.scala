@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.client
 
 import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.models.RequestInfo
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
@@ -40,30 +41,30 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
     case _                         => withAuth(request.response(asJson[A]))
   }
 
-  private def call[A, B <: Any : Manifest](request: Request[String, Nothing], payload: A): F[B] = {
+  private def call[A, B <: Any : Manifest](request: Request[String, Nothing], payload: A, requestInfo: RequestInfo): F[B] = {
     val resp = setResponse[B](setRequest(request, payload))
-    F.flatMap(resp)(r => F.flatMap(r.send())(liftM))
+    F.flatMap(resp)(r => F.flatMap(r.send())(liftM(_, requestInfo)))
   }
 
   /* REST Protocol Calls **/
 
   def get[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): F[A] = {
     val request = sttp.get(createUri(path, query))
-    call[Unit, A](request, ())
+    call[Unit, A](request, (), buildRequestInfo(path, "GET", ()))
   }
 
   def put[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[B] = {
     val request = sttp.put(createUri(path, query))
-    call[A, B](request, payload)
+    call[A, B](request, payload, buildRequestInfo(path, "PUT", payload))
   }
 
   def post[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[B] = {
     val request = sttp.post(createUri(path, query))
-    call[A, B](request, payload)
+    call[A, B](request, payload, buildRequestInfo(path, "POST", payload))
   }
 
   def delete[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[B] = {
     val request = sttp.delete(createUri(path, query))
-    call[A, B](request, payload)
+    call[A, B](request, payload, buildRequestInfo(path, "DELETE", payload))
   }
 }
