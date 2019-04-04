@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.TokenManager.{Token, TokenResponse}
-import com.fullfacing.keycloak4s.models.ErrorDump
+import com.fullfacing.keycloak4s.models.{ErrorDump, RequestInfo}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import org.json4s.Formats
@@ -18,18 +18,29 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
 
   protected val F: MonadError[F] = client.responseMonad
 
-  protected def buildError(response: Response[_]): ErrorDump = {
-    ErrorDump(
-      code        = response.code,
-      body        = response.body.fold(e => e, _ => "N/A"),
-      headers     = response.headers,
-      rawBody     = response.rawErrorBody.fold(new String(_, StandardCharsets.UTF_8), _ => "N/A"),
-      statusText  = response.statusText
+  protected def buildRequestInfo(path: Seq[String], protocol: String, body: Any): RequestInfo = {
+    RequestInfo(
+      path      = path.mkString("/"),
+      protocol  = protocol,
+      body      = body match {
+        case _: Unit  => None
+        case a        => Some(a)
+      }
     )
   }
 
-  protected def liftM[A](response: Response[A]): F[A] = response.body match {
-    case Left(_)    => F.error(buildError(response))
+  protected def buildError(response: Response[_], requestInfo: RequestInfo): ErrorDump = {
+    ErrorDump(
+      code        = response.code,
+      headers     = response.headers,
+      body        = response.rawErrorBody.fold(new String(_, StandardCharsets.UTF_8), _ => "N/A"),
+      statusText  = response.statusText,
+      requestInfo = requestInfo
+    )
+  }
+
+  protected def liftM[A](response: Response[A], requestInfo: RequestInfo): F[A] = response.body match {
+    case Left(_)    => F.error(buildError(response, requestInfo))
     case Right(rsp) => F.unit(rsp)
   }
 
@@ -58,23 +69,27 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     * @return
     */
   private def issueAccessToken(): F[Token] = {
+    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+
     val a = sttp.post(tokenEndpoint)
       .body(password)
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
 
-    Concurrent[F].flatMap(a)(liftM)
+    Concurrent[F].flatMap(a)(liftM(_, requestInfo))
   }
 
   private def refreshAccessToken(t: Token): F[Token] = {
+    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+
     val a = sttp.post(tokenEndpoint)
       .body(refresh(t))
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
 
-    Concurrent[F].flatMap(a)(liftM)
+    Concurrent[F].flatMap(a)(liftM(_, requestInfo))
   }
 
 
