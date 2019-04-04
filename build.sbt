@@ -119,10 +119,26 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
 // -------------------------------------------------------- //
 // Project and configuration for keycloak-akka-http-adapter //
 // -------------------------------------------------------- //
-lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ monix ++ nimbus
+val nexusResolvers = {
+  val nexusURL = sys.env.getOrElse("NEXUS_REPO_URL", "nexus.k8s.dev.fin.fullfacing.com")
+  Seq(
+    "Sonatype OSS Releases" at s"https://$nexusURL/repository/maven-releases",
+    "Sonatype OSS Snapshots" at s"https://$nexusURL/repository/maven-snapshots",
+    Resolver.sonatypeRepo("releases"),
+    Resolver.sonatypeRepo("snapshots")
+  )
+}
+
+val apollo = {
+  val version = "2.8.1-SNAPSHOT"
+  Seq("com.fullfacing" %% "apollo-http" % version)
+}
+
+lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ monix ++ nimbus ++ apollo
 
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-adapters/akka-http"))
   .settings(global: _*)
+  .settings(resolvers ++= nexusResolvers)
   .settings(libraryDependencies ++= `keycloak-akka-http-dependencies`)
   .settings(name := "keycloak4s-akka-http-adapter", publishArtifact := true)
   .dependsOn(keycloak4s)
