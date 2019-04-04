@@ -80,6 +80,20 @@ val `sttp-monix`: Seq[ModuleID] = {
   )
 }
 
+val `akka-http`: Seq[ModuleID] = {
+  val version = "10.1.8"
+  Seq(
+    "com.typesafe.akka" %% "akka-http" % version
+  )
+}
+
+val nimbus: Seq[ModuleID] = {
+  val version = "7.0.1"
+  Seq(
+    "com.nimbusds" % "nimbus-jose-jwt" % version
+  )
+}
+
 // ----------------------------------------------- //
 // Project and configuration for keycloak-monix    //
 // ----------------------------------------------- //
@@ -102,10 +116,21 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
   .settings(name := "keycloak4s-monix", publishArtifact := true)
   .dependsOn(keycloak4s)
 
+// -------------------------------------------------------- //
+// Project and configuration for keycloak-akka-http-adapter //
+// -------------------------------------------------------- //
+lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ monix ++ nimbus
+
+lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-adapters/akka-http"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= `keycloak-akka-http-dependencies`)
+  .settings(name := "keycloak4s-akka-http-adapter", publishArtifact := true)
+  .dependsOn(keycloak4s)
+
 // ---------------------------------------------- //
 // Project and configuration for the root project //
 // ---------------------------------------------- //
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
-  .aggregate(keycloak4s, `keycloak4s-monix`)
+  .aggregate(keycloak4s, `keycloak4s-monix`, `keycloak4s-akka-http`)
