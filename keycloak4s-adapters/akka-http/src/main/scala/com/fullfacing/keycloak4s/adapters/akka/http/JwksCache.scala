@@ -10,6 +10,12 @@ import monix.execution.atomic.Atomic
 
 import scala.concurrent.Future
 
+/**
+ * A wrapper to retrieve and cache the JWK set from the Keycloak server with functionality to recache when necessary.
+ *
+ * Based off code from Alexandru Nedelcu and Michał Siatkowski.
+ * https://github.com/monix/monix/issues/606
+ */
 class JwksCache(host: String, port: String, realm: String)(implicit s: Scheduler) {
   private type NullFuture = Future[Either[Throwable, JWKSet]]
 
