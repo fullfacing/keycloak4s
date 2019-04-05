@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.monix.client
 import java.nio.ByteBuffer
 
 import com.fullfacing.keycloak4s.client.KeycloakConfig
+import com.fullfacing.keycloak4s.models.RequestInfo
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
@@ -46,30 +47,30 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
     case _                         => withAuth(request.response(asJson[A]))
   }
 
-  private def call[A, B <: Any : Manifest](request: Request[String, Nothing], payload: A): Task[B] = {
+  private def call[A, B <: Any : Manifest](request: Request[String, Nothing], payload: A, requestInfo: RequestInfo): Task[B] = {
     val resp = setResponse[B](setRequest(request, payload))
-    F.flatMap(resp)(r => F.flatMap(r.send())(liftM))
+    F.flatMap(resp)(r => F.flatMap(r.send())(liftM(_, requestInfo)))
   }
 
   /* REST Protocol Calls **/
 
   def get[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[A] = {
     val request = sttp.get(createUri(path, query))
-    call[Unit, A](request, ())
+    call[Unit, A](request, (), buildRequestInfo(path, "GET", ()))
   }
 
   def put[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[B] = {
     val request = sttp.put(createUri(path, query))
-    call[A, B](request, payload)
+    call[A, B](request, payload, buildRequestInfo(path, "PUT", payload))
   }
 
   def post[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[B] = {
     val request = sttp.post(createUri(path, query))
-    call[A, B](request, payload)
+    call[A, B](request, payload, buildRequestInfo(path, "POST", payload))
   }
 
   def delete[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[B] = {
     val request = sttp.delete(createUri(path, query))
-    call[A, B](request, payload)
+    call[A, B](request, payload, buildRequestInfo(path, "DELETE", payload))
   }
 }

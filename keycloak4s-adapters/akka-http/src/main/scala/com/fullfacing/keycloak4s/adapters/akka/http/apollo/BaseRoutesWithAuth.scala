@@ -3,11 +3,13 @@ package com.fullfacing.keycloak4s.adapters.akka.http.apollo
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.fullfacing.apollo.core.health.HealthCheck
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.Directives.{context, validateToken}
 import com.fullfacing.apollo.http.rest.BaseUri
+import com.fullfacing.keycloak4s.adapters.akka.http.TokenValidator
 import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutesWithAuth.RequestHandler
+import com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives.Directives.{context, validateToken}
+import monix.execution.Scheduler
 
-abstract class BaseRoutesWithAuth(uri: BaseUri) {
+abstract class BaseRoutesWithAuth(uri: BaseUri, tv: TokenValidator)(implicit s: Scheduler) {
 
   lazy val routes: Route = uri.render {
     path("healthz") {
@@ -16,7 +18,7 @@ abstract class BaseRoutesWithAuth(uri: BaseUri) {
       }
     } ~
     context { initial =>
-      validateToken(initial) { context =>
+      validateToken(initial)(tv, s) { context =>
         api(context)
       }
     }

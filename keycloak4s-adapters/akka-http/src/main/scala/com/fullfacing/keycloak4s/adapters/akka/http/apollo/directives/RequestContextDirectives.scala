@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.adapters.akka.http.apollo
+package com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives
 
 import java.time.Instant
 import java.util.UUID
@@ -6,6 +6,7 @@ import java.util.UUID
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{extractClientIP, extractCredentials, optionalHeaderValueByName, provide}
 import com.fullfacing.apollo.http.directives.TaskDirectives
+import com.fullfacing.keycloak4s.adapters.akka.http.apollo.RequestContext
 
 trait RequestContextDirectives extends TaskDirectives {
 
