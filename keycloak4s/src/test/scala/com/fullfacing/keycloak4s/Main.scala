@@ -27,8 +27,8 @@ object Main extends App {
 
   val clients = Keycloak.Roles[Task, Source[ByteString, Any]]
   import scala.concurrent.duration._
-  global.scheduleOnce(0 seconds) {
-    clients.getRolePermissions("4a89a463-4156-459f-85b4-bf85a5dcbf07").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
+  global.scheduleAtFixedRate(0 seconds, 60 seconds) {
+    clients.getRolePermissions("4a89a463-4156-459f-85b4-bf85a5dcbf07").foreachL(_ => ()).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 

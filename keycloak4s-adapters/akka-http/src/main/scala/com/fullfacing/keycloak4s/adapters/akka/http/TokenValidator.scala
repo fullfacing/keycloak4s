@@ -2,19 +2,26 @@ package com.fullfacing.keycloak4s.adapters.akka.http
 
 import java.time.Instant
 
+import cats.data.EitherT
 import cats.implicits._
 import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSAVerifier
-import com.nimbusds.jose.jwk.RSAKey
+import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.SignedJWT.parse
+import monix.eval.Task
+import monix.execution.Scheduler
 import org.json4s.Formats
 
-import scala.util.control.NonFatal
+import scala.util.Try
 
-object TokenValidator {
-
+class TokenValidator(host: String, port: String, realm: String)(implicit scheduler: Scheduler) {
   implicit val formats: Formats = org.json4s.DefaultFormats
+
+  /* A cache containing the public JWK set of the Keycloak server. Re-cacheable. **/
+  private val cache = new JWKSCache(host, port, realm)
+  /* The cached key set, with thread-safe mutability controlled by the cache. **/
+  private val keySet = cache.keySet
 
   /**
    * Checks if the token is not expired and is not being used before the nbf (if defined).
@@ -31,30 +38,49 @@ object TokenValidator {
   }
 
   /**
-   * Checks the token signature validation using the public keys pulled from the Keycloak server.
+   * Checks the key set cache for valid keys, re-caches once if invalid.
    */
-  def validateSignature(token: SignedJWT, keys: List[RSAKey]): Either[Throwable, Unit] = {
-    val publicKey = keys.find(x => x.getKeyID  == token.getHeader.getKeyID)
+  private def checkKeySet(): Task[Either[Throwable, JWKSet]] = keySet.flatMap {
+    case Right(_) => keySet
+    case Left(_)  => cache.reobtainKeys().map(_.left.map(_ => Errors.JWKS_SERVER_ERROR))
+  }
 
-    publicKey.fold(Errors.PUBLIC_KEY_NOT_FOUND.asLeft[Unit]) { key =>
-      val verifier = new RSASSAVerifier(key)
-      if (token.verify(verifier)) ().asRight else Errors.SIG_INVALID.asLeft
+  /**
+   * Attempts to obtain the public key matching the key ID in the token header. Re-caches the key set once if the key was not found.
+   */
+  private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false): Task[Either[Throwable, RSAKey]] = {
+    Try(keys.getKeyByKeyId(keyId)).toEither match {
+      case Left(_) if !reattempted  => cache.reobtainKeys().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
+      case Left(_)                  => Task(Errors.PUBLIC_KEY_NOT_FOUND.asLeft)
+      case Right(k: RSAKey)         => Task(k.asRight)
     }
+  }
+
+  /**
+   * Validates the token with the public key obtained from the Keycloak server.
+   */
+  private def validateSignature(token: SignedJWT, publicKey: RSAKey): Either[Throwable, Unit] = {
+    val verifier = new RSASSAVerifier(publicKey)
+    if (token.verify(verifier)) ().asRight else Errors.SIG_INVALID.asLeft
   }
 
   /**
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
    */
-  def validate(rawToken: String)(implicit publicKeys: List[RSAKey]): Either[Throwable, Payload] = {
+  def validate(rawToken: String): Task[Either[Throwable, Payload]] = {
     val token = parse(rawToken)
     val nbf = token.getJWTClaimsSet.getNotBeforeTime.toInstant
     val exp = token.getJWTClaimsSet.getExpirationTime.toInstant
 
-    val validator = for {
-      _ <- validateSignature(token, publicKeys)
-      _ <- validateTime(exp, nbf)
+    for {
+      _     <- EitherT.fromEither[Task](validateTime(exp, nbf))
+      keys  <- EitherT(checkKeySet())
+      key   <- EitherT(matchPublicKey(token.getHeader.getKeyID, keys))
+      _     <- EitherT.fromEither[Task](validateSignature(token, key))
     } yield token.getPayload
+  }.value
+}
 
-    try validator catch { case NonFatal(e) => e.asLeft }
-  }
+object TokenValidator {
+  def apply(host: String, port: String, realm: String)(implicit s: Scheduler) = new TokenValidator(host, port, realm)
 }

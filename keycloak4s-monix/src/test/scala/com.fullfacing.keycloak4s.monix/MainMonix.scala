@@ -57,7 +57,10 @@ object MainMonix extends App {
   }*/
 
   val clients = Keycloak.Keys
-  clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
+  import scala.concurrent.duration._
+  global.scheduleAtFixedRate(0 seconds, 60 seconds) {
+    clients.getRealmKeys().foreachL(s => ()/*println(writePretty(s))*/).onErrorHandle(_.printStackTrace()).runToFuture
+  }
 
   obs.walk[State, Seq[User]](State.Init)(ObservableUtils.fetchResources(i => Keycloak.Users.getUsers(first = Some(i)))).toListL.foreach(r => println(writePretty(r.flatten)))
 
