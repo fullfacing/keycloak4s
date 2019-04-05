@@ -25,7 +25,7 @@ class JwksCache(host: String, port: String, realm: String)(implicit s: Scheduler
   private val future = Atomic(null: NullFuture)
 
   /* Executes the JWKSet retrieval Task, caches the resulting Future and returns it. **/
-  private def updateAndGet(retryCount: Int = 0): Future[Either[Throwable, JWKSet]] = synchronized {
+  private def updateAndGet(): Future[Either[Throwable, JWKSet]] = synchronized {
     future.set(task.runToFuture)
     future.get
   }
