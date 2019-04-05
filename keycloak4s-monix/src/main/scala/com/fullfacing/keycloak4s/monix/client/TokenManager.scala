@@ -1,12 +1,11 @@
 package com.fullfacing.keycloak4s.monix.client
 
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 
 import com.fullfacing.keycloak4s.client.KeycloakConfig
-import com.fullfacing.keycloak4s.models.ErrorDump
+import com.fullfacing.keycloak4s.models.{ErrorDump, RequestInfo}
 import com.fullfacing.keycloak4s.monix.client.TokenManager.{Token, TokenResponse}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
@@ -21,18 +20,29 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
 
   protected val F: MonadError[Task] = client.responseMonad
 
-  protected def buildError(response: Response[_]): ErrorDump = {
+  protected def buildRequestInfo(path: Seq[String], protocol: String, body: Any): RequestInfo = {
+    RequestInfo(
+      path      = path.mkString("/"),
+      protocol  = protocol,
+      body      = body match {
+        case _: Unit  => None
+        case a        => Some(a)
+      }
+    )
+  }
+
+  protected def buildError(response: Response[_], requestInfo: RequestInfo): ErrorDump = {
     ErrorDump(
       code        = response.code,
       body        = response.body.fold(e => e, _ => "N/A"),
       headers     = response.headers,
-      rawBody     = response.rawErrorBody.fold(new String(_, StandardCharsets.UTF_8), _ => "N/A"),
-      statusText  = response.statusText
+      statusText  = response.statusText,
+      requestInfo = requestInfo
     )
   }
 
-  protected def liftM[A](response: Response[A]): Task[A] = response.body match {
-    case Left(_)    => F.error(buildError(response))
+  protected def liftM[A](response: Response[A], requestInfo: RequestInfo): Task[A] = response.body match {
+    case Left(_)    => F.error(buildError(response, requestInfo))
     case Right(rsp) => F.unit(rsp)
   }
 
@@ -61,23 +71,27 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     * @return
     */
   private def issueAccessToken(): Task[Token] = {
+    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+
     val a = sttp.post(tokenEndpoint)
       .body(password)
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
 
-    a.flatMap(liftM)
+    a.flatMap(liftM(_, requestInfo))
   }
 
   private def refreshAccessToken(t: Token): Task[Token] = {
+    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+
     val a = sttp.post(tokenEndpoint)
       .body(refresh(t))
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
 
-    a.flatMap(liftM)
+    a.flatMap(liftM(_, requestInfo))
   }
 
 
@@ -104,7 +118,6 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     * credentials grant type, or refreshing the existing token using the refresh_token grant type.
     *
     * If the access token is still valid it simply returns the token unchanged.
-    * @param t
     * @return
     */
   private def validateToken(): Task[Token] = {
@@ -135,7 +148,6 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
 
   /**
     *
-    * @param f
     * @tparam A
     */
   def withAuth[A](request: RequestT[Id, A, Nothing]): Task[RequestT[Id, A, Nothing]] = {

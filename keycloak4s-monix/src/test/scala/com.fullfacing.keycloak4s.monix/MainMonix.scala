@@ -14,6 +14,7 @@ import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import org.json4s.Formats
+import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.writePretty
 
 import scala.io.StdIn
@@ -24,11 +25,36 @@ object MainMonix extends App {
   implicit val formats: Formats = org.json4s.DefaultFormats
   implicit val sttpBackend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
 
-  val config: KeycloakConfig = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
+  val config: KeycloakConfig = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
 
   implicit val client: KeycloakClient = new KeycloakClient(config)
 
+  /*{
+    import com.softwaremill.sttp._
+    import com.softwaremill.sttp.json4s.asJson
+    implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
+
+    val certEndpoint =
+      uri"http://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/certs"
+
+    val password = Map(
+      "grant_type" -> "client_credentials",
+      "client_id" -> config.authn.clientId,
+      "client_secret" -> config.authn.clientSecret
+    )
+
+    def getCert(): Task[Map[String, String]] = {
+      val a = sttp.get(certEndpoint)
+        .body(password)
+        .response(asJson[Map[String, String]])
+        .send()
+
+      a.map(_.body.fold(_ => Map.empty[String, String], a => a))
+    }
+
+//    getCert().foreach(_.foreach(println))
+  }*/
 
   val clients = Keycloak.Keys
   clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture

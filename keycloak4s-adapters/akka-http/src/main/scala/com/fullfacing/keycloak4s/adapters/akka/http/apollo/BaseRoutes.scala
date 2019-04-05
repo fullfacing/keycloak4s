@@ -3,9 +3,10 @@ package com.fullfacing.keycloak4s.adapters.akka.http.apollo
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.fullfacing.apollo.core.health.HealthCheck
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.Directives.{context, validateToken}
 import com.fullfacing.apollo.http.rest.BaseUri
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutesWithAuth.RequestHandler
+import com.fullfacing.keycloak4s.adapters.akka.http.TokenValidator
+import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutes.RequestHandler
+import com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives.Directives.{context, validateToken}
 
 abstract class BaseRoutesWithAuth(uri: BaseUri) {
 
@@ -16,7 +17,7 @@ abstract class BaseRoutesWithAuth(uri: BaseUri) {
       }
     } ~
     context { initial =>
-      validateToken(initial) { context =>
+      validateToken(initial)(tv) { context =>
         api(context)
       }
     }
@@ -24,6 +25,9 @@ abstract class BaseRoutesWithAuth(uri: BaseUri) {
 
   // The custom API definition for this route.
   val api: RequestHandler
+
+
+  private lazy val tv: TokenValidator = new TokenValidator
 
   /**
    * A list of resource handles that should be checked for availability. This is used to determine whether or not
@@ -35,6 +39,6 @@ abstract class BaseRoutesWithAuth(uri: BaseUri) {
   val resources: List[HealthCheck]
 }
 
-object BaseRoutesWithAuth {
+object BaseRoutes {
   type RequestHandler = RequestContext => Route
 }
