@@ -8,7 +8,7 @@ import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutesWithAuth
 import com.fullfacing.keycloak4s.adapters.akka.http.Implicits._
 import com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives.Directives._
 
-object HttpApi extends BaseRoutesWithAuth("test" - "adapter", tv) {
+object HttpApi extends BaseRoutesWithAuth("test" - "adapter") {
 
   val resources: List[HealthCheck] = List.empty
 

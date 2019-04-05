@@ -9,7 +9,7 @@ import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutesWithAuth.Re
 import com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives.Directives.{context, validateToken}
 import monix.execution.Scheduler
 
-abstract class BaseRoutesWithAuth(uri: BaseUri, tv: TokenValidator)(implicit s: Scheduler) {
+abstract class BaseRoutesWithAuth(uri: BaseUri)(implicit tv: TokenValidator, s: Scheduler) {
 
   lazy val routes: Route = uri.render {
     path("healthz") {
