@@ -9,24 +9,28 @@ import monix.execution.Scheduler
 import monix.execution.atomic.Atomic
 
 import scala.concurrent.Future
-import scala.util.control.NonFatal
 
-class JWKSCache(host: String, port: String, realm: String)(implicit s: Scheduler) {
+class JwksCache(host: String, port: String, realm: String)(implicit s: Scheduler) {
   private type NullFuture = Future[Either[Throwable, JWKSet]]
 
+  /* The URL to retrieve the ConnectID JWKS **/
   private val url = new URL(s"http://$host:$port/auth/realms/$realm/protocol/openid-connect/certs")
 
+  /* The asynchronous Task to retrieve the JWKSet. **/
   private val task = Task {
-    try JWKSet.load(url).asRight catch { case NonFatal(e) => e.asLeft }
+    JWKSet.load(url).asRight[Throwable]
   }.onErrorHandle(_.asLeft)
 
+  /* The cached Future resulting from executing the JWKSet retrieval Task. **/
   private val future = Atomic(null: NullFuture)
 
+  /* Executes the JWKSet retrieval Task, caches the resulting Future and returns it. **/
   private def updateAndGet(retryCount: Int = 0): Future[Either[Throwable, JWKSet]] = synchronized {
     future.set(task.runToFuture)
     future.get
   }
 
+  /* The Task containing the currently cached JWKSet. **/
   lazy val keySet: Task[Either[Throwable, JWKSet]] = Task.deferFuture {
     future.get match {
       case null   => updateAndGet()
@@ -34,6 +38,7 @@ class JWKSCache(host: String, port: String, realm: String)(implicit s: Scheduler
     }
   }
 
+  /* Drops the cache, re-executes the JWKSet retrieval Task and returns the result. **/
   def reobtainKeys(): Task[Either[Throwable, JWKSet]] = {
     future.set(null: NullFuture)
     keySet

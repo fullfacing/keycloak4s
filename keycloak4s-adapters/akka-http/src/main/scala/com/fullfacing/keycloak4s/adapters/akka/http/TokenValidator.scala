@@ -19,7 +19,8 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
   implicit val formats: Formats = org.json4s.DefaultFormats
 
   /* A cache containing the public JWK set of the Keycloak server. Re-cacheable. **/
-  private val cache = new JWKSCache(host, port, realm)
+  private val cache = new JwksCache(host, port, realm)
+
   /* The cached key set, with thread-safe mutability controlled by the cache. **/
   private val keySet = cache.keySet
 
@@ -38,7 +39,7 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
   }
 
   /**
-   * Checks the key set cache for valid keys, re-caches once if invalid.
+   * Checks the key set cache for valid keys, re-caches once (and only once) if invalid.
    */
   private def checkKeySet(): Task[Either[Throwable, JWKSet]] = keySet.flatMap {
     case Right(_) => keySet
@@ -46,7 +47,8 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
   }
 
   /**
-   * Attempts to obtain the public key matching the key ID in the token header. Re-caches the key set once if the key was not found.
+   * Attempts to obtain the public key matching the key ID in the token header.
+   * Re-caches the key set once (and only once) if the key was not found.
    */
   private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false): Task[Either[Throwable, RSAKey]] = {
     Try(keys.getKeyByKeyId(keyId)).toEither match {
