@@ -2,11 +2,11 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.{SimpleNameResponse, Synchronization}
+import com.fullfacing.keycloak4s.models.{KeycloakError, SimpleNameResponse, Synchronization}
 
 import scala.collection.immutable.Seq
 
-class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val user_storage = "user-storage"
 
@@ -18,7 +18,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * @param id
    * @return
    */
-  def clientSimpleProviderName(id: String): R[Map[String, Any]] = {
+  def clientSimpleProviderName(id: String): R[Either[KeycloakError, Map[String, Any]]] = {
     val path = Seq(id, "name")
     client.get[Map[String, Any]](path)
   }
@@ -29,7 +29,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * @param userStorageId
    * @return
    */
-  def userSimpleProviderName(userStorageId: String): R[SimpleNameResponse] = {
+  def userSimpleProviderName(userStorageId: String): R[Either[KeycloakError, SimpleNameResponse]] = {
     val path = Seq(client.realm, user_storage, userStorageId, "name")
     client.get[SimpleNameResponse](path)
   }
@@ -39,7 +39,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * @param userStorageId
    * @return
    */
-  def removeImportedUsers(userStorageId: String): R[Unit] = {
+  def removeImportedUsers(userStorageId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, user_storage, userStorageId, "remove-imported-users")
     client.post(path)
   }
@@ -52,7 +52,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * @param action  com.fullfacing.keycloak4s.models.enums.TriggerSyncActions
    * @return
    */
-  def syncUsers(userStorageId: String, action: Option[String]): R[Synchronization] = {
+  def syncUsers(userStorageId: String, action: Option[String]): R[Either[KeycloakError, Synchronization]] = {
     val path  = Seq(client.realm, user_storage, userStorageId, "sync")
     val query = createQuery(("action", action))
     client.post[Unit, Synchronization](path, query = query)
@@ -64,7 +64,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * @param userStorageId
    * @return
    */
-  def unlink(userStorageId: String): R[Unit] = {
+  def unlink(userStorageId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, user_storage, userStorageId, "unlink-users")
     client.post(path)
   }
@@ -78,7 +78,7 @@ class UserStorageProviders[R[_]: Concurrent, S](implicit client: KeycloakClient[
    * @param direction com.fullfacing.keycloak4s.models.enums.MapperSyncDirections
    * @return
    */
-  def syncMapperData(mapperId: String, userStorageId: String, direction: Option[String]): R[Synchronization] = {
+  def syncMapperData(mapperId: String, userStorageId: String, direction: Option[String]): R[Either[KeycloakError, Synchronization]] = {
     val path  = Seq(client.realm, user_storage, userStorageId, "mappers", mapperId, "sync")
     val query = createQuery(("direction", direction))
     client.post[Unit, Synchronization](path, query = query)

@@ -4,17 +4,13 @@ import java.nio.ByteBuffer
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.KeycloakConfig
-import com.fullfacing.keycloak4s.models.User
 import com.fullfacing.keycloak4s.monix.client.{Keycloak, KeycloakClient}
-import com.fullfacing.keycloak4s.monix.utilities.ObservableUtils
-import com.fullfacing.keycloak4s.monix.utilities.ObservableUtils._
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import org.json4s.Formats
-import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.writePretty
 
 import scala.io.StdIn
@@ -30,39 +26,11 @@ object MainMonix extends App {
 
   implicit val client: KeycloakClient = new KeycloakClient(config)
 
-  /*{
-    import com.softwaremill.sttp._
-    import com.softwaremill.sttp.json4s.asJson
-    implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
-
-    val certEndpoint =
-      uri"http://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/certs"
-
-    val password = Map(
-      "grant_type" -> "client_credentials",
-      "client_id" -> config.authn.clientId,
-      "client_secret" -> config.authn.clientSecret
-    )
-
-    def getCert(): Task[Map[String, String]] = {
-      val a = sttp.get(certEndpoint)
-        .body(password)
-        .response(asJson[Map[String, String]])
-        .send()
-
-      a.map(_.body.fold(_ => Map.empty[String, String], a => a))
-    }
-
-//    getCert().foreach(_.foreach(println))
-  }*/
-
   val clients = Keycloak.Keys
   import scala.concurrent.duration._
   global.scheduleAtFixedRate(0 seconds, 60 seconds) {
-    clients.getRealmKeys().foreachL(s => ()/*println(writePretty(s))*/).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
   }
-
-  obs.walk[State, Seq[User]](State.Init)(ObservableUtils.fetchResources(i => Keycloak.Users.getUsers(first = Some(i)))).toListL.foreach(r => println(writePretty(r.flatten)))
 
   StdIn.readLine()
 }

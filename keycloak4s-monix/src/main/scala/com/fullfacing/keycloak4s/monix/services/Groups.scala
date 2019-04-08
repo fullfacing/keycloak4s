@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.monix.services
 
-import com.fullfacing.keycloak4s.models.{Group, User}
+import com.fullfacing.keycloak4s.models.{Group, KeycloakError, User}
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.services.createQuery
 import monix.eval.Task
@@ -17,7 +17,7 @@ class Groups(implicit client: KeycloakClient) {
    * @param search
    * @return
    */
-  def getGroups(first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): Task[Seq[Group]] = {
+  def getGroups(first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): Task[Either[KeycloakError, Seq[Group]]] = {
     val query = createQuery(
       ("first", first),
       ("max", max),
@@ -36,7 +36,7 @@ class Groups(implicit client: KeycloakClient) {
    * @param max
    * @return
    */
-  def getUsers(groupId: String, first: Option[Int] = None, max: Option[Int] = None): Task[Seq[User]] = {
+  def getUsers(groupId: String, first: Option[Int] = None, max: Option[Int] = None): Task[Either[KeycloakError, Seq[User]]] = {
     val query = createQuery(
       ("first", first),
       ("max", max)
