@@ -7,6 +7,7 @@ import com.fullfacing.keycloak4s.adapters.akka.http.apollo.RequestContext
 
 trait AuthorisationDirectives extends TaskDirectives {
 
+  /** WIP - authorisation directive */
   def authorise(ctx: RequestContext, found: List[String]): Directive0 = {
     authorize(true)
   }
