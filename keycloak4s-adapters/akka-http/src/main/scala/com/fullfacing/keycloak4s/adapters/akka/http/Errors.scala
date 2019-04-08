@@ -9,6 +9,8 @@ object Errors {
   val NOT_YET_VALID         = new Throwable("401 Unauthorized - The bearer token is not yet valid.")
   val EXPIRED               = new Throwable("401 Unauthorized - The bearer token has expired.")
   val SIG_INVALID           = new Throwable("401 Unauthorized - Bearer token signature verification failed.")
+  val AUTH_MISSING          = new Throwable("403 Forbidden - Authorization details not included in bearer token.")
+  val UNAUTHORIZED          = new Throwable("403 Forbidden - Authorization denied.")
 
   def errorResponse(code: Int, message: String, log: Option[String] = None): HttpResponse = {
     logger.debug(s"Invalid Request - $code: ${log.getOrElse(message)}")
