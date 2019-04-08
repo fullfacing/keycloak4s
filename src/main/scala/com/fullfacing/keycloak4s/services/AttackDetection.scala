@@ -2,9 +2,9 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.BruteForceResponse
+import com.fullfacing.keycloak4s.models.{BruteForceResponse, KeycloakError}
 
-class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Clear any user login failures for all users.
@@ -13,7 +13,7 @@ class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * @param realm Name of the Realm
    * @return
    */
-  def clearAllLoginFailures(realm: String): R[Unit] = {
+  def clearAllLoginFailures(realm: String): R[Either[KeycloakError, Unit]] = {
     client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: Nil)
   }
 
@@ -24,7 +24,7 @@ class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(realm: String, userId: String): R[BruteForceResponse] = {
+  def getUserStatus(realm: String, userId: String): R[Either[KeycloakError, BruteForceResponse]] = {
     client.get[BruteForceResponse](realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 
@@ -35,7 +35,7 @@ class AttackDetection[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]
    * @param realm Name of the Realm.
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure(realm: String, userId: String): R[Unit] = {
+  def clearUserLoginFailure(realm: String, userId: String): R[Either[KeycloakError, Unit]] = {
     client.delete(realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 }

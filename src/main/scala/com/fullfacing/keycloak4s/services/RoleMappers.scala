@@ -2,11 +2,11 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.{Mappings, Role}
+import com.fullfacing.keycloak4s.models.{KeycloakError, Mappings, Role}
 
 import scala.collection.immutable.Seq
 
-class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class RoleMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val groups_path   = "groups"
   private val role_mappings = "role-mappings"
@@ -17,7 +17,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id
    * @return
    */
-  def fetchRoleMappings(realm: String, id: String): R[Mappings] = {
+  def fetchRoleMappings(realm: String, id: String): R[Either[KeycloakError, Mappings]] = {
     val path = Seq(realm, groups_path, id, role_mappings)
     client.get[Mappings](path)
   }
@@ -30,7 +30,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles Roles to add
    * @return
    */
-  def addRealmLevelRoleMappings(realm: String, id: String, roles: List[Role]): R[Unit] = {
+  def addRealmLevelRoleMappings(realm: String, id: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm")
     client.post[List[Role], Unit](path, roles)
   }
@@ -42,7 +42,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id
    * @return
    */
-  def fetchRealmRoleMappings(realm: String, id: String): R[List[Role]] = {
+  def fetchRealmRoleMappings(realm: String, id: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm")
     client.get[List[Role]](path)
   }
@@ -55,7 +55,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles Roles to be deleted
    * @return
    */
-  def removeRealmRoleMappings(realm: String, id: String, roles: List[Role]): R[Unit] = {
+  def removeRealmRoleMappings(realm: String, id: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm")
     client.delete[List[Role], Unit](path, roles)
   }
@@ -67,7 +67,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id
    * @return
    */
-  def getAvailableRealmRoles(realm: String, id: String): R[List[Role]] = {
+  def getAvailableRealmRoles(realm: String, id: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm", "available")
     client.get[List[Role]](path)
   }
@@ -79,7 +79,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id
    * @return
    */
-  def getEffectiveRealmRoleMappings(realm: String, id: String): R[List[Role]] = {
+  def getEffectiveRealmRoleMappings(realm: String, id: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, groups_path, id, role_mappings, "realm", "composite")
     client.get[List[Role]](path)
   }
@@ -91,7 +91,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId User id
    * @return
    */
-  def getUserRoleMappings(realm: String, userId: String): R[Mappings] = {
+  def getUserRoleMappings(realm: String, userId: String): R[Either[KeycloakError, Mappings]] = {
     val path = Seq(realm, "users", userId, role_mappings)
     client.get[Mappings](path)
   }
@@ -104,7 +104,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles  Roles to add
    * @return
    */
-  def addRealmRoleMappingsToUser(realm: String, userId: String, roles: List[Role]): R[Unit] = {
+  def addRealmRoleMappingsToUser(realm: String, userId: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm")
     client.post[List[Role], Unit](path, roles)
   }
@@ -116,7 +116,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId User id
    * @return
    */
-  def getUserRealmRoleMappings(realm: String, userId: String): R[List[Role]] = {
+  def getUserRealmRoleMappings(realm: String, userId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm")
     client.get[List[Role]](path)
   }
@@ -129,7 +129,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles  Roles to be deleted
    * @return
    */
-  def removeUserRealmRoleMappings(realm: String, userId: String, roles: List[Role]): R[Unit] = {
+  def removeUserRealmRoleMappings(realm: String, userId: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm")
     client.delete[List[Role], Unit](path, roles)
   }
@@ -141,7 +141,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId User id
    * @return
    */
-  def getAvailableUserRealmRoles(realm: String, userId: String): R[List[Role]] = {
+  def getAvailableUserRealmRoles(realm: String, userId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm", "available")
     client.get[List[Role]](path)
   }
@@ -153,7 +153,7 @@ class RoleMappers[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param userId User id
    * @return
    */
-  def getEffectiveUserRealmRoles(realm: String, userId: String): R[List[Role]] = {
+  def getEffectiveUserRealmRoles(realm: String, userId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, "users", userId, role_mappings, "realm", "available")
     client.get[List[Role]](path)
   }
