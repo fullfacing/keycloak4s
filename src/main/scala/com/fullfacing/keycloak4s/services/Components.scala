@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.models._
 
 import scala.collection.immutable.Seq
 
-class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Components[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Create a component.
@@ -15,7 +15,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param component Object representing a component's details.
    * @return
    */
-  def createComponent(realm: String, component: Component): R[Unit] = {
+  def createComponent(realm: String, component: Component): R[Either[KeycloakError, Unit]] = {
     client.post[Component, Unit](realm :: "components" :: Nil, component)
   }
 
@@ -25,7 +25,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param realm Name of the Realm.
    * @return
    */
-  def getComponents(realm: String): R[Seq[Component]] = {
+  def getComponents(realm: String): R[Either[KeycloakError, Seq[Component]]] = {
     client.get[Seq[Component]](realm :: "components" :: Nil)
   }
 
@@ -36,7 +36,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param realm       Name of the Realm.
    * @return
    */
-  def getComponent(componentId: String, realm: String): R[Component] = {
+  def getComponent(componentId: String, realm: String): R[Either[KeycloakError, Component]] = {
     client.get[Component](realm :: "components" :: componentId :: Nil)
   }
 
@@ -48,7 +48,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param component   Object representing a component's details.
    * @return
    */
-  def updateComponent(componentId: String, realm: String, component: Component): R[Component] = {
+  def updateComponent(componentId: String, realm: String, component: Component): R[Either[KeycloakError, Component]] = {
     client.put[Component, Component](realm :: "components" :: componentId :: Nil, component)
   }
 
@@ -59,7 +59,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param realm       Name of the Realm.
    * @return
    */
-  def deleteComponent(componentId: String, realm: String): R[Unit] = {
+  def deleteComponent(componentId: String, realm: String): R[Either[KeycloakError, Unit]] = {
     client.delete(realm :: "components" :: componentId :: Nil)
   }
 
@@ -71,7 +71,7 @@ class Components[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param `type`
    * @return
    */
-  def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None): R[Seq[ComponentType]] = {
+  def getListOfSubComponentTypes(componentId: String, realm: String, `type`: Option[String] = None): R[Either[KeycloakError, Seq[ComponentType]]] = {
     val query = createQuery(("type", `type`))
     client.get[Seq[ComponentType]](realm :: "components" :: componentId :: "sub-component-types" :: Nil, query = query)
   }
