@@ -4,7 +4,6 @@ import java.time.Instant
 import java.util.UUID
 
 import akka.http.scaladsl.model.RemoteAddress
-import com.nimbusds.jose.Payload
 
 /**
  * The request context class will be injected/forwarded at each program entry point. For example, all HTTP requests
@@ -21,9 +20,12 @@ import com.nimbusds.jose.Payload
 final case class RequestContext(ip: Option[RemoteAddress.IP] = None,
                                 agent: Option[String] = None,
                                 token: Option[String] = None,
-                                permissions: Option[Payload] = None,
+                                permissions: Permissions = Permissions(),
                                 timestamp: Instant = Instant.now(),
                                 correlationId: UUID = UUID.randomUUID())
+
+final case class Permissions(roles: List[String] = List.empty[String],
+                             scopes: List[String] = List.empty[String])
 
 object RequestContext {
   def SYSTEM: RequestContext = {
