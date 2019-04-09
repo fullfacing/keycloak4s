@@ -15,7 +15,7 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
-  def create(realm: String, user: User): R[Either[KeycloakError, Unit]] = {
+  def create(user: User): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path)
     client.post(path, user)
   }
@@ -38,8 +38,8 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
     client.get[List[User]](path, query = query)
   }
 
-  def fetchById(realm: String, userId: String): R[Either[KeycloakError, User]] = {
-    val path = Seq(realm, users_path, userId)
+  def fetchById(userId: UUID): R[Either[KeycloakError, User]] = {
+    val path = Seq(realm, users_path, userId.toString)
     client.get[User](path)
   }
 
@@ -69,13 +69,13 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   // -------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Consent ------------------------------------------------ //
   // -------------------------------------------------------------------------------------------------------- //
-  def fetchUserConsent(userId: String): R[Either[KeycloakError, List[UserConsent]]] = {
-    val path = Seq(realm, users_path, userId, "consents")
+  def fetchUserConsent(userId: UUID): R[Either[KeycloakError, List[UserConsent]]] = {
+    val path = Seq(realm, users_path, userId.toString, "consents")
     client.get[List[UserConsent]](path)
   }
   
-  def revokeClientConsentForUser(userId: String, clientId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, users_path, userId, "consents", clientId)
+  def revokeClientConsentForUser(userId: UUID, clientId: String): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "consents", clientId)
     client.delete(path)
   }
 
@@ -87,8 +87,8 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
     client.post[FederatedIdentity, Unit](path, rep)
   }
   
-  def fetchFederatedIdentities(userId: String): R[Either[KeycloakError, List[FederatedIdentity]]] = {
-    val path = Seq(realm, users_path, userId, "federated-identity")
+  def fetchFederatedIdentities(userId: UUID): R[Either[KeycloakError, List[FederatedIdentity]]] = {
+    val path = Seq(realm, users_path, userId.toString, "federated-identity")
     client.get[List[FederatedIdentity]](path)
   }
 
@@ -149,39 +149,32 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   // -------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Roles ------------------------------------------------ //
   // -------------------------------------------------------------------------------------------------------- //
-  def getUserRoles(userId: UUID): R[Either[KeycloakError, Mappings]] = {
+  def fetchRealmRoles(userId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
+    client.get[List[Role]](path)
+  }
+
+  def fetchUserRoleMappings(userId: UUID): R[Either[KeycloakError, Mappings]] = {
     val path = Seq(realm, "users", userId.toString, "role-mappings")
     client.get[Mappings](path)
   }
 
-  def getUserRealmRoles(userId: UUID): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
-    client.get[List[Role]](path)
-  }
-
-  def addRealmRoleToUser(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def addRealmRoles(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
     client.post[List[Role], Unit](path, roles)
   }
 
-  def removeUserRealmRoles(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def removeRealmRoles(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
     client.delete[List[Role], Unit](path, roles)
   }
 
-  def getAvailableRealmRoles( userId: UUID): R[Either[KeycloakError, List[Role]]] = {
+  def fetchAvailableRealmRoles(userId: UUID): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, "users", userId.toString, "role-mappings", "realm", "available")
     client.get[List[Role]](path)
   }
 
-  /**
-    * Get effective realm-level role mappings. This will recurse all composite roles to get the result.
-    *
-    * @param realm  realm name (not id!)
-    * @param userId User id
-    * @return
-    */
-  def getEffectiveUserRealmRoles(realm: String, userId: String): R[Either[KeycloakError, List[Role]]] = {
+  def fetchEffectiveRealmRoles(userId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, "users", userId, "role-mappings", "realm", "available")
     client.get[List[Role]](path)
   }
