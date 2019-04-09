@@ -8,6 +8,7 @@ import com.fullfacing.keycloak4s.adapters.akka.http.apollo.RequestContext
 
 trait AuthorisationDirectives extends MethodDirectives {
 
+  //TODO Determine if OPTIONS method will require authentication.
   private def scopeMap(method: HttpMethod): String = method match {
     case HttpMethods.GET | HttpMethods.HEAD => "view"
     case HttpMethods.POST | HttpMethods.PUT | HttpMethods.PATCH => "create"
@@ -22,6 +23,7 @@ trait AuthorisationDirectives extends MethodDirectives {
     }
   }
 
+  //TODO Find way to implicitly call RequestContext without breaking the subsequent closure.
   def deleteA(ctx: RequestContext): Directive0 = delete.tflatMap(_ => authorizeMethod(ctx))
   def getA(ctx: RequestContext): Directive0 = get.tflatMap(_ => authorizeMethod(ctx))
   def headA(ctx: RequestContext): Directive0 = head.tflatMap(_ => authorizeMethod(ctx))
