@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.{KeycloakError, ManagementPermission, Response, Role, User}
+import com.fullfacing.keycloak4s.models.{KeycloakError, ManagementPermission, Role, User}
 
 import scala.collection.immutable.Seq
 

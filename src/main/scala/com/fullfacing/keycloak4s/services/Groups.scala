@@ -18,8 +18,8 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
     client.post[Group, Unit](path, group)
   }
 
-  def createSubGroup(groupId: String, group: Group): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, "groups", groupId, "children")
+  def createSubGroup(groupId: UUID, group: Group): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "groups", groupId.toString, "children")
     client.post[Group, Unit](path, group)
   }
 
@@ -105,13 +105,13 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   // ------------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Permissions ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------------- //
-  def getManagementPermissions(groupId: String): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(realm, "groups", groupId, "management", "permissions")
+  def getManagementPermissions(groupId: UUID): R[Either[KeycloakError, ManagementPermission]] = {
+    val path = Seq(realm, "groups", groupId.toString, "management", "permissions")
     client.get[ManagementPermission](path)
   }
   
-  def updateManagementPermissions(groupId: String, permissions: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(realm, "groups", groupId, "management", "permissions")
+  def updateManagementPermissions(groupId: UUID, permissions: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+    val path = Seq(realm, "groups", groupId.toString, "management", "permissions")
     client.put[ManagementPermission, ManagementPermission](path, permissions)
   }
 }

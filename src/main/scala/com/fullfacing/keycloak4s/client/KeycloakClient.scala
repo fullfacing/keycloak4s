@@ -1,9 +1,9 @@
 package com.fullfacing.keycloak4s.client
 
-import cats.implicits._
 import cats.effect.Concurrent
-import com.fullfacing.keycloak4s.models.{KeycloakAdminException, KeycloakError, KeycloakException, RequestInfo}
+import cats.implicits._
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
+import com.fullfacing.keycloak4s.models.{KeycloakAdminException, KeycloakError, KeycloakException, RequestInfo}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
 import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, SttpBackend, Uri, sttp}

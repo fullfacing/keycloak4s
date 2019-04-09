@@ -30,8 +30,6 @@ object Main extends App {
     clients.fetch().foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
-
-
   Console.readBoolean()
 }
 
