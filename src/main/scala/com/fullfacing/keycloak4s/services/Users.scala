@@ -174,8 +174,8 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
     client.get[List[Role]](path)
   }
 
-  def fetchEffectiveRealmRoles(userId: String): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, "users", userId, "role-mappings", "realm", "available")
+  def fetchEffectiveRealmRoles(userId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm", "available")
     client.get[List[Role]](path)
   }
 
