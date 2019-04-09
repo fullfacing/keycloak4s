@@ -37,7 +37,7 @@ abstract class JwksCache (host: String, port: String, realm: String)(implicit s:
   }
 
   /* The Task containing the currently cached JWKSet. **/
-  lazy val keySet: Task[Either[Throwable, JWKSet]] = Task.deferFuture {
+  val keySet: Task[Either[Throwable, JWKSet]] = Task.deferFuture {
     future.get match {
       case null   => updateAndGet()
       case valid  => valid

@@ -12,9 +12,7 @@ import com.nimbusds.jwt.SignedJWT.parse
 import monix.eval.Task
 import monix.execution.Scheduler
 
-import scala.util.Try
-
-//TODO Make TokenValidator abstract, have the akka-http directive wrapper extend it instead.
+//TODO Look into making TokenValidator abstract, and having the akka-http directive wrapper extend it instead.
 class TokenValidator(host: String, port: String, realm: String)(implicit scheduler: Scheduler) extends JwksCache(host, port, realm) {
 
   /**
@@ -44,12 +42,12 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
    * Re-caches the key set once (and only once) if the key was not found.
    */
   private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false): Task[Either[Throwable, RSAKey]] = {
-    Try(keys.getKeyByKeyId(keyId)).toEither match {
-      case Left(_) if !reattempted  => reobtainKeys().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
-      case Left(_)                  => Task(Errors.PUBLIC_KEY_NOT_FOUND.asLeft)
-      case Right(k: RSAKey)         => Task(k.asRight)
+    Option(keys.getKeyByKeyId(keyId)) match {
+      case None if !reattempted => reobtainKeys().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
+      case None                 => Task(Errors.PUBLIC_KEY_NOT_FOUND.asLeft)
+      case Some(k: RSAKey)      => Task(k.asRight)
     }
-  }
+  }.onErrorHandle(_ => Errors.UNEXPECTED.asLeft)
 
   /**
    * Validates the token with the public key obtained from the Keycloak server.
@@ -67,13 +65,14 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
     val nbf = token.getJWTClaimsSet.getNotBeforeTime.toInstant
     val exp = token.getJWTClaimsSet.getExpirationTime.toInstant
 
+    //TODO Rewrite without EitherT's to reduce overhead.
     for {
       _     <- EitherT.fromEither[Task](validateTime(exp, nbf))
       keys  <- EitherT(checkKeySet())
       key   <- EitherT(matchPublicKey(token.getHeader.getKeyID, keys))
       _     <- EitherT.fromEither[Task](validateSignature(token, key))
     } yield token.getPayload
-  }.value
+  }.value.onErrorHandle(_ => Errors.UNEXPECTED.asLeft)
 }
 
 object TokenValidator {

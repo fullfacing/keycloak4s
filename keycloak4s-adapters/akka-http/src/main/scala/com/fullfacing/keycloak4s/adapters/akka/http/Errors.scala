@@ -11,6 +11,7 @@ object Errors {
   val SIG_INVALID           = new Throwable("401 Unauthorized - Bearer token signature verification failed.")
   val AUTH_MISSING          = new Throwable("403 Forbidden - Authorization details not included in bearer token.")
   val UNAUTHORIZED          = new Throwable("403 Forbidden - Authorization denied.")
+  val UNEXPECTED            = new Throwable("500 Internal Server Error - An unexpected error has occurred.")
 
   def errorResponse(code: Int, message: String, log: Option[String] = None): HttpResponse = {
     logger.debug(s"Invalid Request - $code: ${log.getOrElse(message)}")
