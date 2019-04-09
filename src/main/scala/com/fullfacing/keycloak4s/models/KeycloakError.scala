@@ -1,12 +1,12 @@
 package com.fullfacing.keycloak4s.models
 
-final final case class RequestInfo(path: String,
+final case class RequestInfo(path: String,
                                    protocol: String,
                                    body: Option[Any] = None)
 
 sealed trait KeycloakError extends Throwable
 
-final final case class KeycloakAdminException(code: Int,
+final case class KeycloakAdminException(code: Int,
                                               body: String,
                                               headers: Seq[(String, String)],
                                               statusText: String,
@@ -22,4 +22,4 @@ final final case class KeycloakAdminException(code: Int,
   }
 }
 
-final final case class KeycloakException(ex: Throwable) extends KeycloakError
+final case class KeycloakException(ex: Throwable) extends KeycloakError
