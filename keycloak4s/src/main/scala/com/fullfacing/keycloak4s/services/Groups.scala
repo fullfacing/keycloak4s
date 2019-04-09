@@ -87,12 +87,12 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
     client.get[List[Role]](path)
   }
 
-  def fetchEffectiveRealmRoleMappings(id: UUID): R[Either[KeycloakError, List[Role]]] = {
+  def fetchEffectiveRealmRoles(id: UUID): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(realm, "groups", id.toString, "role-mappings", "realm", "composite")
     client.get[List[Role]](path)
   }
 
-  def addRealmLevelRoleMappings(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def addRealmRoles(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "groups", id.toString, "role-mappings", "realm")
     client.post[List[Role], Unit](path, roles)
   }
@@ -105,12 +105,12 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   // ------------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Permissions ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------------- //
-  def getManagementPermissions(groupId: String, realm: String): R[Either[KeycloakError, ManagementPermission]] = {
+  def getManagementPermissions(groupId: String): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(realm, "groups", groupId, "management", "permissions")
     client.get[ManagementPermission](path)
   }
   
-  def updateManagementPermissions(groupId: String, realm: String, permissions: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+  def updateManagementPermissions(groupId: String, permissions: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(realm, "groups", groupId, "management", "permissions")
     client.put[ManagementPermission, ManagementPermission](path, permissions)
   }
