@@ -1,48 +1,27 @@
 package com.fullfacing.keycloak4s.services
 
+import java.util.UUID
+
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
 
 import scala.collection.immutable.Seq
 
-class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient[R, S]) {
 
   private val users_path = "users"
 
-  /**
-   * Create a new user
-   * Username must be unique
-   *
-   * @param user
-   * @return
-   */
-  def createUser(user: User): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path)
+  // ------------------------------------------------------------------------------------------------------ //
+  // ------------------------------------------------ CRUD ------------------------------------------------ //
+  // ------------------------------------------------------------------------------------------------------ //
+  def create(realm: String, user: User): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path)
     client.post(path, user)
   }
 
-  /**
-   * Get users Returns a list of users, filtered according to query parameters
-   *
-   * @param briefRep
-   * @param email
-   * @param first
-   * @param firstName
-   * @param lastName
-   * @param max       Maximum results size (defaults to 100)
-   * @param search    A String contained in username, first or last name, or email
-   * @param username
-   * @return
-   */
-  def getUsers(briefRep: Option[Boolean] = None,
-               email: Option[String] = None,
-               first: Option[Int] = None,
-               firstName: Option[String] = None,
-               lastName: Option[String] = None,
-               max: Option[Int] = None,
-               search: Option[String] = None,
-               username: Option[String] = None): R[Either[KeycloakError, List[User]]] = {
+  def fetch(briefRep: Option[Boolean] = None, username: Option[String] = None, email: Option[String] = None, first: Option[Int] = None,
+            firstName: Option[String] = None, lastName: Option[String] = None, max: Option[Int] = None, search: Option[String] = None): R[Either[KeycloakError, List[User]]] = {
 
     val query = createQuery(
       ("briefRepresentation", briefRep),
@@ -55,288 +34,194 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       ("username", username)
     )
 
-    val path = Seq(client.realm, users_path)
+    val path = Seq(realm, users_path)
     client.get[List[User]](path, query = query)
   }
 
-  /**
-   *
-   * @return
-   */
-  def getUsersCount(): R[Either[KeycloakError, Int]] = {
-    val path = Seq(client.realm, users_path, "count")
-    client.get[Int](path)
-  }
-
-  /**
-   * Get representation of the user
-   *
-   * @param userId
-   * @return
-   */
-  def getUserById(userId: String): R[Either[KeycloakError, User]] = {
-    val path = Seq(client.realm, users_path, userId)
+  def fetchById(realm: String, userId: String): R[Either[KeycloakError, User]] = {
+    val path = Seq(realm, users_path, userId)
     client.get[User](path)
   }
 
-  /**
-   * Update the user
-   *
-   * @param userId
-   * @param updated
-   * @return
-   */
-  def updateUser(userId: String, updated: User): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId)
-    client.put(path, updated)
+  def update(userId: UUID, user: User): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString)
+    client.put(path, user)
   }
 
-  /**
-   * Delete the user
-   *
-   * @param userId
-   * @return
-   */
-  def deleteUser(userId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId)
+  def delete(userId: String): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId)
     client.delete(path)
   }
 
-  /**
-   * Get consents granted by the user
-   *
-   * @param userId
-   * @return
-   */
-  def getUserConsents(userId: String): R[Either[KeycloakError, List[UserConsent]]] = {
-    val path = Seq(client.realm, users_path, userId, "consents")
-    client.get[List[UserConsent]](path)
+  // -------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Counts ------------------------------------------------ //
+  // -------------------------------------------------------------------------------------------------------- //
+  def count(): R[Either[KeycloakError, Int]] = {
+    val path = Seq(realm, users_path, "count")
+    client.get[Int](path)
   }
 
-  /**
-   * Revoke consent and offline tokens for particular client from user
-   *
-   * @param userId
-   * @param clientId
-   * @return
-   */
-  def revokeClientConsentForUser(userId: String, clientId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "consents", clientId)
-    client.delete(path)
-  }
-
-  /**
-   *
-   * @param userId
-   * @param credentialTypes See User model field 'disableableCredentialTypes'.
-   * @return
-   */
-  def disableUserCredentials(userId: String, credentialTypes: List[String]): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "disable-credential-types")
-    client.put[List[String], Unit](path, credentialTypes)
-  }
-
-  /**
-   * Send a update account email to the user.
-   * An email contains a link the user can click to perform a set of required actions.
-   *
-   * The redirectUri and clientId parameters are optional.
-   * If no redirect is given, then there will be no link back to click after actions have completed.
-   * Redirect uri must be a valid uri for the particular clientId.
-   *
-   * @param userId      User id
-   * @param clientId    Client id
-   * @param lifespan    Number of seconds after which the generated token expires
-   * @param redirectUri Redirect uri
-   * @param actions     Required actions the user needs to complete
-   * @return
-   */
-  def executeActionsEmail(userId: String,
-                          clientId: Option[String] = None,
-                          lifespan: Option[Int] = None,
-                          redirectUri: Option[String],
-                          actions: List[String]): R[Either[KeycloakError, Unit]] = {
-
-    val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
-
-    val path = Seq(client.realm, users_path, userId, "execute-actions-email")
-    client.put[List[String], Unit](path, actions, query)
-  }
-
-  /**
-   * Get social logins associated with the user
-   *
-   * @param userId
-   * @return
-   */
-  def federatedIdentity(userId: String): R[Either[KeycloakError, List[FederatedIdentity]]] = {
-    val path = Seq(client.realm, users_path, userId, "federated-identity")
-    client.get[List[FederatedIdentity]](path)
-  }
-
-  /**
-   * Add a social login provider to the user
-   *
-   * @param userId
-   * @param provider Social login provider id
-   * @param rep
-   * @return
-   */
-  def addUserSocialLoginProvider(userId: String, provider: String, rep: FederatedIdentity): R[Either[KeycloakError, Unit]] = { // Unknown Return Type
-    val path = Seq(client.realm, users_path, userId, "federated-identity", provider)
-    client.post[FederatedIdentity, Unit](path, rep)
-  }
-
-  /**
-   * Remove a social login provider from user
-   *
-   * @param userId
-   * @param provider
-   * @return
-   */
-  def removeUserSocialLoginProvider(userId: String, provider: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "federated-identity", provider)
-    client.delete(path)
-  }
-
-  /**
-   *
-   * @param userId
-   * @param first
-   * @param max
-   * @param search
-   * @return
-   */
-  def getGroups(userId: String,
-                first: Option[Int] = None,
-                max: Option[Int] = None,
-                search: Option[String] = None): R[Either[KeycloakError, List[Group]]] = {
-
-    val query = createQuery(("first", first), ("max", max), ("search", search))
-
-    val path = Seq(client.realm, users_path, userId, "groups")
-    client.get[List[Group]](path, query = query)
-  }
-
-  /**
-   *
-   * @param userId
-   * @return
-   */
-  def groupCount(userId: String): R[Either[KeycloakError, Count]] = {
-    val path = Seq(client.realm, users_path, userId, "groups", "count")
+  def countGroups(userId: UUID): R[Either[KeycloakError, Count]] = {
+    val path = Seq(realm, users_path, userId.toString, "groups", "count")
     client.get[Count](path)
   }
 
-  /**
-   * Add user to specified group
-   *
-   * @param userId    Id of user to add to the group
-   * @param groupId   Id of the group the user is to be added to
-   * @return
-   */
-  def joinGroup(userId: String, groupId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "groups", groupId)
-    client.put(path)
+  // -------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Consent ------------------------------------------------ //
+  // -------------------------------------------------------------------------------------------------------- //
+  def fetchUserConsent(userId: String): R[Either[KeycloakError, List[UserConsent]]] = {
+    val path = Seq(realm, users_path, userId, "consents")
+    client.get[List[UserConsent]](path)
   }
-
-
-  /**
-   * removeMembership
-   *
-   * @param userId    Id of user to remove from the group.
-   * @param groupId   Id of the group from which the user is to be removed.
-   * @return
-   */
-  def removeFromGroup(userId: String, groupId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "groups", groupId)
+  
+  def revokeClientConsentForUser(userId: String, clientId: String): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId, "consents", clientId)
     client.delete(path)
   }
 
-  /**
-   * Impersonate the user
-   *
-   * @param userId
-   * @return
-   */
-  def impersonate(userId: String): R[Either[KeycloakError, ImpersonationResponse]] = {
-    val path = Seq(client.realm, users_path, userId, "impersonation")
-    client.post[Unit, ImpersonationResponse](path)
+  // -------------------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Federated Identity ------------------------------------------------ //
+  // -------------------------------------------------------------------------------------------------------------------- //
+  def createFederatedIdentity(userId: UUID, provider: String, rep: FederatedIdentity): R[Either[KeycloakError, Unit]] = { // Unknown Return Type
+    val path = Seq(realm, users_path, userId.toString, "federated-identity", provider)
+    client.post[FederatedIdentity, Unit](path, rep)
+  }
+  
+  def fetchFederatedIdentities(userId: String): R[Either[KeycloakError, List[FederatedIdentity]]] = {
+    val path = Seq(realm, users_path, userId, "federated-identity")
+    client.get[List[FederatedIdentity]](path)
   }
 
-  /**
-   * Remove all user sessions associated with the user.
-   * Also send notification to all clients that have an admin URL to invalidate the sessions for the particular user.
-   *
-   * @param userId
-   * @return
-   */
-  def logout(userId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "logout")
-    client.post(path)
+  def removeFederatedIdentityProvider(userId: UUID, provider: String): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "federated-identity", provider)
+    client.delete(path)
   }
 
-  /** Get offline sessions associated with the user and client
-   *
-   * @param userId
-   * @param clientId
-   * @return
-   */
-  def getOfflineSessions(userId: String, clientId: String): R[Either[KeycloakError, List[UserSession]]] = {
-    val path = Seq(client.realm, users_path, userId, "offline-sessions", clientId)
-    client.get[List[UserSession]](path)
-  }
+  // -------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Emails ------------------------------------------------ //
+  // -------------------------------------------------------------------------------------------------------- //
 
-  /**
-   * Remove TOTP from the user
-   *
-   * @param userId
-   * @return
-   */
-  def removeTotp(userId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "remove-totp")
-    client.put(path)
-  }
-
-  /** Set up a new password for the user.
-   *
-   * @param userId
-   * @param pass
-   * @return
-   */
-  def resetPassword(userId: String, pass: Credential): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId, "reset-password")
-    client.put(path, pass)
-  }
-
-  /** Send an email-verification email to the user.
-   *  An email contains a link the user can click to verify their email address.
-   *
-   * The redirectUri and clientId parameters are optional. The default for the redirect is the account client.
-   *
-   * @param userId
-   * @param clientId
-   * @param redirectUri
-   * @return
-   */
-  def sendVerificationEmail(userId: String,
-                            clientId: Option[String] = None,
-                            redirectUri: Option[String] = None): R[Either[KeycloakError, Unit]] = {
-
+  /** Send an email-verification email to the user. An email contains a link the user can click to verify their email address.
+    *
+    * The redirectUri and clientId parameters are optional. The default for the redirect is the account client.
+    */
+  def sendVerificationEmail(userId: UUID, clientId: Option[String] = None, redirectUri: Option[String] = None): R[Either[KeycloakError, Unit]] = {
     val query = createQuery(("client_id", clientId), ("redirect_uri",redirectUri))
-
-    val path = Seq(client.realm, users_path, userId, "send-verify-email")
+    val path = Seq(realm, users_path, userId.toString, "send-verify-email")
     client.put(path, query = query)
   }
 
   /**
-   * Get sessions associated with the user
-   *
-   * @param userId
-   * @return
-   */
-  def getSessions(userId: String): R[Either[KeycloakError, List[UserSession]]] = {
-    val path = Seq(client.realm, users_path, userId, "sessions")
+    * Send a update account email to the user, the email contains a link that the user can click on to perform a set of
+    * required actions.
+    *
+    * The redirectUri and clientId parameters are optional. If no redirect is given, then there will be no link back to
+    * click after actions have completed. The Redirect URI must be a valid URI for the particular clientId.
+    */
+  def sendActionsEmail(userId: UUID, clientId: Option[String] = None, lifespan: Option[Int] = None,
+                       redirectUri: Option[String], actions: List[String]): R[Either[KeycloakError, Unit]] = {
+    val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
+    val path = Seq(realm, users_path, userId.toString, "execute-actions-email")
+    client.put[List[String], Unit](path, actions, query)
+  }
+
+
+
+  // -------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Groups ------------------------------------------------ //
+  // -------------------------------------------------------------------------------------------------------- //
+  def fetchGroups(userId: UUID, first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): R[Either[KeycloakError, List[Group]]] = {
+    val query = createQuery(("first", first), ("max", max), ("search", search))
+    val path = Seq(realm, users_path, userId.toString, "groups")
+    client.get[List[Group]](path, query = query)
+  }
+  
+  def addToGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "groups", groupId.toString)
+    client.put(path)
+  }
+  
+  def removeFromGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "groups", groupId.toString)
+    client.delete(path)
+  }
+
+  // -------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Roles ------------------------------------------------ //
+  // -------------------------------------------------------------------------------------------------------- //
+  def getUserRoles(userId: UUID): R[Either[KeycloakError, Mappings]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings")
+    client.get[Mappings](path)
+  }
+
+  def getUserRealmRoles(userId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
+    client.get[List[Role]](path)
+  }
+
+  def addRealmRoleToUser(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
+    client.post[List[Role], Unit](path, roles)
+  }
+
+  def removeUserRealmRoles(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
+    client.delete[List[Role], Unit](path, roles)
+  }
+
+  def getAvailableRealmRoles( userId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path = Seq(realm, "users", userId.toString, "role-mappings", "realm", "available")
+    client.get[List[Role]](path)
+  }
+
+  /**
+    * Get effective realm-level role mappings. This will recurse all composite roles to get the result.
+    *
+    * @param realm  realm name (not id!)
+    * @param userId User id
+    * @return
+    */
+  def getEffectiveUserRealmRoles(realm: String, userId: String): R[Either[KeycloakError, List[Role]]] = {
+    val path = Seq(realm, "users", userId, "role-mappings", "realm", "available")
+    client.get[List[Role]](path)
+  }
+
+  // ---------------------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------ Sessions ------------------------------------------------ //
+  // ---------------------------------------------------------------------------------------------------------- //
+  
+  def fetchSessions(userId: UUID): R[Either[KeycloakError, List[UserSession]]] = {
+    val path = Seq(realm, users_path, userId.toString, "sessions")
     client.get[List[UserSession]](path)
+  }
+  
+  def fetchOfflineSessions(userId: UUID, clientId: String): R[Either[KeycloakError, List[UserSession]]] = {
+    val path = Seq(realm, users_path, userId.toString, "offline-sessions", clientId)
+    client.get[List[UserSession]](path)
+  }
+  
+  def removeTotp(realm: String, userId: String): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId, "remove-totp")
+    client.put(path)
+  }
+  
+  def resetPassword(userId: UUID, credential: Credential): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "reset-password")
+    client.put(path, credential)
+  }
+  
+  def disableUserCredentials(userId: UUID, credentialTypes: List[String]): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "disable-credential-types")
+    client.put[List[String], Unit](path, credentialTypes)
+  }
+  
+  def impersonate(userId: UUID): R[Either[KeycloakError, ImpersonationResponse]] = {
+    val path = Seq(realm, users_path, userId.toString, "impersonation")
+    client.post[Unit, ImpersonationResponse](path)
+  }
+  
+  def logout(userId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, users_path, userId.toString, "logout")
+    client.post(path)
   }
 }

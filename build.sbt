@@ -3,7 +3,7 @@ organization := "com.fullfacing"
 
 lazy val global = {
   Seq(
-    version       := "0.2.1-SNAPSHOT",
+    version       := "0.3.1-SNAPSHOT",
     scalaVersion  := "2.12.8",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts
