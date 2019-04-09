@@ -12,7 +12,7 @@ import monix.eval.Task
 import monix.reactive.Observable
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
-
+import com.fullfacing.keycloak4s.monix.client.ObservableExtensions._
 import scala.collection.immutable.Seq
 import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
@@ -59,6 +59,14 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
     call[Unit, A](request, (), buildRequestInfo(path, "GET", ()))
   }
 
+  def getList[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue], offset: Int = 0, batch: Int = 100): Observable[A] = {
+    val call: Int => Task[Seq[A]] = { i =>
+      get[List[A]](path, query :+ KeyValue("first", s"$i"))
+    }
+
+    ObservableExtensions.ObservableExtensions(Observable).walk[State, Seq[A]](State.Continue(offset))(fetchResources(call, batch)).flatMap(Observable.fromIterable)
+  }
+
   def put[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[B] = {
     val request = sttp.put(createUri(path, query))
     call[A, B](request, payload, buildRequestInfo(path, "PUT", payload))
@@ -72,5 +80,32 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
   def delete[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[B] = {
     val request = sttp.delete(createUri(path, query))
     call[A, B](request, payload, buildRequestInfo(path, "DELETE", payload))
+  }
+
+  /** Created by https://github.com/Executioner1939
+   *
+   * Generator functions for the `fromAsyncStateAction` on `Observable`. This function continually fetches
+   * the next set of resources until a result set less than 100 is returned.
+   *
+   * @param source a function that fetches the next batch of resources.
+   * @return the next state and element to be pushed downstream.
+   */
+  def fetchResources[A](source: Int => Task[Seq[A]], batchSize: Int): State => Task[Either[Seq[A], (Seq[A], State)]] = {
+    case State.Init =>
+      source(0).map { resources =>
+        if (resources.size >= batchSize) {
+          Right((resources, State.Continue(resources.size)))
+        } else {
+          Left(resources)
+        }
+      }
+    case State.Continue(offset) =>
+      source(offset).map { resources =>
+        if (resources.size >= batchSize) {
+          Right((resources, State.Continue(offset + resources.size)))
+        } else {
+          Left(resources)
+        }
+      }
   }
 }
