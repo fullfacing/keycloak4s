@@ -1,5 +1,5 @@
 name         := "keycloak4s"
-version      := "0.3.3-SNAPSHOT"
+version      := "0.3.4-SNAPSHOT"
 organization := "com.fullfacing"
 
 val scalacOpts = Seq(

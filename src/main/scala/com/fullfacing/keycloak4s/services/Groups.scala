@@ -97,7 +97,7 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
     client.post[List[Role], Unit](path, roles)
   }
 
-  def removeRealmRoles(id: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def removeRealmRoles(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "groups", id.toString, "role-mappings", "realm")
     client.delete[List[Role], Unit](path, roles)
   }
