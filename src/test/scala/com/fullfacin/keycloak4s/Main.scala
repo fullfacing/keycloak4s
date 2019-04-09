@@ -24,10 +24,10 @@ object Main extends App {
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Users[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Users[Task, Source[ByteString, Any]]("temp")
   import scala.concurrent.duration._
   global.scheduleOnce(0 seconds) {
-    clients.getUsers("demo").foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.fetch().foreachL(println).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
 
