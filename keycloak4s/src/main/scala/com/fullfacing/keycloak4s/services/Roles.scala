@@ -2,11 +2,11 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.{ManagementPermission, Role, User}
+import com.fullfacing.keycloak4s.models.{KeycloakError, ManagementPermission, Role, User}
 
 import scala.collection.immutable.Seq
 
-class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   private val clients_path  = "clients"
   private val roles_path    = "roles"
@@ -22,7 +22,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id    id of client (not client-id)
    * @return
    */
-  def getClientRoles(id: String): R[List[Role]] = {
+  def getClientRoles(id: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, clients_path, id, roles_path)
     client.get[List[Role]](path)
   }
@@ -30,7 +30,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /**
    * Get all roles for the realm
    */
-  def getRealmRoles(): R[List[Role]] = {
+  def getRealmRoles(): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, roles_path)
     client.get[List[Role]](path)
   }
@@ -44,7 +44,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleId id of role
    * @return
    */
-  def getById(roleId: String): R[Role] = {
+  def getById(roleId: String): R[Either[KeycloakError, Role]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId)
     client.get[Role](path)
   }
@@ -56,7 +56,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName  role’s name (not id!)
    * @return
    */
-  def getClientRoleByName(id: String, roleName: String): R[Role] = {
+  def getClientRoleByName(id: String, roleName: String): R[Either[KeycloakError, Role]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName)
     client.get[Role](path)
   }
@@ -67,7 +67,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getRealmRoleByName(roleName: String): R[Role] = {
+  def getRealmRoleByName(roleName: String): R[Either[KeycloakError, Role]] = {
     val path = Seq(client.realm, roles_path, roleName)
     client.get[Role](path)
   }
@@ -84,7 +84,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def createClientRole(id: String, role: Role): R[Unit] = {
+  def createClientRole(id: String, role: Role): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, clients_path, id, roles_path)
     client.post[Role, Unit](path, role)
   }
@@ -95,7 +95,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def createRealmRole(role: Role): R[Unit] = {
+  def createRealmRole(role: Role): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, roles_path)
     client.post[Role, Unit](path, role)
   }
@@ -112,7 +112,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def updateById(roleId: String, role: Role): R[Unit] = {
+  def updateById(roleId: String, role: Role): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId)
     client.put[Role, Unit](path, role)
   }
@@ -125,7 +125,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param role
    * @return
    */
-  def updateClientRoleByName(id: String, roleName: String, role: Role): R[Unit] = {
+  def updateClientRoleByName(id: String, roleName: String, role: Role): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName)
     client.put[Role, Unit](path, role)
   }
@@ -137,7 +137,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param role     Updated role
    * @return
    */
-  def updateRealmRoleByName(roleName: String, role: Role): R[Unit] = {
+  def updateRealmRoleByName(roleName: String, role: Role): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, roles_path, roleName)
     client.put[Role, Unit](path, role)
   }
@@ -153,7 +153,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleId id of role
    * @return
    */
-  def removeById(roleId: String): R[Unit] = {
+  def removeById(roleId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId)
     client.delete(path)
   }
@@ -165,7 +165,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName  role’s name (not id!)
    * @return
    */
-  def removeClientRoleByName(id: String, roleName: String): R[Unit] = {
+  def removeClientRoleByName(id: String, roleName: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName)
     client.delete(path)
   }
@@ -177,7 +177,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param role     Role to be deleted
    * @return
    */
-  def removeRealmRoleByName(roleName: String, role: String): R[Unit] = {
+  def removeRealmRoleByName(roleName: String, role: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, roles_path, roleName)
     client.delete[String, Unit](path, role)
   }
@@ -193,7 +193,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleId id of role
    * @return
    */
-  def getRoleComposites(roleId: String): R[List[Role]] = {
+  def getRoleComposites(roleId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "composites")
     client.get[List[Role]](path)
   }
@@ -205,7 +205,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName  role’s name (not id!)
    * @return
    */
-  def getClientRoleComposites(id: String, roleName: String): R[List[Role]] = {
+  def getClientRoleComposites(id: String, roleName: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "composites")
     client.get[List[Role]](path)
   }
@@ -216,7 +216,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getRealmRoleComposites(roleName: String): R[List[Role]] = {
+  def getRealmRoleComposites(roleName: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, roles_path, roleName, "composites")
     client.get[List[Role]](path)
   }
@@ -233,7 +233,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles
    * @return
    */
-  def addRoleComposites(roleId: String, roles: List[Role]): R[Unit] = {
+  def addRoleComposites(roleId: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "composites")
     client.post[List[Role], Unit](path, roles)
   }
@@ -246,7 +246,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles
    * @return
    */
-  def addClientRoleComposites(id: String, roleName: String, roles: List[Role]): R[Unit] = {
+  def addClientRoleComposites(id: String, roleName: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "composites")
     client.post[List[Role], Unit](path, roles)
   }
@@ -258,7 +258,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles    Composite roles to be added
    * @return
    */
-  def addRealmRoleComposites(roleName: String, roles: List[Role]): R[Unit] = {
+  def addRealmRoleComposites(roleName: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, roles_path, roleName, "composites")
     client.post[List[Role], Unit](path, roles)
   }
@@ -275,7 +275,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles   A set of roles to be removed
    * @return
    */
-  def removeRoleComposites(roleId: String, roles: List[Role]): R[Unit] = {
+  def removeRoleComposites(roleId: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "composites")
     client.delete[List[Role], Unit](path, roles)
   }
@@ -288,7 +288,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles    roles to remove
    * @return
    */
-  def removeClientRoleComposites(id: String, roleName: String, roles: List[Role]): R[Unit] = {
+  def removeClientRoleComposites(id: String, roleName: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "composites")
     client.delete[List[Role], Unit](path, roles)
   }
@@ -300,7 +300,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roles    roles to be removed
    * @return
    */
-  def removeRealmRoleComposites(roleName: String, roles: List[Role]): R[Unit] = {
+  def removeRealmRoleComposites(roleName: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, roles_path, roleName, "composites")
     client.delete[List[Role], Unit](path, roles)
   }
@@ -317,7 +317,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param compositeClientId  id of client of composite role
    * @return
    */
-  def getSubRoleClientLevelRoles(roleId: String, compositeClientId: String): R[List[Role]] = {
+  def getSubRoleClientLevelRoles(roleId: String, compositeClientId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "composites", "clients", compositeClientId)
     client.get[List[Role]](path)
   }
@@ -330,7 +330,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param compositeClientId  id of client of composite role
    * @return
    */
-  def getClientLevelCompositeClientRoles(id: String, roleName: String, compositeClientId: String): R[List[Role]] = {
+  def getClientLevelCompositeClientRoles(id: String, roleName: String, compositeClientId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "composites", "clients", compositeClientId)
     client.get[List[Role]](path)
   }
@@ -342,7 +342,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param compositeClientId  id of client of composite role
    * @return
    */
-  def getRealmLevelCompositeClientRoles(roleName: String, compositeClientId: String): R[List[Role]] = {
+  def getRealmLevelCompositeClientRoles(roleName: String, compositeClientId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, roles_path, roleName, "composites", "clients", compositeClientId)
     client.get[List[Role]](path)
   }
@@ -358,7 +358,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleId id of role
    * @return
    */
-  def getCompositeRealmRoles(roleId: String): R[List[Role]] = {
+  def getCompositeRealmRoles(roleId: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "composites", "realm")
     client.get[List[Role]](path)
   }
@@ -370,7 +370,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getClientLevelCompositeRealmRoles(id: String, roleName: String): R[List[Role]] = {
+  def getClientLevelCompositeRealmRoles(id: String, roleName: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "composites", "realm")
     client.get[List[Role]](path)
   }
@@ -381,7 +381,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getRealmLevelCompositeRealmRoles(roleName: String): R[List[Role]] = {
+  def getRealmLevelCompositeRealmRoles(roleName: String): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, roles_path, roleName, "composites", "realm")
     client.get[List[Role]](path)
   }
@@ -400,7 +400,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param max
    * @return
    */
-  def getClientRoleUsers(id: String, roleName: String, first: Option[Int], max: Option[Int]): R[List[User]] = {
+  def getClientRoleUsers(id: String, roleName: String, first: Option[Int], max: Option[Int]): R[Either[KeycloakError, List[User]]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
     client.get[List[User]](path, query = query)
@@ -414,7 +414,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param max
    * @return
    */
-  def getRealmRoleUsers(roleName: String, first: Option[Int], max: Option[Int]): R[User] = {
+  def getRealmRoleUsers(roleName: String, first: Option[Int], max: Option[Int]): R[Either[KeycloakError, User]] = {
     val path  = Seq(client.realm, roles_path, roleName, "users")
     val query = createQuery(("first", first), ("max", max))
     client.get[User](path, query = query)
@@ -431,7 +431,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleId id of role
    * @return
    */
-  def getRolePermissions(roleId: String): R[ManagementPermission] = {
+  def getRolePermissions(roleId: String): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "management", "permissions")
     client.get[ManagementPermission](path)
   }
@@ -443,7 +443,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getClientRolePermissions(id: String, roleName: String): R[ManagementPermission] = {
+  def getClientRolePermissions(id: String, roleName: String): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "management", "permissions")
     client.get[ManagementPermission](path)
   }
@@ -454,7 +454,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param roleName role’s name (not id!)
    * @return
    */
-  def getRealmRolePermissions(roleName: String): R[ManagementPermission] = {
+  def getRealmRolePermissions(roleName: String): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, roles_path, roleName, "management", "permissions")
     client.get[ManagementPermission](path)
   }
@@ -470,7 +470,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param ref    ..
    * @return
    */
-  def setRolePermissions(roleId: String, ref: ManagementPermission): R[ManagementPermission] = {
+  def setRolePermissions(roleId: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, `roles-by-id`, roleId, "management", "permissions")
     client.put[ManagementPermission, ManagementPermission](path, ref)
   }
@@ -482,7 +482,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param ref
    * @return
    */
-  def setClientRolePermissions(id: String, roleName: String, ref: ManagementPermission): R[ManagementPermission] = {
+  def setClientRolePermissions(id: String, roleName: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, clients_path, id, roles_path, roleName, "management", "permissions")
     client.put[ManagementPermission, ManagementPermission](path, ref)
   }
@@ -493,7 +493,7 @@ class Roles[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param ref
    * @return
    */
-  def setRealmRolePermissions(roleName: String, ref: ManagementPermission): R[ManagementPermission] = {
+  def setRealmRolePermissions(roleName: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, roles_path, roleName, "management", "permissions")
     client.put[ManagementPermission, ManagementPermission](path, ref)
   }

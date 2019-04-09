@@ -3,14 +3,18 @@ package com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives._
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.RequestContext
+import com.fullfacing.keycloak4s.adapters.akka.http.apollo.{Permissions, RequestContext}
 import com.fullfacing.keycloak4s.adapters.akka.http.{Errors, TokenValidator}
 import com.nimbusds.jose.Payload
 import monix.execution.Scheduler
+import org.json4s.Formats
+import org.json4s.jackson.JsonMethods.parse
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 trait ValidationDirective {
+
+  implicit val formats: Formats = org.json4s.DefaultFormats
 
   /**
    * Extracts the token from the RequestContext and has it validated.
@@ -41,8 +45,16 @@ trait ValidationDirective {
 
   /** Injects the user permissions from the unpacked token into the request context. */
   private def updateRequestContext(result: Payload, context: RequestContext): RequestContext = {
-    context.copy(
-      permissions = Some(result)
-    )
+    val json = parse(result.toString)
+
+    val scopes = Try {
+      (json \\ "scope").extract[String].split(" ").toList
+    }.getOrElse(Nil)
+
+    val roles = Try {
+      (json \\ "realm_access" \\ "roles").extract[List[String]]
+    }.getOrElse(Nil)
+
+    context.copy(permissions = Permissions(scopes = scopes, roles = roles))
   }
 }

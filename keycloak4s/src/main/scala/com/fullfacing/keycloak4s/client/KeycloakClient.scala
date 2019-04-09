@@ -1,7 +1,8 @@
 package com.fullfacing.keycloak4s.client
 
+import cats.implicits._
 import cats.effect.Concurrent
-import com.fullfacing.keycloak4s.models.RequestInfo
+import com.fullfacing.keycloak4s.models.{KeycloakAdminException, KeycloakError, KeycloakException, RequestInfo}
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
@@ -12,8 +13,9 @@ import org.json4s.jackson.Serialization.read
 import scala.collection.immutable.Seq
 import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
+import scala.util.control.NonFatal
 
-class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) extends TokenManager[F, S](config) {
+class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) extends TokenManager[F, S](config) {
 
   val realm: String = config.realm
 
@@ -38,34 +40,41 @@ class KeycloakClient[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit cli
   }
 
   private def setResponse[A <: Any : Manifest](request: RequestT[Id, String, Nothing])(implicit tag: TypeTag[A])
-  : F[RequestT[Id, A, Nothing]] = tag match {
+  : F[Either[KeycloakAdminException, RequestT[Id, A, Nothing]]] = tag match {
     case _ if tag == typeTag[Unit] => withAuth(request.mapResponse(_ => read[A]("null"))) //reading the string literal "null" is how you deserialize to a Unit with json4s
     case _                         => withAuth(request.response(asJson[A]))
   }
 
-  private def call[A, B <: Any : Manifest](request: Request[String, Nothing], payload: A, requestInfo: RequestInfo): F[B] = {
+  private def call[A, B <: Any : Manifest](request: Request[String, Nothing], payload: A, requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
     val resp = setResponse[B](setRequest(request, payload))
-    F.flatMap(resp)(r => F.flatMap(r.send())(liftM(_, requestInfo)))
+
+    val response = F.flatMap(resp) {
+      case Right(r) => F.map(r.send())(liftM(_, requestInfo))
+      case Left(e)  => F.unit(e.asLeft[B])
+    }
+
+    F.handleError[Either[KeycloakError, B]](response) {
+      case NonFatal(ex) => F.unit(KeycloakException(ex).asLeft[B])
+    }
   }
 
   /* REST Protocol Calls **/
-
-  def get[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): F[A] = {
+  def get[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
     val request = sttp.get(createUri(path, query))
     call[Unit, A](request, (), buildRequestInfo(path, "GET", ()))
   }
 
-  def put[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[B] = {
+  def put[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, B]] = {
     val request = sttp.put(createUri(path, query))
     call[A, B](request, payload, buildRequestInfo(path, "PUT", payload))
   }
 
-  def post[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[B] = {
+  def post[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, B]] = {
     val request = sttp.post(createUri(path, query))
     call[A, B](request, payload, buildRequestInfo(path, "POST", payload))
   }
 
-  def delete[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[B] = {
+  def delete[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, B]] = {
     val request = sttp.delete(createUri(path, query))
     call[A, B](request, payload, buildRequestInfo(path, "DELETE", payload))
   }

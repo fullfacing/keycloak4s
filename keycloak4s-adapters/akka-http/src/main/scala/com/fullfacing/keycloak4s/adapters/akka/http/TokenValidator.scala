@@ -11,18 +11,11 @@ import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.SignedJWT.parse
 import monix.eval.Task
 import monix.execution.Scheduler
-import org.json4s.Formats
 
 import scala.util.Try
 
-class TokenValidator(host: String, port: String, realm: String)(implicit scheduler: Scheduler) {
-  implicit val formats: Formats = org.json4s.DefaultFormats
-
-  /* A cache containing the public JWK set of the Keycloak server. Re-cacheable. **/
-  private val cache = new JwksCache(host, port, realm)
-
-  /* The cached key set, with thread-safe mutability controlled by the cache. **/
-  private val keySet = cache.keySet
+//TODO Make TokenValidator abstract, have the akka-http directive wrapper extend it instead.
+class TokenValidator(host: String, port: String, realm: String)(implicit scheduler: Scheduler) extends JwksCache(host, port, realm) {
 
   /**
    * Checks if the token is not expired and is not being used before the nbf (if defined).
@@ -43,7 +36,7 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
    */
   private def checkKeySet(): Task[Either[Throwable, JWKSet]] = keySet.flatMap {
     case Right(_) => keySet
-    case Left(_)  => cache.reobtainKeys().map(_.left.map(_ => Errors.JWKS_SERVER_ERROR))
+    case Left(_)  => reobtainKeys().map(_.left.map(_ => Errors.JWKS_SERVER_ERROR))
   }
 
   /**
@@ -52,7 +45,7 @@ class TokenValidator(host: String, port: String, realm: String)(implicit schedul
    */
   private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false): Task[Either[Throwable, RSAKey]] = {
     Try(keys.getKeyByKeyId(keyId)).toEither match {
-      case Left(_) if !reattempted  => cache.reobtainKeys().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
+      case Left(_) if !reattempted  => reobtainKeys().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
       case Left(_)                  => Task(Errors.PUBLIC_KEY_NOT_FOUND.asLeft)
       case Right(k: RSAKey)         => Task(k.asRight)
     }

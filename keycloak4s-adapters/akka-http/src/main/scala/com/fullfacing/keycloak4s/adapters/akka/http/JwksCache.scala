@@ -16,10 +16,10 @@ import scala.concurrent.Future
  * Based off code from Alexandru Nedelcu and Michał Siatkowski.
  * https://github.com/monix/monix/issues/606
  */
-class JwksCache(host: String, port: String, realm: String)(implicit s: Scheduler) {
-  private type NullFuture = Future[Either[Throwable, JWKSet]]
+abstract class JwksCache (host: String, port: String, realm: String)(implicit s: Scheduler) {
+  type JwksFuture = Future[Either[Throwable, JWKSet]]
 
-  /* The URL to retrieve the ConnectID JWKS **/
+  /* The URL to retrieve the ConnectID JWKS. **/
   private val url = new URL(s"http://$host:$port/auth/realms/$realm/protocol/openid-connect/certs")
 
   /* The asynchronous Task to retrieve the JWKSet. **/
@@ -28,10 +28,10 @@ class JwksCache(host: String, port: String, realm: String)(implicit s: Scheduler
   }.onErrorHandle(_.asLeft)
 
   /* The cached Future resulting from executing the JWKSet retrieval Task. **/
-  private val future = Atomic(null: NullFuture)
+  private val future = Atomic(null: JwksFuture)
 
   /* Executes the JWKSet retrieval Task, caches the resulting Future and returns it. **/
-  private def updateAndGet(): Future[Either[Throwable, JWKSet]] = synchronized {
+  private def updateAndGet(): JwksFuture = synchronized {
     future.set(task.runToFuture)
     future.get
   }
@@ -46,7 +46,7 @@ class JwksCache(host: String, port: String, realm: String)(implicit s: Scheduler
 
   /* Drops the cache, re-executes the JWKSet retrieval Task and returns the result. **/
   def reobtainKeys(): Task[Either[Throwable, JWKSet]] = {
-    future.set(null: NullFuture)
+    future.set(null: JwksFuture)
     keySet
   }
 }
