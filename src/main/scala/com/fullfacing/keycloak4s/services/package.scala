@@ -6,14 +6,14 @@ import java.nio.file.Files
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.{Multipart, multipart}
 
-import scala.collection.immutable.{Seq => iSeq}
+import scala.collection.immutable.{Seq => ImmutableSeq}
 
 package object services {
 
-  def createQuery(queries: (String, Option[Any])*): iSeq[KeyValue] = {
+  def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = {
     queries.flatMap { case (key, value) =>
       value.map(v => KeyValue(key, v.toString))
-    }.to[iSeq]
+    }.to[ImmutableSeq]
   }
 
   def createdUrlEncodedMap(queries: (String, Option[Any])*): Map[String, String] = {
