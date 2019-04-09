@@ -6,14 +6,14 @@ import com.fullfacing.keycloak4s.models.{AuthenticationProvider, _}
 
 import scala.collection.immutable.Seq
 
-class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class AuthenticationManagement[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /**
    * Returns a list of authenticator providers.
    *
    * @return
    */
-  def getAuthenticationProviders(): R[Seq[AuthenticationProvider]] = {
+  def getAuthenticationProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {
     client.get[Seq[AuthenticationProvider]](client.realm :: "authentication" :: "authenticator-providers" :: Nil)
   }
 
@@ -22,7 +22,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @return
    */
-  def getClientAuthenticationProviders(): R[Seq[AuthenticationProvider]] = {
+  def getClientAuthenticationProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {
     val path = Seq(client.realm, "authentication", "client-authenticator-providers")
     client.get[Seq[AuthenticationProvider]](path)
   }
@@ -33,7 +33,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param providerId ID of the Provider.
    * @return
    */
-  def getProviderConfigDescription(providerId: String): R[AuthenticatorConfigInfo] = {
+  def getProviderConfigDescription(providerId: String): R[Either[KeycloakError, AuthenticatorConfigInfo]] = {
     val path = Seq(client.realm, "authentication", "config-description", providerId)
     client.get[AuthenticatorConfigInfo](path)
   }
@@ -44,7 +44,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param configId ID of the Configuration.
    * @return
    */
-  def getAuthenticatorConfig(configId: String): R[AuthenticatorConfig] = {
+  def getAuthenticatorConfig(configId: String): R[Either[KeycloakError, AuthenticatorConfig]] = {
     val path = Seq(client.realm, "authentication", "config", configId)
     client.get[AuthenticatorConfig](path)
   }
@@ -56,7 +56,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param request  Object describing new state of authenticator configuration.
    * @return
    */
-  def updateAuthenticatorConfig(configId: String, request: AuthenticatorConfig): R[Unit] = {
+  def updateAuthenticatorConfig(configId: String, request: AuthenticatorConfig): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "config", configId)
     client.put[AuthenticatorConfig, Unit](path, request)
   }
@@ -67,7 +67,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param configId ID of the Configuration.
    * @return
    */
-  def deleteAuthenticatorConfig(configId: String): R[Unit] = {
+  def deleteAuthenticatorConfig(configId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "config", configId)
     client.delete[Unit, Unit](path)
   }
@@ -78,7 +78,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param request Object describing authentication execution.
    * @return
    */
-  def addNewAuthenticationExecution(request: AuthenticationExecution): R[Unit] = {
+  def addNewAuthenticationExecution(request: AuthenticationExecution): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions")
     client.post[AuthenticationExecution, Unit](path, request)
   }
@@ -89,7 +89,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param executionId ID of the execution.
    * @return
    */
-  def getSingleExecution(executionId: String): R[Unit] = {
+  def getSingleExecution(executionId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions", executionId)
     client.get(path)
   }
@@ -100,7 +100,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param executionId ID of the execution.
    * @return
    */
-  def deleteExecution(executionId: String): R[Unit] = {
+  def deleteExecution(executionId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions", executionId)
     client.delete[Unit, Unit](path)
   }
@@ -112,7 +112,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param request     Object describing new configuration.
    * @return
    */
-  def updateExecutionConfig(executionId: String, request: AuthenticatorConfig): R[Unit] = {
+  def updateExecutionConfig(executionId: String, request: AuthenticatorConfig): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions", executionId, "config")
     client.post[AuthenticatorConfig, Unit](path, request)
   }
@@ -123,7 +123,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param executionId ID of the execution.
    * @return
    */
-  def lowerExecutionPriority(executionId: String): R[Unit] = {
+  def lowerExecutionPriority(executionId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions", executionId, "lower-priority")
     client.post[Unit, Unit](path)
   }
@@ -134,7 +134,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param executionId ID of the execution.
    * @return
    */
-  def raiseExecutionPriority(executionId: String): R[Unit] = {
+  def raiseExecutionPriority(executionId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions", executionId, "raise-priority")
     client.post[Unit, Unit](path)
   }
@@ -144,7 +144,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @return
    */
-  def getAuthenticationFlows(): R[Seq[AuthenticationFlow]] = {
+  def getAuthenticationFlows(): R[Either[KeycloakError, Seq[AuthenticationFlow]]] = {
     val path = Seq(client.realm, "authentication", "flows")
     client.get[Seq[AuthenticationFlow]](path)
   }
@@ -156,7 +156,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param newName   The name for the flow copy.
    * @return
    */
-  def copyAuthenticationFlow(flowAlias: String, newName: String): R[Unit] = {
+  def copyAuthenticationFlow(flowAlias: String, newName: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowAlias, "copy")
     client.post[Map[String, String], Unit](path, Map("newName" -> newName))
   }
@@ -167,7 +167,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param flowAlias Name of the existing authentication flow.
    * @return
    */
-  def getFlowAuthenticationExecutions(flowAlias: String): R[Unit] = {
+  def getFlowAuthenticationExecutions(flowAlias: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowAlias, "executions")
     client.get(path)
   }
@@ -179,7 +179,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param request   Object describing updated authentication executions.
    * @return
    */
-  def updateFlowAuthenticationExecutions(flowAlias: String, request: AuthenticationExecutionInfo): R[Unit] = {
+  def updateFlowAuthenticationExecutions(flowAlias: String, request: AuthenticationExecutionInfo): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowAlias, "executions")
     client.put[AuthenticationExecutionInfo, Unit](path, request)
   }
@@ -191,7 +191,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param provider  Provider ID
    * @return
    */
-  def addFlowAuthenticationExecution(flowAlias: String, provider: String): R[Unit] = {
+  def addFlowAuthenticationExecution(flowAlias: String, provider: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowAlias, "executions", "execution")
     client.post[ProviderWrapper, Unit](path, ProviderWrapper(provider))
   }
@@ -203,7 +203,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param request   Object describing new authentication flow.
    * @return
    */
-  def addNewFlowWithNewExecution(flowAlias: String, request: NewAuthenticationFlow): R[Unit] = {
+  def addNewFlowWithNewExecution(flowAlias: String, request: NewAuthenticationFlow): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowAlias, "executions", "flow")
     client.post[NewAuthenticationFlow, Unit](path, request)
   }
@@ -214,7 +214,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param flowId    ID of an existing authentication flow.
    * @return
    */
-  def getAuthenticationFlow(flowId: String): R[AuthenticationFlow] = {
+  def getAuthenticationFlow(flowId: String): R[Either[KeycloakError, AuthenticationFlow]] = {
     val path = Seq(client.realm, "authentication", "flows", flowId)
     client.get[AuthenticationFlow](path)
   }
@@ -226,7 +226,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param flow   Authentication flow representation.
    * @return
    */
-  def updateAuthenticationFlow(flowId: String, flow: AuthenticationFlow): R[Unit] = {
+  def updateAuthenticationFlow(flowId: String, flow: AuthenticationFlow): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowId)
     client.put[AuthenticationFlow, Unit](path, flow)
   }
@@ -237,7 +237,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param flowId    ID of an existing authentication flow.
    * @return
    */
-  def deleteAuthenticationFlow(flowId: String): R[Unit] = {
+  def deleteAuthenticationFlow(flowId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "flows", flowId)
     client.delete[Unit, Unit](path)
   }
@@ -247,7 +247,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @return
    */
-  def getFormActionProviders(): R[Seq[FormProvider]] = {
+  def getFormActionProviders(): R[Either[KeycloakError, Seq[FormProvider]]] = {
     val path = Seq(client.realm, "authentication", "form-action-providers")
     client.get[Seq[FormProvider]](path)
   }
@@ -257,7 +257,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @return
    */
-  def getFormProviders(): R[Seq[FormProvider]] = {
+  def getFormProviders(): R[Either[KeycloakError, Seq[FormProvider]]] = {
     val path = Seq(client.realm, "authentication", "form-providers")
     client.get[Seq[FormProvider]](path)
   }
@@ -267,7 +267,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @return Map of the realm's client auth types and their configurations
    */
-  def getConfigurationDescriptions(): R[Map[String, List[ConfigProperty]]] = {
+  def getConfigurationDescriptions(): R[Either[KeycloakError, Map[String, List[ConfigProperty]]]] = {
     val path = Seq(client.realm, "authentication", "per-client-config-description")
     client.get[Map[String, List[ConfigProperty]]](path)
   }
@@ -278,7 +278,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param requiredAction  Details of the required action
    * @return
    */
-  def registerRequiredAction(requiredAction: RequiredAction): R[Unit] = {
+  def registerRequiredAction(requiredAction: RequiredAction): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "register-required-action")
     client.post[RequiredAction, Unit](path, requiredAction)
   }
@@ -288,7 +288,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    *
    * @return
    */
-  def getRequiredActions(): R[Seq[RequiredActionProvider]] = {
+  def getRequiredActions(): R[Either[KeycloakError, Seq[RequiredActionProvider]]] = {
     val path = Seq(client.realm, "authentication", "register-actions")
     client.get[Seq[RequiredActionProvider]](path)
   }
@@ -299,7 +299,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param alias Alias of required action.
    * @return
    */
-  def getRequiredAction(alias: String): R[RequiredActionProvider] = {
+  def getRequiredAction(alias: String): R[Either[KeycloakError, RequiredActionProvider]] = {
     val path = Seq(client.realm, "authentication", "register-actions", alias)
     client.get[RequiredActionProvider](path)
   }
@@ -311,7 +311,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param request Object describing new state of required action.
    * @return
    */
-  def updateRequiredAction(alias: String, request: RequiredActionProvider): R[Unit] = {
+  def updateRequiredAction(alias: String, request: RequiredActionProvider): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "register-actions", alias)
     client.put[RequiredActionProvider, Unit](path, request)
   }
@@ -322,7 +322,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param alias Alias of required action.
    * @return
    */
-  def deleteRequiredAction(alias: String): R[Unit] = {
+  def deleteRequiredAction(alias: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "register-actions", alias)
     client.delete[Unit, Unit](path)
   }
@@ -333,7 +333,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param alias Alias of required action.
    * @return
    */
-  def lowerRequiredActionPriority(alias: String): R[Unit] = {
+  def lowerRequiredActionPriority(alias: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "register-actions", alias, "lower-priority")
     client.post[Unit, Unit](path)
   }
@@ -344,7 +344,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
    * @param alias Alias of required action.
    * @return
    */
-  def raiseRequiredActionPriority(alias: String): R[Unit] = {
+  def raiseRequiredActionPriority(alias: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "register-actions", alias, "raise-priority")
     client.post[Unit, Unit](path)
   }
@@ -352,7 +352,7 @@ class AuthenticationManagement[R[_]: Concurrent, S](implicit client: KeycloakCli
   /**
    * Returns a list of unregistered required actions.
    */
-  def getUnregisteredRequiredActions(): R[Seq[Map[String, AnyRef]]] = {
+  def getUnregisteredRequiredActions(): R[Either[KeycloakError, Seq[Map[String, AnyRef]]]] = {
     val path = Seq(client.realm, "authentication", "unregistered-required-actions")
     client.get[Seq[Map[String, AnyRef]]](path)
   }

@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.monix.services
 
-import com.fullfacing.keycloak4s.models.KeysMetadata
+import com.fullfacing.keycloak4s.models.{KeycloakError, KeysMetadata}
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
 import monix.eval.Task
 
@@ -11,7 +11,7 @@ class Keys(implicit client: KeycloakClient) {
   /**
    *
    */
-  def getRealmKeys(): Task[KeysMetadata] = {
+  def getRealmKeys(): Task[Either[KeycloakError, KeysMetadata]] = {
     val path = Seq(client.realm, "keys")
     client.get[KeysMetadata](path)
   }

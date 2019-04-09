@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.monix.services
 
-import com.fullfacing.keycloak4s.models.User
+import com.fullfacing.keycloak4s.models.{KeycloakError, User}
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.services.createQuery
 import monix.eval.Task
@@ -29,7 +29,7 @@ class Users(implicit client: KeycloakClient) {
                lastName: Option[String] = None,
                max: Option[Int] = None,
                search: Option[String] = None,
-               username: Option[String] = None): Task[List[User]] = {
+               username: Option[String] = None): Task[Either[KeycloakError, List[User]]] = {
 
     val query = createQuery(
       ("briefRepresentation", briefRep),
