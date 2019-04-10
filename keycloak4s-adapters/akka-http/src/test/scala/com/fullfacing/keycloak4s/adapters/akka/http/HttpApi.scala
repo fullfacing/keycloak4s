@@ -1,22 +1,45 @@
 package com.fullfacing.keycloak4s.adapters.akka.http
 
 import akka.http.scaladsl.server.Directives._
-import com.fullfacing.apollo.core.health.HealthCheck
-import com.fullfacing.apollo.http.rest.BaseUri._
+import akka.http.scaladsl.server.Route
 import com.fullfacing.keycloak4s.adapters.akka.http.Implicits._
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutesWithAuth
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.BaseRoutesWithAuth.RequestHandler
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives.Directives._
+import com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives.{AuthorisationDirectives, ValidationDirective}
 
-object HttpApi extends BaseRoutesWithAuth("test" - "adapter") {
+object HttpApi extends ValidationDirective with AuthorisationDirectives {
 
-  val resources: List[HealthCheck] = List.empty
 
-  override val api: RequestHandler = { implicit ctx =>
-    path("cars") {
-      getA(ctx) {
-        withAuth("cars", ctx) {
-          complete(s"This is an auth test \n $ctx")
+  val api: Route = pathPrefix("test") {
+    validateToken(tv, scheduler) { permissions =>
+      path("cars") {
+        getA(permissions) {
+          withAuth("cars", permissions) {
+            complete(s"GET /cars \n $permissions")
+          }
+        } ~
+        postA(permissions) {
+          withAuth("cars", permissions) {
+            complete(s"POST /cars \n $permissions")
+          }
+        } ~
+        putA(permissions) {
+          withAuth("cars", permissions) {
+            complete(s"PUT /cars \n $permissions")
+          }
+        } ~
+        patchA(permissions) {
+          withAuth("cars", permissions) {
+            complete(s"PATCH /cars \n $permissions")
+          }
+        } ~
+        deleteA(permissions) {
+          withAuth("cars", permissions) {
+            complete(s"DELETE /cars \n $permissions")
+          }
+        } ~
+        deleteA(permissions) {
+          withAuth("cars", permissions) {
+            complete(s"DELETE /cars \n $permissions")
+          }
         }
       }
     }
