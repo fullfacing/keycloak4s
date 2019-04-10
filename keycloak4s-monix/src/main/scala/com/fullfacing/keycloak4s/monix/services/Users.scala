@@ -2,8 +2,8 @@ package com.fullfacing.keycloak4s.monix.services
 
 import com.fullfacing.keycloak4s.models.{KeycloakError, User}
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
-import com.fullfacing.keycloak4s.services.createQuery
 import monix.eval.Task
+import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
@@ -22,19 +22,19 @@ class Users(implicit client: KeycloakClient) {
    * @param username
    * @return
    */
-  def getUsers(briefRep: Option[Boolean] = None,
+  def getUsers(first: Option[Int] = None,
+               max: Option[Int] = None,
+               briefRep: Option[Boolean] = None,
                email: Option[String] = None,
-               first: Option[Int] = None,
                firstName: Option[String] = None,
                lastName: Option[String] = None,
-               max: Option[Int] = None,
                search: Option[String] = None,
-               username: Option[String] = None): Task[Either[KeycloakError, List[User]]] = {
+               username: Option[String] = None,
+               batchSize: Int = 100): Observable[User] = {
 
     val query = createQuery(
       ("briefRepresentation", briefRep),
       ("email", email),
-      ("first", first),
       ("firstName", firstName),
       ("lastName", lastName),
       ("max", max),
@@ -43,6 +43,19 @@ class Users(implicit client: KeycloakClient) {
     )
 
     val path = Seq(client.realm, "users")
-    client.get[List[User]](path, query = query)
+    client.getList[User](path, query, first.getOrElse(0), batchSize)
+  }
+
+  def getUsersL(first: Option[Int] = None,
+                max: Option[Int] = None,
+                briefRep: Option[Boolean] = None,
+                email: Option[String] = None,
+                firstName: Option[String] = None,
+                lastName: Option[String] = None,
+                search: Option[String] = None,
+                username: Option[String] = None): Task[List[User]] = {
+
+    getUsers(first, max, briefRep, email, firstName, lastName, search, username)
+      .consumeWith(consumer[User]())
   }
 }

@@ -26,10 +26,10 @@ object MainMonix extends App {
 
   implicit val client: KeycloakClient = new KeycloakClient(config)
 
-  val clients = Keycloak.Keys
+  val clients = Keycloak.Users
   import scala.concurrent.duration._
-  global.scheduleAtFixedRate(0 seconds, 60 seconds) {
-    clients.getRealmKeys().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
+  global.scheduleOnce(0 seconds) {
+    clients.getUsers().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
   StdIn.readLine()

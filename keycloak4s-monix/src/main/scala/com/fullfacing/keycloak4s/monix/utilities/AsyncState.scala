@@ -8,6 +8,8 @@ import monix.reactive.observers.Subscriber
 
 import scala.util.control.NonFatal
 
+/* Created by https://github.com/Executioner1939  */
+
 class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Observable[A] {
   def unsafeSubscribeFn(subscriber: Subscriber[A]): Cancelable = {
     import subscriber.scheduler
@@ -53,9 +55,8 @@ class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Obse
     }
 }
 
-object ObservableExtensions {
-  implicit class ObservableExtensions(val obs: Observable.type) {
-    def walk[S, A](seed: => S)(f: S => Task[Either[A, (A, S)]]) =
-      new AsyncState(seed, f)
-  }
+sealed trait State
+object State {
+  case object Init extends State
+  case class Continue(offset: Int) extends State
 }
