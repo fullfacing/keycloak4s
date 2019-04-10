@@ -19,7 +19,7 @@ trait AuthorisationDirectives extends MethodDirectives {
   private def authorizeMethod(permissions: Permissions): Directive0 = {
     extractMethod.flatMap { method =>
       authorize {
-        scopeMap(method).exists(required => permissions.scopes.contains(required))
+        scopeMap(method).exists(permissions.scopes.contains)
       }
     }
   }

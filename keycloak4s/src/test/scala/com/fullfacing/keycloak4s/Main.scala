@@ -25,10 +25,10 @@ object Main extends App {
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Roles[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Roles[Task, Source[ByteString, Any]]("master")
   import scala.concurrent.duration._
   global.scheduleAtFixedRate(0 seconds, 60 seconds) {
-    clients.getRolePermissions("4a89a463-4156-459f-85b4-bf85a5dcbf07").foreachL(_ => ()).onErrorHandle(_.printStackTrace()).runToFuture
+    //clients.getRolePermissions("4a89a463-4156-459f-85b4-bf85a5dcbf07").foreachL(_ => ()).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
   Console.readBoolean()

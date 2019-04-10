@@ -103,7 +103,7 @@ val nimbus: Seq[ModuleID] = {
 // ----------------------------------------------- //
 // Project and configuration for keycloak-monix    //
 // ----------------------------------------------- //
-lazy val `keycloak-dependencies`: Seq[ModuleID] = `sttp-akka` ++ cats ++ json4s ++ logback ++ monix
+lazy val `keycloak-dependencies`: Seq[ModuleID] = `sttp-akka` ++ cats ++ json4s ++ logback ++ monix ++ enumeratum
 
 lazy val keycloak4s = (project in file("./keycloak4s"))
   .settings(global: _*)
