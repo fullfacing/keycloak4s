@@ -1,7 +1,8 @@
 package com.fullfacing.keycloak4s.monix.services
 
-import com.fullfacing.keycloak4s.models.{KeycloakError, User}
+import com.fullfacing.keycloak4s.models.User
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
+import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -17,45 +18,41 @@ class Users(implicit client: KeycloakClient) {
    * @param first
    * @param firstName
    * @param lastName
-   * @param max       Maximum results size (defaults to 100)
    * @param search    A String contained in username, first or last name, or email
    * @param username
    * @return
    */
-  def getUsers(first: Option[Int] = None,
-               max: Option[Int] = None,
-               briefRep: Option[Boolean] = None,
-               email: Option[String] = None,
-               firstName: Option[String] = None,
-               lastName: Option[String] = None,
-               search: Option[String] = None,
-               username: Option[String] = None,
-               batchSize: Int = 100): Observable[User] = {
+  def fetch(first: Int = 0,
+            briefRep: Option[Boolean] = None,
+            email: Option[String] = None,
+            firstName: Option[String] = None,
+            lastName: Option[String] = None,
+            search: Option[String] = None,
+            username: Option[String] = None,
+            batchSize: Int = 100): Observable[User] = {
 
     val query = createQuery(
       ("briefRepresentation", briefRep),
       ("email", email),
       ("firstName", firstName),
       ("lastName", lastName),
-      ("max", max),
       ("search", search),
       ("username", username)
     )
 
     val path = Seq(client.realm, "users")
-    client.getList[User](path, query, first.getOrElse(0), batchSize)
+    client.getList[User](path, query, first, batchSize)
   }
 
-  def getUsersL(first: Option[Int] = None,
-                max: Option[Int] = None,
-                briefRep: Option[Boolean] = None,
-                email: Option[String] = None,
-                firstName: Option[String] = None,
-                lastName: Option[String] = None,
-                search: Option[String] = None,
-                username: Option[String] = None): Task[List[User]] = {
+  def fetchL(first: Int = 0,
+             briefRep: Option[Boolean] = None,
+             email: Option[String] = None,
+             firstName: Option[String] = None,
+             lastName: Option[String] = None,
+             search: Option[String] = None,
+             username: Option[String] = None): Task[List[User]] = {
 
-    getUsers(first, max, briefRep, email, firstName, lastName, search, username)
+    fetch(first, briefRep, email, firstName, lastName, search, username)
       .consumeWith(consumer[User]())
   }
 }

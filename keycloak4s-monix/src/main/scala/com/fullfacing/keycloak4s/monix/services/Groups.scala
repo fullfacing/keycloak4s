@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.monix.services
 
-import com.fullfacing.keycloak4s.models.{Group, KeycloakError, User}
+import com.fullfacing.keycloak4s.models.{Group, User}
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
 import monix.eval.Task
 import monix.reactive.Observable
@@ -13,42 +13,33 @@ class Groups(implicit client: KeycloakClient) {
    * Retrieves all groups for a Realm. Only name and ids are returned.
    *
    * @param first
-   * @param max
    * @param search
    * @return
    */
-  def getGroups(first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): Observable[Group] = {
-    val query = createQuery(
-      ("max", max),
-      ("search", search)
-    )
+  def fetch(first: Int = 0, search: Option[String] = None): Observable[Group] = {
+    val query = createQuery(("search", search))
+    val path  = Seq(client.realm, "groups")
 
-    val path = Seq(client.realm, "groups")
-
-    client.getList[Group](path, query, first.getOrElse(0))
+    client.getList[Group](path, query, first)
   }
 
-  def getGroupsL(first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): Task[List[Group]] = {
-    getGroups(first, max, search).consumeWith(consumer())
+  def fetchL(first: Int = 0, search: Option[String] = None): Task[List[Group]] = {
+    fetch(first, search).consumeWith(consumer())
   }
 
   /**
    * Returns a list of users, filtered according to query parameters
    *
    * @param first
-   * @param max
    * @return
    */
-  def getUsers(groupId: String, first: Option[Int] = None, max: Option[Int] = None): Observable[User] = {
-    val query = createQuery(
-      ("max", max)
-    )
+  def fetchUsers(groupId: String, first: Int = 0, batch: Int = 100): Observable[User] = {
+    val path  = Seq(client.realm, "groups", groupId, "members")
 
-    val path = Seq(client.realm, "groups", groupId, "members")
-    client.getList[User](path, query, first.getOrElse(0))
+    client.getList[User](path, offset = first, batch = batch)
   }
 
-  def getUsersL(groupId: String, first: Option[Int] = None, max: Option[Int] = None): Task[List[User]] = {
-    getUsers(groupId, first, max).consumeWith(consumer())
+  def fetchUsersL(groupId: String, first: Int = 0): Task[List[User]] = {
+    fetchUsers(groupId, first).consumeWith(consumer())
   }
 }

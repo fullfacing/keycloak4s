@@ -73,7 +73,8 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
 
   def getList[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue], offset: Int = 0, batch: Int = 100): Observable[A] = {
     val call: Int => Task[Seq[A]] = { i =>
-      get[Seq[A]](path, query :+ KeyValue("first", s"$i")).map {
+      val q =  (query :+ KeyValue("first", s"$i")) :+ KeyValue("max", s"$batch")
+      get[Seq[A]](path, q).map {
         case Right(a) => a
         case Left(_)  => Seq.empty[A]
       }
