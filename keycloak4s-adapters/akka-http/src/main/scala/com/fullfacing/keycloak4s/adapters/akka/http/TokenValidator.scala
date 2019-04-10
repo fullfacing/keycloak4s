@@ -32,9 +32,9 @@ class TokenValidator(host: String, port: String, realm: String)(implicit ec: Exe
   /**
    * Checks the key set cache for valid keys, re-caches once (and only once) if invalid.
    */
-  private def checkKeySet(): IO[Either[Throwable, JWKSet]] = getCachedValue().flatMap {
+  private def checkKeySet(): IO[Either[Throwable, JWKSet]] = retrieveCachedValue().flatMap {
     case r @ Right(_) => IO(r)
-    case Left(_)      => recache().map(_.left.map(_ => Errors.JWKS_SERVER_ERROR))
+    case Left(_)      => updateCache().map(_.left.map(_ => Errors.JWKS_SERVER_ERROR))
   }
 
   /**
@@ -43,7 +43,7 @@ class TokenValidator(host: String, port: String, realm: String)(implicit ec: Exe
    */
   private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false): IO[Either[Throwable, RSAKey]] = {
     Option(keys.getKeyByKeyId(keyId)) match {
-      case None if !reattempted => recache().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
+      case None if !reattempted => updateCache().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
       case None                 => IO.pure(Errors.PUBLIC_KEY_NOT_FOUND.asLeft)
       case Some(k: RSAKey)      => IO(k.asRight)
     }
