@@ -15,9 +15,9 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
-  def create(user: User): R[Either[KeycloakError, Unit]] = {
+  def create(user: User.Create): R[Either[KeycloakError, User]] = {
     val path = Seq(realm, users_path)
-    client.post(path, user)
+    client.post[User.Create, User](path, user)
   }
 
   def fetch(briefRep: Option[Boolean] = None, username: Option[String] = None, email: Option[String] = None, first: Option[Int] = None,

@@ -1,8 +1,8 @@
 package com.fullfacing.keycloak4s.models
 
-case class RealmEventsConfig(adminEventsDetailsEnabled: Option[Boolean],
-                             adminEventsEnabled: Option[Boolean],
-                             enabledEventTypes: Option[List[String]],
-                             eventsEnabled: Option[Boolean],
-                             eventsExpiration: Option[Long],
-                             eventsListeners: Option[List[String]])
+final case class RealmEventsConfig(adminEventsDetailsEnabled: Option[Boolean],
+                                   adminEventsEnabled: Option[Boolean],
+                                   enabledEventTypes: Option[List[String]],
+                                   eventsEnabled: Option[Boolean],
+                                   eventsExpiration: Option[Long],
+                                   eventsListeners: Option[List[String]])

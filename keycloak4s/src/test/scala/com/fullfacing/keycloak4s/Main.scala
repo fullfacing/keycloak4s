@@ -31,8 +31,6 @@ object Main extends App {
     clients.getRolePermissions("4a89a463-4156-459f-85b4-bf85a5dcbf07").foreachL(_ => ()).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
-
-
   Console.readBoolean()
 }
 

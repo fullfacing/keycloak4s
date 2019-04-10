@@ -3,7 +3,7 @@ organization := "com.fullfacing"
 
 lazy val global = {
   Seq(
-    version       := "0.3.1-SNAPSHOT",
+    version       := "0.4.0-SNAPSHOT",
     scalaVersion  := "2.12.8",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts
@@ -49,6 +49,12 @@ val json4s: Seq[ModuleID] = {
   val version = "3.6.5"
   Seq(
     "org.json4s" %% "json4s-jackson" % version
+  )
+}
+
+val enumeratum: Seq[ModuleID] = {
+  Seq(
+    "com.beachape" %% "enumeratum-json4s" % "1.5.14"
   )
 }
 
