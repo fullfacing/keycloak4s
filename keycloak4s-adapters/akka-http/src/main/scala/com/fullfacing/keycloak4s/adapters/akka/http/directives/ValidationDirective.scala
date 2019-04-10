@@ -1,9 +1,9 @@
-package com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives
+package com.fullfacing.keycloak4s.adapters.akka.http.directives
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives._
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.Permissions
+import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
 import com.fullfacing.keycloak4s.adapters.akka.http.{Errors, TokenValidator}
 import com.nimbusds.jose.Payload
 import monix.execution.Scheduler

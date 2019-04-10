@@ -1,10 +1,10 @@
-package com.fullfacing.keycloak4s.adapters.akka.http.apollo.directives
+package com.fullfacing.keycloak4s.adapters.akka.http.directives
 
 import akka.http.scaladsl.server.directives.MethodDirectives
 import akka.http.scaladsl.model.{HttpMethod, HttpMethods}
 import akka.http.scaladsl.server.Directive0
 import akka.http.scaladsl.server.Directives._
-import com.fullfacing.keycloak4s.adapters.akka.http.apollo.Permissions
+import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
 
 trait AuthorisationDirectives extends MethodDirectives {
 
