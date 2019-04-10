@@ -6,10 +6,10 @@ import akka.http.scaladsl.server.Directives._
 import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
 import com.fullfacing.keycloak4s.adapters.akka.http.{Errors, TokenValidator}
 import com.nimbusds.jose.Payload
-import monix.execution.Scheduler
 import org.json4s.Formats
 import org.json4s.jackson.JsonMethods.parse
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 trait ValidationDirective {
@@ -21,7 +21,7 @@ trait ValidationDirective {
    *
    * @return        directive with the updated RequestContext containing the verified user's permissions
    */
-  def validateToken(implicit tv: TokenValidator, scheduler: Scheduler): Directive1[Permissions] = {
+  def validateToken(implicit tv: TokenValidator, ec: ExecutionContext): Directive1[Permissions] = {
     extractCredentials.flatMap {
       case Some(token) => callValidation(token.token())
       case None        => complete(Errors.errorResponse(StatusCodes.Unauthorized.intValue, "No token provided"))
@@ -29,8 +29,8 @@ trait ValidationDirective {
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String)(implicit validator: TokenValidator, scheduler: Scheduler): Directive1[Permissions] = {
-    onComplete(validator.validate(token).runToFuture).flatMap {
+  private def callValidation(token: String)(implicit validator: TokenValidator): Directive1[Permissions] = {
+    onComplete(validator.validate(token).unsafeToFuture()).flatMap {
       case Success(r) => handleValidationResponse(r)
       case Failure(e) => complete(Errors.errorResponse(StatusCodes.InternalServerError.intValue, "An unexpected error occurred", Some(e.getMessage)))
     }
