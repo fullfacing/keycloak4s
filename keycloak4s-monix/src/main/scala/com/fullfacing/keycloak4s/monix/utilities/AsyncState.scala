@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.client
+package com.fullfacing.keycloak4s.monix.utilities
 
 import monix.eval.Task
 import monix.execution.Ack.{Continue, Stop}
@@ -53,13 +53,6 @@ class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Obse
       case ex if NonFatal(ex) =>
         Task.raiseError(ex)
     }
-}
-
-object ObservableExtensions {
-  implicit class ObservableExtensions(val obs: Observable.type) {
-    def walk[S, A](seed: => S)(f: S => Task[Either[A, (A, S)]]) =
-      new AsyncState(seed, f)
-  }
 }
 
 sealed trait State
