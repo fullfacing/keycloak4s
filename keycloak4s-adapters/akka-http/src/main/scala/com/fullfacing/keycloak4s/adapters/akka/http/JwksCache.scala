@@ -23,7 +23,7 @@ abstract class JwksCache (host: String, port: String, realm: String)(implicit s:
   private val url = new URL(s"http://$host:$port/auth/realms/$realm/protocol/openid-connect/certs")
 
   /* The asynchronous Task to retrieve the JWKSet. **/
-  private val task = Task {
+  private val task = Task.evalAsync {
     JWKSet.load(url).asRight[Throwable]
   }.onErrorHandle(_.asLeft)
 
