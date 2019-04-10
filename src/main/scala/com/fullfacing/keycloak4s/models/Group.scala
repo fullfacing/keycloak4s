@@ -1,10 +1,18 @@
 package com.fullfacing.keycloak4s.models
 
-final case class Group(access: Option[Map[String, Boolean]] = None,
-                       attributes: Option[Map[String, Seq[String]]] = None,
-                       clientRoles: Option[Map[String, Seq[String]]] = None,
-                       id: Option[String] = None,
-                       name: Option[String] = None,
-                       path: Option[String] = None,
-                       realmRoles: Option[List[String]] = None,
-                       subGroups: Option[List[Group]] = None)
+import java.util.UUID
+
+final case class Group(name: String,
+                       path: String,
+                       subGroups: List[Group] = List.empty[Group],
+                       realmRoles: List[String] = List.empty[String],
+                       access: Map[String, Boolean] = Map.empty[String, Boolean],
+                       attributes: Map[String, List[String]] = Map.empty[String, List[String]],
+                       clientRoles: Map[String, List[String]] = Map.empty[String, List[String]],
+                       id: UUID)
+
+object Group {
+
+  final case class Create(name: Option[String] = None,
+                          attributes: Map[String, List[String]] = Map.empty[String, List[String]])
+}

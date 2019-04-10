@@ -1,5 +1,5 @@
 name         := "keycloak4s"
-version      := "0.3.4-SNAPSHOT"
+version      := "0.4.0-SNAPSHOT"
 organization := "com.fullfacing"
 
 val scalacOpts = Seq(
@@ -45,6 +45,12 @@ val json4s: Seq[ModuleID] = {
   )
 }
 
+val enumeratum: Seq[ModuleID] = {
+  Seq(
+    "com.beachape" %% "enumeratum-json4s" % "1.5.14"
+  )
+}
+
 val sttp: Seq[ModuleID] = {
   val version = "1.5.11"
   Seq(
@@ -60,6 +66,6 @@ val cats: Seq[ModuleID] = Seq(
   "org.typelevel" %% "cats-effect" % "1.2.0"
 )
 
-libraryDependencies ++= sttp ++ cats ++ json4s ++ logback ++ Seq(
+libraryDependencies ++= sttp ++ cats ++ json4s ++ logback ++ enumeratum ++ Seq(
   "io.monix" %% "monix" % "3.0.0-RC2"
 )

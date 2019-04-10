@@ -6,14 +6,14 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.Concurrent
 import cats.implicits._
+import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.client.TokenManager.{Token, TokenResponse}
 import com.fullfacing.keycloak4s.models.{KeycloakAdminException, RequestInfo}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
-import org.json4s.Formats
 import org.json4s.jackson.Serialization
 
-abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) {
+abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S]) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 

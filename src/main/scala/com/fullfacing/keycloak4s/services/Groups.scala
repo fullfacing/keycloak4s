@@ -13,14 +13,14 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
-  def create(group: Group): R[Either[KeycloakError, Unit]] = {
+  def create(group: Group.Create): R[Either[KeycloakError, Group]] = {
     val path = Seq(realm, "groups")
-    client.post[Group, Unit](path, group)
+    client.post[Group.Create, Group](path, group)
   }
 
-  def createSubGroup(groupId: UUID, group: Group): R[Either[KeycloakError, Group]] = {
+  def createSubGroup(groupId: UUID, group: Group.Create): R[Either[KeycloakError, Group]] = {
     val path = Seq(realm, "groups", groupId.toString, "children")
-    client.post[Group, Group](path, group)
+    client.post[Group.Create, Group](path, group)
   }
 
   def fetch(first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): R[Either[KeycloakError, Seq[Group]]] = {
@@ -53,10 +53,10 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   // ------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Users ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------- //
-  def fetchUsers(groupId: UUID, first: Option[Int] = None, max: Option[Int] = None): R[Either[KeycloakError, Seq[User]]] = {
+  def fetchUsers(groupId: UUID, first: Option[Int] = None, max: Option[Int] = None): R[Either[KeycloakError, List[User]]] = {
     val query = createQuery(("first", first), ("max", max))
     val path = Seq(realm, "groups", groupId.toString, "members")
-    client.get[Seq[User]](path, query = query)
+    client.get[List[User]](path, query = query)
   }
   
   def addUserToGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {

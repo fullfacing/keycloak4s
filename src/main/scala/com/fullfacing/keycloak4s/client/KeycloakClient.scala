@@ -2,12 +2,12 @@ package com.fullfacing.keycloak4s.client
 
 import cats.effect.Concurrent
 import cats.implicits._
+import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.models.enums.ContentTypes
 import com.fullfacing.keycloak4s.models.{KeycloakAdminException, KeycloakError, KeycloakException, RequestInfo}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
 import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, SttpBackend, Uri, sttp}
-import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
 
 import scala.collection.immutable.Seq
@@ -15,7 +15,7 @@ import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
 import scala.util.control.NonFatal
 
-class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S], formats: Formats) extends TokenManager[F, S](config) {
+class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S]) extends TokenManager[F, S](config) {
 
   /* URI Builder **/
   private[client] def createUri(path: Seq[String], query: Seq[KeyValue]) = Uri(
