@@ -1,10 +1,13 @@
-package com.fullfacing.keycloak4s.adapters.akka.http
+package com.fullfacing.keycloak4s.adapters.akka.http.services
 
 import java.time.Instant
 
 import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
+import com.fullfacing.keycloak4s.adapters.akka.http.Errors
+import com.fullfacing.keycloak4s.adapters.akka.http.IoImplicits._
+import com.fullfacing.keycloak4s.adapters.akka.http.Logging.logger
 import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
@@ -12,19 +15,22 @@ import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.SignedJWT.parse
 
 import scala.concurrent.ExecutionContext
+import scala.util.Try
 
 class TokenValidator(host: String, port: String, realm: String)(implicit ec: ExecutionContext) extends JwksCache(host, port, realm) {
 
   /**
    * Checks if the token is not expired and is not being used before the nbf (if defined).
    */
-  private def validateTime(exp: Instant, nbf: Instant): Either[Throwable, Unit] = {
+  private def validateTime(token: SignedJWT): Either[Throwable, SignedJWT] = {
     val now = Instant.now()
+    val nbf = token.getJWTClaimsSet.getNotBeforeTime.toInstant
+    val exp = token.getJWTClaimsSet.getExpirationTime.toInstant
 
     val nbfCond = nbf == Instant.EPOCH || now.isAfter(nbf)
     val expCond = now.isBefore(exp)
 
-    if (nbfCond && expCond) ().asRight
+    if (nbfCond && expCond) token.asRight
     else if (!nbfCond) Errors.NOT_YET_VALID.asLeft
     else Errors.EXPIRED.asLeft
   }
@@ -47,7 +53,7 @@ class TokenValidator(host: String, port: String, realm: String)(implicit ec: Exe
       case None                 => IO.pure(Errors.PUBLIC_KEY_NOT_FOUND.asLeft)
       case Some(k: RSAKey)      => IO(k.asRight)
     }
-  }.handleError(_ => Errors.UNEXPECTED.asLeft)
+  }.handleErrorWithLogging(_ => Errors.UNEXPECTED.asLeft)
 
   /**
    * Validates the token with the public key obtained from the Keycloak server.
@@ -61,18 +67,17 @@ class TokenValidator(host: String, port: String, realm: String)(implicit ec: Exe
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
    */
   def validate(rawToken: String): IO[Either[Throwable, Payload]] = {
-    val token = parse(rawToken)
-    val nbf = token.getJWTClaimsSet.getNotBeforeTime.toInstant
-    val exp = token.getJWTClaimsSet.getExpirationTime.toInstant
+    val token = Try {
+      parse(rawToken)
+    }.fold(_ => Errors.PARSE_FAILED.asLeft, validateTime)
 
-    //TODO Rewrite without EitherT's to reduce overhead.
     for {
-      _     <- EitherT.fromEither[IO](validateTime(exp, nbf))
+      t     <- EitherT.fromEither[IO](token)
       keys  <- EitherT(checkKeySet())
-      key   <- EitherT(matchPublicKey(token.getHeader.getKeyID, keys))
-      _     <- EitherT.fromEither[IO](validateSignature(token, key))
-    } yield token.getPayload
-  }.value.handleError(_ => Errors.UNEXPECTED.asLeft)
+      key   <- EitherT(matchPublicKey(t.getHeader.getKeyID, keys))
+      _     <- EitherT.fromEither[IO](validateSignature(t, key))
+    } yield t.getPayload
+  }.value.handleErrorWithLogging(_ => Errors.UNEXPECTED.asLeft)
 }
 
 object TokenValidator {

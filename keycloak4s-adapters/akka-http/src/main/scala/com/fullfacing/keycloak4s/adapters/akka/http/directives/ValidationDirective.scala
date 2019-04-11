@@ -3,13 +3,13 @@ package com.fullfacing.keycloak4s.adapters.akka.http.directives
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives._
+import com.fullfacing.keycloak4s.adapters.akka.http.Errors
 import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
-import com.fullfacing.keycloak4s.adapters.akka.http.{Errors, TokenValidator}
+import com.fullfacing.keycloak4s.adapters.akka.http.services.TokenValidator
 import com.nimbusds.jose.Payload
 import org.json4s.Formats
 import org.json4s.jackson.JsonMethods.parse
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 trait ValidationDirective {
@@ -21,7 +21,7 @@ trait ValidationDirective {
    *
    * @return        directive with the updated RequestContext containing the verified user's permissions
    */
-  def validateToken(implicit tv: TokenValidator, ec: ExecutionContext): Directive1[Permissions] = {
+  def validateToken(implicit tv: TokenValidator): Directive1[Permissions] = {
     extractCredentials.flatMap {
       case Some(token) => callValidation(token.token())
       case None        => complete(Errors.errorResponse(StatusCodes.Unauthorized.intValue, "No token provided"))

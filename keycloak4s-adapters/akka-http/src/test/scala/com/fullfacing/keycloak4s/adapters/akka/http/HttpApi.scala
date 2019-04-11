@@ -7,7 +7,6 @@ import com.fullfacing.keycloak4s.adapters.akka.http.directives.{AuthorisationDir
 
 object HttpApi extends ValidationDirective with AuthorisationDirectives {
 
-
   val api: Route = pathPrefix("test") {
     validateToken(tv, scheduler) { permissions =>
       path("cars") {

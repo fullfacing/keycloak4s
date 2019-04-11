@@ -1,5 +1,6 @@
 package com.fullfacing.keycloak4s.adapters.akka.http
 
+import com.fullfacing.keycloak4s.adapters.akka.http.services.TokenValidator
 import monix.execution.Scheduler
 
 object Implicits {

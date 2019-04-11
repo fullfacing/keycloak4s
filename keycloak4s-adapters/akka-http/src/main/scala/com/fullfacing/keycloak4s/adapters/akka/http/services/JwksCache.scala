@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.adapters.akka.http
+package com.fullfacing.keycloak4s.adapters.akka.http.services
 
 import java.net.URL
 import java.util.concurrent.atomic.AtomicReference

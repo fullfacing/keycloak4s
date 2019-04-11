@@ -1,7 +1,7 @@
-package com.fullfacing.keycloak4s.adapters.akka
+package com.fullfacing.keycloak4s.adapters.akka.http
 
 import org.slf4j.{Logger, LoggerFactory}
 
-package object http {
+object Logging {
   implicit val logger: Logger = LoggerFactory.getLogger("apollo.http")
 }
