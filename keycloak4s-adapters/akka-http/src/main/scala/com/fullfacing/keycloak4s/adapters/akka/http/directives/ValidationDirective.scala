@@ -6,15 +6,13 @@ import akka.http.scaladsl.server.Directives._
 import com.fullfacing.keycloak4s.adapters.akka.http.Errors
 import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
 import com.fullfacing.keycloak4s.adapters.akka.http.services.TokenValidator
+import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
 import com.nimbusds.jose.Payload
-import org.json4s.Formats
 import org.json4s.jackson.JsonMethods.parse
 
 import scala.util.{Failure, Success, Try}
 
 trait ValidationDirective {
-
-  implicit val formats: Formats = org.json4s.DefaultFormats
 
   /**
    * Extracts the token from the RequestContext and has it validated.

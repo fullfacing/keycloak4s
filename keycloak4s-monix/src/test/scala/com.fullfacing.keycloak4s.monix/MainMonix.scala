@@ -4,13 +4,13 @@ import java.nio.ByteBuffer
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.KeycloakConfig
+import com.fullfacing.keycloak4s.client.serialization.JsonFormats._
 import com.fullfacing.keycloak4s.monix.client.{Keycloak, KeycloakClient}
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
-import org.json4s.Formats
 import org.json4s.jackson.Serialization.writePretty
 
 import scala.io.StdIn
@@ -18,9 +18,7 @@ import scala.language.postfixOps
 
 object MainMonix extends App {
 
-  implicit val formats: Formats = org.json4s.DefaultFormats
   implicit val sttpBackend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
-
   val config: KeycloakConfig = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
 
