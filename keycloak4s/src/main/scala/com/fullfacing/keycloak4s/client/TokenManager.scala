@@ -1,15 +1,14 @@
 package com.fullfacing.keycloak4s.client
 
-import cats.implicits._
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.Concurrent
 import cats.implicits._
-import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.client.TokenManager.{Token, TokenResponse}
-import com.fullfacing.keycloak4s.models.{KeycloakAdminException, KeycloakError, RequestInfo}
+import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
+import com.fullfacing.keycloak4s.models.{KeycloakAdminException, RequestInfo}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import org.json4s.jackson.Serialization

@@ -83,7 +83,6 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
     Observable.walk[State, Seq[A]](State.Continue(offset))(fetchResources(call, batch)).flatMap(Observable.fromIterable)
   }
 
-
   def put[A, B <: Any : Manifest](path: Seq[String], payload: A = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Either[KeycloakError, B]] = {
     val request = sttp.put(createUri(path, query))
     call[A, B](request, payload, buildRequestInfo(path, "PUT", payload))

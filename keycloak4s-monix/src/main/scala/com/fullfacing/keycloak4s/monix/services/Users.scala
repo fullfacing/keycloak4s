@@ -2,7 +2,6 @@ package com.fullfacing.keycloak4s.monix.services
 
 import com.fullfacing.keycloak4s.models.User
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import monix.eval.Task
 import monix.reactive.Observable
 
