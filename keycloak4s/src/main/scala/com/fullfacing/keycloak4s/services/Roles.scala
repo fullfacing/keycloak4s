@@ -16,9 +16,9 @@ class Roles[R[+_]: Concurrent, S](realm: String)(implicit keyCloakClient: Keyclo
   // ------------------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Client Roles CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------------------- //
-  def createClientRole(clientId: UUID, role: Role): R[Either[KeycloakError, Unit]] = {
+  def createClientRole(clientId: UUID, role: Role.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, clients_path, clientId.toString, roles_path)
-    keyCloakClient.post[Role, Unit](path, role)
+    keyCloakClient.post[Role.Create, Unit](path, role.copy(clientRole = true))
   }
 
   def createCompositeClientRoles(clientId: UUID, name: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
@@ -81,9 +81,9 @@ class Roles[R[+_]: Concurrent, S](realm: String)(implicit keyCloakClient: Keyclo
   // ------------------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ Realm Roles CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------------------ //
-  def createRealmRole(role: Role): R[Either[KeycloakError, Unit]] = {
+  def createRealmRole(role: Role.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, roles_path)
-    keyCloakClient.post[Role, Unit](path, role)
+    keyCloakClient.post[Role.Create, Unit](path, role.copy(clientRole = false))
   }
 
   def fetchRealmRoles(): R[Either[KeycloakError, List[Role]]] = {
