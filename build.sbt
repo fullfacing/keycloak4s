@@ -125,7 +125,7 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
 // -------------------------------------------------------- //
 // Project and configuration for keycloak-akka-http-adapter //
 // -------------------------------------------------------- //
-lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ monix ++ nimbus
+lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ nimbus
 
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-adapters/akka-http"))
   .settings(global: _*)

@@ -7,39 +7,38 @@ import com.fullfacing.keycloak4s.adapters.akka.http.directives.{AuthorisationDir
 
 object HttpApi extends ValidationDirective with AuthorisationDirectives {
 
-  val api: Route = pathPrefix("test") {
-    validateToken(tv) { permissions =>
-      path("cars") {
-        getA(permissions) {
-          withAuth("cars", permissions) {
-            complete(s"GET /cars \n $permissions")
-          }
+  private val cars   = "cars"
+  private val bikes  = "bikes"
+  private val planes = "planes"
+
+  val api: Route = validateToken(tv) { implicit p =>
+    path(cars) {
+      authoriseResource(cars) { m =>
+        get(m) {
+          complete(s"GET /cars \n $p")
         } ~
-        postA(permissions) {
-          withAuth("cars", permissions) {
-            complete(s"POST /cars \n $permissions")
-          }
+        post(m) {
+          complete(s"POST /cars \n $p")
         } ~
-        putA(permissions) {
-          withAuth("cars", permissions) {
-            complete(s"PUT /cars \n $permissions")
-          }
+        put(m) {
+          complete(s"PUT /cars \n $p")
         } ~
-        patchA(permissions) {
-          withAuth("cars", permissions) {
-            complete(s"PATCH /cars \n $permissions")
-          }
+        patch(m) {
+          complete(s"PATCH /cars \n $p")
         } ~
-        deleteA(permissions) {
-          withAuth("cars", permissions) {
-            complete(s"DELETE /cars \n $permissions")
-          }
-        } ~
-        deleteA(permissions) {
-          withAuth("cars", permissions) {
-            complete(s"DELETE /cars \n $permissions")
-          }
+        delete(m) {
+          complete(s"DELETE /cars \n $p")
         }
+      }
+    } ~
+    path(planes) {
+      withAuth(planes) {
+        complete(s"/planes $p")
+      }
+    } ~
+    pathA(bikes, p)(bikes / JavaUUID / JavaUUID) { case (m, (id, _)) =>
+      get(m) {
+        complete(s"/bikes/$id")
       }
     }
   }

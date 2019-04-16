@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives._
 import com.fullfacing.keycloak4s.adapters.akka.http.Errors
-import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
+import com.fullfacing.keycloak4s.adapters.akka.http.models.{ResourceMethods, Permissions}
 import com.fullfacing.keycloak4s.adapters.akka.http.services.TokenValidator
 import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
 import com.nimbusds.jose.Payload
@@ -44,14 +44,10 @@ trait ValidationDirective {
   private def updateRequestContext(result: Payload): Permissions = {
     val json = parse(result.toString)
 
-    val scopes = Try {
-      (json \\ "scope").extract[String].split(" ").toList
-    }.getOrElse(Nil)
+    val access: Map[String, ResourceMethods] = Try {
+      (json \\ "resource_access").extract[Map[String, ResourceMethods]]
+    }.getOrElse(Map.empty)
 
-    val roles = Try {
-      (json \\ "realm_access" \\ "roles").extract[List[String]]
-    }.getOrElse(Nil)
-
-    Permissions(scopes = scopes, roles = roles)
+    Permissions(access)
   }
 }
