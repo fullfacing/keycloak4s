@@ -7,13 +7,9 @@ import com.fullfacing.keycloak4s.adapters.akka.http.directives.{AuthorisationDir
 
 object HttpApi extends ValidationDirective with AuthorisationDirectives {
 
-  private val cars   = "cars"
-  private val bikes  = "bikes"
-  private val planes = "planes"
-
   val api: Route = validateToken(tv) { implicit p =>
-    path(cars) {
-      authoriseResource(cars) { m =>
+    path("cars") {
+      authoriseResource("cars") { m =>
         get(m) {
           complete(s"GET /cars \n $p")
         } ~
@@ -31,14 +27,9 @@ object HttpApi extends ValidationDirective with AuthorisationDirectives {
         }
       }
     } ~
-    path(planes) {
-      withAuth(planes) {
+    path("planes") {
+      withAuth("planes") {
         complete(s"/planes $p")
-      }
-    } ~
-    path(bikes, p)(bikes / JavaUUID) { case (m, (id,)) =>
-      get(m) {
-        complete(s"/bikes/$id")
       }
     }
   }
