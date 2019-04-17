@@ -22,7 +22,7 @@ object Keycloak {
   def Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient[R, S]) = new Users[R, S](realm)
   def Roles[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient[R, S]) = new Roles[R, S](realm)
   def Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient[R, S]) = new Groups[R, S](realm)
-  def RolesById[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient[R, S]) = new RolesById[R, S]
+  def RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new RolesById[R, S]
 
   def Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new Clients[R, S]
 }

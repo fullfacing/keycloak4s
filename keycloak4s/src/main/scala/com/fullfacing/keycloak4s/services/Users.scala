@@ -15,9 +15,9 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
-  def create(user: User.Create): R[Either[KeycloakError, User]] = {
+  def create(user: User.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path)
-    client.post[User.Create, User](path, user)
+    client.post[Unit](path, user)
   }
 
   def fetch(briefRep: Option[Boolean] = None, username: Option[String] = None, email: Option[String] = None, first: Option[Int] = None,
@@ -45,12 +45,12 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
 
   def update(userId: UUID, user: User): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString)
-    client.put(path, user)
+    client.put[Unit](path, user)
   }
 
   def delete(userId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   // -------------------------------------------------------------------------------------------------------- //
@@ -76,7 +76,7 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   
   def revokeClientConsentForUser(userId: UUID, clientId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "consents", clientId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   // -------------------------------------------------------------------------------------------------------------------- //
@@ -84,7 +84,7 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   // -------------------------------------------------------------------------------------------------------------------- //
   def createFederatedIdentity(userId: UUID, provider: String, rep: FederatedIdentity): R[Either[KeycloakError, Unit]] = { // Unknown Return Type
     val path = Seq(realm, users_path, userId.toString, "federated-identity", provider)
-    client.post[FederatedIdentity, Unit](path, rep)
+    client.post[Unit](path, rep)
   }
   
   def fetchFederatedIdentities(userId: UUID): R[Either[KeycloakError, List[FederatedIdentity]]] = {
@@ -94,7 +94,7 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
 
   def removeFederatedIdentityProvider(userId: UUID, provider: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "federated-identity", provider)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   // -------------------------------------------------------------------------------------------------------- //
@@ -108,7 +108,7 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   def sendVerificationEmail(userId: UUID, clientId: Option[String] = None, redirectUri: Option[String] = None): R[Either[KeycloakError, Unit]] = {
     val query = createQuery(("client_id", clientId), ("redirect_uri",redirectUri))
     val path = Seq(realm, users_path, userId.toString, "send-verify-email")
-    client.put(path, query = query)
+    client.put[Unit](path, query = query)
   }
 
   /**
@@ -122,7 +122,7 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
                        redirectUri: Option[String], actions: List[String]): R[Either[KeycloakError, Unit]] = {
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
     val path = Seq(realm, users_path, userId.toString, "execute-actions-email")
-    client.put[List[String], Unit](path, actions, query)
+    client.put[Unit](path, actions, query)
   }
 
 
@@ -138,12 +138,12 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   
   def addToGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "groups", groupId.toString)
-    client.put(path)
+    client.put[Unit](path)
   }
   
   def removeFromGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "groups", groupId.toString)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   // -------------------------------------------------------------------------------------------------------- //
@@ -161,12 +161,12 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
 
   def addRealmRoles(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
-    client.post[List[Role], Unit](path, roles)
+    client.post[Unit](path, roles)
   }
 
   def removeRealmRoles(userId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId.toString, "role-mappings", "realm")
-    client.delete[List[Role], Unit](path, roles)
+    client.delete[Unit](path, roles)
   }
 
   def fetchAvailableRealmRoles(userId: UUID): R[Either[KeycloakError, List[Role]]] = {
@@ -195,26 +195,26 @@ class Users[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient
   
   def removeTotp(realm: String, userId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId, "remove-totp")
-    client.put(path)
+    client.put[Unit](path)
   }
   
   def resetPassword(userId: UUID, credential: Credential): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "reset-password")
-    client.put(path, credential)
+    client.put[Unit](path, credential)
   }
   
   def disableUserCredentials(userId: UUID, credentialTypes: List[String]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "disable-credential-types")
-    client.put[List[String], Unit](path, credentialTypes)
+    client.put[Unit](path, credentialTypes)
   }
   
   def impersonate(userId: UUID): R[Either[KeycloakError, ImpersonationResponse]] = {
     val path = Seq(realm, users_path, userId.toString, "impersonation")
-    client.post[Unit, ImpersonationResponse](path)
+    client.post[ImpersonationResponse](path)
   }
   
   def logout(userId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, users_path, userId.toString, "logout")
-    client.post(path)
+    client.post[Unit](path)
   }
 }

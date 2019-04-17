@@ -17,7 +17,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def createMulitpleMappersForScope(scopeId: String, mapper: Seq[ProtocolMapper]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "add-models")
-    client.post[Seq[ProtocolMapper], Unit](path, mapper)
+    client.post[Unit](path, mapper)
   }
 
   /**
@@ -29,7 +29,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def createMapperForScope(scopeId: String, mapper: ProtocolMapper): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models")
-    client.post[ProtocolMapper, Unit](path, mapper)
+    client.post[Unit](path, mapper)
   }
 
   /**
@@ -65,7 +65,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def updateMapperForScope(scopeId: String, mapperId: String, mapper: ProtocolMapper): R[Either[KeycloakError, ProtocolMapper]] = {
     val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
-    client.put[ProtocolMapper, ProtocolMapper](path, mapper)
+    client.put[ProtocolMapper](path, mapper)
   }
 
   /**
@@ -77,7 +77,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def deleteMapperForScope(scopeId: String, mapperId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "client-scopes", scopeId, "protocol-mappers", "models", mapperId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -101,7 +101,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def createMulitpleMappersForClient(clientId: String, mapper: Seq[ProtocolMapper]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "add-models")
-    client.post[Seq[ProtocolMapper], Unit](path, mapper)
+    client.post[Unit](path, mapper)
   }
 
   /**
@@ -113,7 +113,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def createMapperForClient(clientId: String, mapper: ProtocolMapper): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models")
-    client.post[ProtocolMapper, Unit](path, mapper)
+    client.post[Unit](path, mapper)
   }
 
   /**
@@ -149,7 +149,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def updateMapperForClient(clientId: String, mapperId: String, mapper: ProtocolMapper): R[Either[KeycloakError, ProtocolMapper]] = {
     val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
-    client.put[ProtocolMapper, ProtocolMapper](path, mapper)
+    client.put[ProtocolMapper](path, mapper)
   }
 
   /**
@@ -161,7 +161,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    */
   def deleteMapperForClient(clientId: String, mapperId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "client-scopes", clientId, "protocol-mappers", "models", mapperId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
