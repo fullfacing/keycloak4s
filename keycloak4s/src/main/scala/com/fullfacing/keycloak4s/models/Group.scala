@@ -13,6 +13,6 @@ final case class Group(name: String,
 
 object Group {
 
-  final case class Create(name: Option[String] = None,
+  final case class Create(name: String,
                           attributes: Map[String, List[String]] = Map.empty[String, List[String]])
 }

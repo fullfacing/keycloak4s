@@ -36,7 +36,7 @@ object HttpApi extends ValidationDirective with AuthorisationDirectives {
         complete(s"/planes $p")
       }
     } ~
-    pathA(bikes, p)(bikes / JavaUUID / JavaUUID) { case (m, (id, _)) =>
+    path(bikes, p)(bikes / JavaUUID) { case (m, (id,)) =>
       get(m) {
         complete(s"/bikes/$id")
       }

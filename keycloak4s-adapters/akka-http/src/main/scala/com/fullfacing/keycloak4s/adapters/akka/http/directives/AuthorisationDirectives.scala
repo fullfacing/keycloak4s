@@ -4,13 +4,14 @@ import akka.http.scaladsl.model.{HttpMethod, HttpMethods}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute._
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.server.directives.MethodDirectives
+import akka.http.scaladsl.server.directives.{MethodDirectives, PathDirectives}
 import akka.http.scaladsl.server.util.Tuple._
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives._
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.magents.{AuthoriseResourceMagnet, WithAuthMagnet}
 import com.fullfacing.keycloak4s.adapters.akka.http.models.{Permissions, ResourceMethods}
 
-trait AuthorisationDirectives extends MethodDirectives {
+trait AuthorisationDirectives extends MethodDirectives with PathDirectives {
+
   //TODO Find way to implicitly call Permissions without breaking the subsequent closure.
   /**
    * HTTP methods with checks to ensure the user has the permission to perform the attempted
@@ -37,8 +38,8 @@ trait AuthorisationDirectives extends MethodDirectives {
    * Creates a path directive after authorising the user's access to the resource using permissions
    * from the validated access token.
    */
-  def pathA[L](resource: String, permissions: Permissions)(pm: PathMatcher[L]): Directive[Tuple1[(ResourceMethods, L)]] = {
-    checkPermissions(resource, permissions, v => path(pm).tmap(a => Tuple1((v, a))))
+  def path[L](resource: String, permissions: Permissions)(pm: PathMatcher[L]): Directive[Tuple1[(ResourceMethods, L)]] = {
+    checkPermissions(resource, permissions, v => super.path(pm).tmap(a => Tuple1((v, a))))
   }
 }
 
