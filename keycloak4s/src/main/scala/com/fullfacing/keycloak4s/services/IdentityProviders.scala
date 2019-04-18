@@ -5,7 +5,6 @@ import java.io.File
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
-import com.softwaremill.sttp.Multipart
 
 import scala.collection.immutable.Seq
 
@@ -20,7 +19,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
   def importIdentityProvider(config: File): R[Either[KeycloakError, Map[String, String]]] = {
     val path = Seq(client.realm, "identity-provider", "import-config")
     val multipart = createMultipart(config)
-    client.post[Multipart, Map[String, String]](path, multipart)
+    client.post[Map[String, String]](path, multipart)
   }
 
   /**
@@ -31,7 +30,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def createIdentityProvider(identityProvider: IdentityProvider): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "identity-provider", "instances")
-    client.post[IdentityProvider, Unit](path, identityProvider)
+    client.post[Unit](path, identityProvider)
   }
 
   /**
@@ -61,7 +60,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def updateIdentityProvider(alias: String, identityProvider: IdentityProvider): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "identity-provider", "instances", alias)
-    client.put[IdentityProvider, Unit](path, identityProvider)
+    client.put[Unit](path, identityProvider)
   }
 
   /**
@@ -72,7 +71,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def deleteIdentityProvider(alias: String): R[Either[KeycloakError, IdentityProvider]] = {
     val path = Seq(client.realm, "identity-provider", "instances", alias)
-    client.delete[Unit, IdentityProvider](path)
+    client.delete[IdentityProvider](path)
   }
 
   /**
@@ -86,7 +85,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
     val query = createQuery(("format", format))
 
     val path = Seq(client.realm, "identity-provider", "instances", alias, "export")
-    client.get(path, query = query)
+    client.get[Unit](path, query = query)
   }
 
   /**
@@ -109,7 +108,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def updateManagementPermissions(alias: String, permissions: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, "identity-provider", "instances", alias, "management", "permissions")
-    client.put[ManagementPermission, ManagementPermission](path, permissions)
+    client.put[ManagementPermission](path, permissions)
   }
 
   /**
@@ -132,7 +131,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def addMapperTypes(alias: String, mapper: IdentityProviderMapper): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "identity-provider", "instances", alias, "mapper")
-    client.post[IdentityProviderMapper, Unit](path, mapper)
+    client.post[Unit](path, mapper)
   }
 
   /**
@@ -168,7 +167,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def updateMapper(alias: String, mapperId: String, mapper: IdentityProviderMapper): R[Either[KeycloakError, IdentityProviderMapper]] = {
     val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId)
-    client.put[IdentityProviderMapper, IdentityProviderMapper](path, mapper)
+    client.put[IdentityProviderMapper](path, mapper)
   }
 
   /**
@@ -180,7 +179,7 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def deleteMapper(alias: String, mapperId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -191,6 +190,6 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
    */
   def getIdentityProviders(providerId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "identity-provider", "providers", providerId)
-    client.get(path)
+    client.get[Unit](path)
   }
 }

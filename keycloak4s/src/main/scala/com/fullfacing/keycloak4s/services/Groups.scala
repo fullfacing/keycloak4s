@@ -15,12 +15,12 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   // ------------------------------------------------------------------------------------------------------ //
   def create(group: Group.Create): R[Either[KeycloakError, Group]] = {
     val path = Seq(realm, "groups")
-    client.post[Group.Create, Group](path, group)
+    client.post[Group](path, group)
   }
 
   def createSubGroup(groupId: UUID, group: Group.Create): R[Either[KeycloakError, Group]] = {
     val path = Seq(realm, "groups", groupId.toString, "children")
-    client.post[Group.Create, Group](path, group)
+    client.post[Group](path, group)
   }
 
   def fetch(first: Option[Int] = None, max: Option[Int] = None, search: Option[String] = None): R[Either[KeycloakError, Seq[Group]]] = {
@@ -36,12 +36,12 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
 
   def update(groupId: UUID, group: Group): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "groups", groupId.toString)
-    client.put[Group, Unit](path, group)
+    client.put[Unit](path, group)
   }
 
   def delete(groupId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "groups", groupId.toString)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   def count(search: Option[String] = None, top: Boolean = false): R[Either[KeycloakError, Count]] = {
@@ -61,12 +61,12 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   
   def addUserToGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId.toString, "groups", groupId.toString)
-    client.put(path)
+    client.put[Unit](path)
   }
 
   def removeUserFromGroup(userId: UUID, groupId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "users", userId.toString, "groups", groupId.toString)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   // ------------------------------------------------------------------------------------------------------- //
@@ -94,12 +94,12 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
 
   def addRealmRoles(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "groups", id.toString, "role-mappings", "realm")
-    client.post[List[Role], Unit](path, roles)
+    client.post[Unit](path, roles)
   }
 
   def removeRealmRoles(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "groups", id.toString, "role-mappings", "realm")
-    client.delete[List[Role], Unit](path, roles)
+    client.delete[Unit](path, roles)
   }
 
   // ------------------------------------------------------------------------------------------------------------- //
@@ -112,6 +112,6 @@ class Groups[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClien
   
   def updateManagementPermissions(groupId: UUID, permissions: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(realm, "groups", groupId.toString, "management", "permissions")
-    client.put[ManagementPermission, ManagementPermission](path, permissions)
+    client.put[ManagementPermission](path, permissions)
   }
 }
