@@ -2,9 +2,7 @@ package com.fullfacing.keycloak4s.models
 
 import java.util.UUID
 
-import enumeratum.values.{StringEnum, StringEnumEntry}
-
-import scala.collection.immutable
+import com.fullfacing.keycloak4s.models.enums.{Protocol, Protocols}
 
 final case class Client(id: UUID,
                         clientId: String,
@@ -31,7 +29,7 @@ final case class Client(id: UUID,
                         notBefore: Option[Int],
                         optionalClientScopes: List[String],
                         origin: Option[String],
-                        protocol: Client.Protocol,
+                        protocol: Protocol,
                         protocolMappers: List[ProtocolMapper],
                         publicClient: Boolean,
                         redirectUris: List[String],
@@ -69,7 +67,7 @@ object Client {
                           notBefore: Option[Int] = None,
                           optionalClientScopes: Option[List[String]] = None,
                           origin: Option[String] = None,
-                          protocol: Client.Protocol = Protocols.OpenIdConnect,
+                          protocol: Protocol = Protocols.OpenIdConnect,
                           protocolMappers: Option[List[ProtocolMapper]] = None,
                           publicClient: Option[Boolean] = None,
                           redirectUris: List[String] = List.empty[String],
@@ -116,14 +114,6 @@ object Client {
                           standardFlowEnabled: Option[Boolean] = None,
                           surrogateAuthRequired: Option[Boolean] = None,
                           webOrigins: Option[List[String]] = None)
-
-  sealed abstract class Protocol(val value: String) extends StringEnumEntry
-  case object Protocols extends StringEnum[Protocol] {
-    case object Saml          extends Protocol("saml")
-    case object OpenIdConnect extends Protocol("openid-connect")
-
-    val values: immutable.IndexedSeq[Protocol] = findValues
-  }
 }
 
 final case class ClientAccess(view: Boolean,

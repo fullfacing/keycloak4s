@@ -15,6 +15,7 @@ object EnumSerializers
     Json4s.serializer(PolicyTypes),
     Json4sValues.serializer(CredentialTypes),
     Json4sValues.serializer(Directions),
+    Json4sValues.serializer(Protocols),
     Json4sValues.serializer(RequiredActions),
     Json4sValues.serializer(TriggerSyncActions)
   )
