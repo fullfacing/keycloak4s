@@ -14,10 +14,7 @@ import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.SignedJWT.parse
 
-import scala.concurrent.ExecutionContext
-import scala.util.Try
-
-class TokenValidator(host: String, port: String, realm: String)(implicit ec: ExecutionContext) extends JwksCache(host, port, realm) {
+class TokenValidator(host: String, port: String, realm: String) extends JwksCache(host, port, realm) {
 
   /**
    * Checks if the token is not expired and is not being used before the nbf (if defined).
@@ -67,12 +64,13 @@ class TokenValidator(host: String, port: String, realm: String)(implicit ec: Exe
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
    */
   def validate(rawToken: String): IO[Either[Throwable, Payload]] = {
-    val token = Try {
-      parse(rawToken)
-    }.fold(_ => Errors.PARSE_FAILED.asLeft, validateTime)
+
+    val token = IO {
+      validateTime(parse(rawToken))
+    }.handleError(_ => Errors.PARSE_FAILED.asLeft)
 
     for {
-      t     <- EitherT.fromEither[IO](token)
+      t     <- EitherT(token)
       keys  <- EitherT(checkKeySet())
       key   <- EitherT(matchPublicKey(t.getHeader.getKeyID, keys))
       _     <- EitherT.fromEither[IO](validateSignature(t, key))
@@ -81,5 +79,5 @@ class TokenValidator(host: String, port: String, realm: String)(implicit ec: Exe
 }
 
 object TokenValidator {
-  def apply(host: String, port: String, realm: String)(implicit ec: ExecutionContext) = new TokenValidator(host, port, realm)
+  def apply(host: String, port: String, realm: String) = new TokenValidator(host, port, realm)
 }

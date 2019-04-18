@@ -2,9 +2,7 @@ package com.fullfacing.keycloak4s.models
 
 import java.util.UUID
 
-import enumeratum.values.{StringEnum, StringEnumEntry}
-
-import scala.collection.immutable
+import com.fullfacing.keycloak4s.models.enums.RequiredAction
 
 final case class User(username: String,
                       access: Option[UserAccess] = None,
@@ -24,24 +22,13 @@ final case class User(username: String,
                       notBefore: Option[String] = None,
                       origin: Option[String] = None,
                       realmRoles: List[String] = List.empty[String],
-                      requiredActions: List[User.RequiredAction] = List.empty[User.RequiredAction],
+                      requiredActions: List[RequiredAction] = List.empty[RequiredAction],
                       self: Option[String] = None,
                       serviceAccountClientId: Option[String] = None,
                       createdTimestamp: Long,
                       id: UUID)
 
 object User {
-
-  sealed abstract class RequiredAction(val value: String) extends StringEnumEntry
-  case object RequiredActions extends StringEnum[RequiredAction] {
-    case object VerifyEmail        extends RequiredAction("VERIFY_EMAIL")
-    case object ConfigureTotp      extends RequiredAction("CONFIGURE_TOTP")
-    case object UpdateProfile      extends RequiredAction("UPDATE_PROFILE")
-    case object UpdatePassword     extends RequiredAction("UPDATE_PASSWORD")
-    case object TermsAndConditions extends RequiredAction("terms_and_conditions")
-
-    val values: immutable.IndexedSeq[RequiredAction] = findValues
-  }
 
   final case class Create(username: String,
                           enabled: Boolean,
