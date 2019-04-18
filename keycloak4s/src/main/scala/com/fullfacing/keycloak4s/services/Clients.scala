@@ -13,9 +13,9 @@ import scala.collection.immutable.Seq
 class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Get client installation file */
-  def getClientInstallationProvider(clientId: UUID, providerId: InstallationProvider = InstallationProviders.Json): R[Either[KeycloakError, Unit]] = {
+  def getClientInstallationProvider(clientId: UUID, providerId: InstallationProvider = InstallationProviders.Json): R[Either[KeycloakError, InstallationConfig]] = {
     val path = Seq(client.realm, "clients", clientId.toString, "installation", "providers", providerId.value)
-    client.get[Unit](path)
+    client.get[InstallationConfig](path)
   }
 
   // ------------------------------------------------------------------------------------------------------ //
