@@ -4,10 +4,8 @@ import java.util.UUID
 
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import com.fullfacing.keycloak4s.client.serialization.JsonFormats.default
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
-import com.fullfacing.keycloak4s.models.RealmRepresentation
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
@@ -15,21 +13,20 @@ import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.Future
 import scala.language.postfixOps
-import org.json4s.jackson.Serialization.writePretty
 
 object Main extends App {
 
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
 
-  val config = KeycloakConfig("http", "localhost", 8080, "TestRealm", KeycloakConfig.Auth("master", "admin-cli", "7856293e-307c-4834-8b39-27d60874ebfb"))
+  val config = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.RealmsAdmin[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Roles[Task, Source[ByteString, Any]]("master")
   import scala.concurrent.duration._
   global.scheduleAtFixedRate(0 seconds, 60 seconds) {
-    clients.getTopLevelRepresentation().foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.fetchClientRoles(UUID.fromString("4a89a463-4156-459f-85b4-bf85a5dcbf07")).foreachL(_ => ()).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
   Console.readBoolean()
