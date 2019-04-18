@@ -433,9 +433,6 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /**
    * Push the client’s revocation policy to its admin URL.
    * If the client has an admin URL, push revocation policy to it.
-   *
-   * @param clientId ID of client (not client-id).
-   * @return
    */
   def pushRevocationPolicy(clientId: UUID): R[Either[KeycloakError, GlobalRequestResult]] = {
     val path = Seq(client.realm, "clients", clientId.toString, "push-revocation")

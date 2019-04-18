@@ -459,11 +459,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------ Client Registration Policies ------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
 
-  /**
-   * Base path for retrieving providers with the configProperties properly filled.
-   *
-   * @return
-   */
+  /** Base path for retrieving providers with the configProperties properly filled. */
   def getClientRegistrationPolicyProviders(): R[Either[KeycloakError, List[ComponentType]]] = {
     val path = Seq(client.realm, "client-registration-policy", "providers")
     client.get[List[ComponentType]](path)
