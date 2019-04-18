@@ -13,7 +13,7 @@ class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    * @return
    */
   def clearAllLoginFailures(): R[Either[KeycloakError, Unit]] = {
-    client.delete(client.realm :: "attack-detection" :: "brute-force" :: "users" :: Nil)
+    client.delete[Unit](client.realm :: "attack-detection" :: "brute-force" :: "users" :: Nil)
   }
 
   /**
@@ -33,6 +33,6 @@ class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    * @param userId  ID of the User.
    */
   def clearUserLoginFailure(userId: String): R[Either[KeycloakError, Unit]] = {
-    client.delete(client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
+    client.delete[Unit](client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
   }
 }

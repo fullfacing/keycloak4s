@@ -3,7 +3,6 @@ package com.fullfacing.keycloak4s.services
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models._
-import com.softwaremill.sttp.Multipart
 
 import scala.collection.immutable.Seq
 
@@ -14,7 +13,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def importRealm(realm: RealmRepresentation): R[Either[KeycloakError, Unit]] = {
     val path = Seq.empty[String]
-    client.post[RealmRepresentation, Unit](path, realm)
+    client.post[Unit](path, realm)
   }
 
   /**
@@ -37,7 +36,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateTopLevelRepresentation(update: RealmRepresentation): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm)
-    client.put[RealmRepresentation, Unit](path, update)
+    client.put[Unit](path, update)
   }
 
   /**
@@ -45,7 +44,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteRealm(): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -100,7 +99,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteAdminEvents(): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "admin-events")
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -110,7 +109,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def clearKeysCache(): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "clear-keys-cache")
-    client.post(path)
+    client.post[Unit](path)
   }
 
   /**
@@ -120,7 +119,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def clearRealmCache(): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "clear-realm-cache")
-    client.post(path)
+    client.post[Unit](path)
   }
 
   /**
@@ -130,7 +129,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def clearUserCache(): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "clear-user-cache")
-    client.post(path)
+    client.post[Unit](path)
   }
 
   /**
@@ -141,7 +140,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def importClientViaDescription(description: String): R[Either[KeycloakError, Client]] = {
     val path = Seq(client.realm, "client-description-converter")
-    client.post[String, Client](path, description)
+    client.post[Client](path, description)
   }
 
   /**
@@ -174,7 +173,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateDefaultClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "default-default-client-scopes", scopeId)
-    client.put(path)
+    client.put[Unit](path)
   }
 
   /**
@@ -185,7 +184,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteDefaultClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "default-default-client-scopes", scopeId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -207,7 +206,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateGroupHierarchy(groupId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "default-groups", groupId)
-    client.put(path)
+    client.put[Unit](path)
   }
 
   /**
@@ -218,7 +217,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteGroupHierarchy(groupId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "default-groups", groupId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -237,7 +236,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateOptionalClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "default-Optional-client-scopes", scopeId)
-    client.put(path)
+    client.put[Unit](path)
   }
 
   /**
@@ -248,7 +247,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteOptionalClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "default-Optional-client-scopes", scopeId)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -294,7 +293,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def deleteAllEvents(): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "events")
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -317,7 +316,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateEventsConfig(config: RealmEventsConfig): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "events", "config")
-    client.put(path, config)
+    client.put[Unit](path, config)
   }
 
   /**
@@ -338,7 +337,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def logoutAll(): R[Either[KeycloakError, GlobalRequestResult]] = {
     val path = Seq(client.realm, "logout-all")
-    client.post[Unit, GlobalRequestResult](path)
+    client.post[GlobalRequestResult](path)
   }
 
   /**
@@ -353,7 +352,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     val path    = Seq(client.realm, "partial-export")
     val queries = createQuery(("exportClients", exportClients), ("exportGroupsAndRoles", exportGroupsAndRoles))
 
-    client.post[Unit, RealmRepresentation](path, query = queries)
+    client.post[RealmRepresentation](path, query = queries)
   }
 
   /**
@@ -364,7 +363,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def partialImport(rep: PartialImport): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "partialImport")
-    client.post[PartialImport, Unit](path, rep)
+    client.post[Unit](path, rep)
   }
 
   /**
@@ -374,7 +373,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def pushRevocation(): R[Either[KeycloakError, GlobalRequestResult]] = {
     val path = Seq(client.realm, "push-revocation")
-    client.post[Unit, GlobalRequestResult](path)
+    client.post[GlobalRequestResult](path)
   }
 
   /**
@@ -386,7 +385,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def removeUserSession(session: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "sessions", session)
-    client.delete(path)
+    client.delete[Unit](path)
   }
 
   /**
@@ -423,7 +422,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     //Documentation does not specify which content type this endpoint consumes, multipart/form-data and application/json are equally likely.
     //Therefor, in case the endpoint returns an error, it may be required to build a case class from the query parameters instead of a multipart.
     val mp = createMultipart(flattenOptionMap(queries))
-    client.post[Multipart, Unit](path, mp)
+    client.post[Unit](path, mp)
   }
 
   /**
@@ -434,7 +433,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def testSmtpConnection(config: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "testSMTPConnection", config)
-    client.post(path)
+    client.post[Unit](path)
   }
 
   /**
@@ -453,6 +452,6 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    */
   def updateUsersManagementPermissions(ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, "users-management-permissions")
-    client.put[ManagementPermission, ManagementPermission](path, ref)
+    client.put[ManagementPermission](path, ref)
   }
 }

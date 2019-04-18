@@ -41,7 +41,7 @@ class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient
    */
   def removeImportedUsers(userStorageId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, user_storage, userStorageId, "remove-imported-users")
-    client.post(path)
+    client.post[Unit](path)
   }
 
   /**
@@ -55,7 +55,7 @@ class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient
   def syncUsers(userStorageId: String, action: Option[String]): R[Either[KeycloakError, Synchronization]] = {
     val path  = Seq(client.realm, user_storage, userStorageId, "sync")
     val query = createQuery(("action", action))
-    client.post[Unit, Synchronization](path, query = query)
+    client.post[Synchronization](path, query = query)
   }
 
   /**
@@ -66,7 +66,7 @@ class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient
    */
   def unlink(userStorageId: String): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, user_storage, userStorageId, "unlink-users")
-    client.post(path)
+    client.post[Unit](path)
   }
 
   /**
@@ -81,6 +81,6 @@ class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient
   def syncMapperData(mapperId: String, userStorageId: String, direction: Option[String]): R[Either[KeycloakError, Synchronization]] = {
     val path  = Seq(client.realm, user_storage, userStorageId, "mappers", mapperId, "sync")
     val query = createQuery(("direction", direction))
-    client.post[Unit, Synchronization](path, query = query)
+    client.post[Synchronization](path, query = query)
   }
 }

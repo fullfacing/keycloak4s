@@ -25,6 +25,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
       protocol  = protocol,
       body      = body match {
         case _: Unit  => None
+        case NoBody   => None
         case a        => Some(a)
       }
     )
