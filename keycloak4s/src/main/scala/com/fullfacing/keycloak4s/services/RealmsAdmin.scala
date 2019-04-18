@@ -454,4 +454,37 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     val path = Seq(client.realm, "users-management-permissions")
     client.put[ManagementPermission](path, ref)
   }
+
+  // ------------------------------------------------------------------------------------------------------ //
+  // ------------------------------------ Client Registration Policies ------------------------------------ //
+  // ------------------------------------------------------------------------------------------------------ //
+
+  /**
+   * Base path for retrieving providers with the configProperties properly filled.
+   *
+   * @return
+   */
+  def getClientRegistrationPolicyProviders(): R[Either[KeycloakError, List[ComponentType]]] = {
+    val path = Seq(client.realm, "client-registration-policy", "providers")
+    client.get[List[ComponentType]](path)
+  }
+
+  // ------------------------------------------------------------------------------------------------------ //
+  // --------------------------------------- Initial Access Tokens ---------------------------------------- //
+  // ------------------------------------------------------------------------------------------------------ //
+
+  /** Create a new initial access token. */
+  def createInitialAccessToken(config: ClientInitialAccessCreate): R[Either[KeycloakError, ClientInitialAccess]] = {
+    client.post[ClientInitialAccess](client.realm :: "clients-initial-access" :: Nil, config)
+  }
+
+  /** Retrieve all access tokens for the Realm. */
+  def fetchInitialAccessTokens(): R[Either[KeycloakError, Seq[ClientInitialAccess]]] = {
+    client.get[Seq[ClientInitialAccess]](client.realm :: "clients-initial-access" :: Nil)
+  }
+
+  /** Delete an initial access token. */
+  def deleteInitialAccessToken(tokenId: String): R[Either[KeycloakError, Unit]] = {
+    client.delete[Unit](client.realm :: "clients-initial-access" :: tokenId :: Nil)
+  }
 }

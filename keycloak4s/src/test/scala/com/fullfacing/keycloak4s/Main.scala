@@ -5,11 +5,14 @@ import java.util.UUID
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.implicits._
+import com.fullfacing.keycloak4s.client.serialization.JsonFormats._
 import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
+import com.fullfacing.keycloak4s.models.Client
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
+import org.json4s.jackson.Serialization
 
 import scala.concurrent.Future
 import scala.language.postfixOps
@@ -18,16 +21,16 @@ object Main extends App {
 
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
 
-  val config = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
+  val config = KeycloakConfig("http", "localhost", 8080, "Retry", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
 
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] =
     new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Roles[Task, Source[ByteString, Any]]("master")
-  import scala.concurrent.duration._
-  global.scheduleAtFixedRate(0 seconds, 60 seconds) {
-    clients.fetchClientRoles(UUID.fromString("4a89a463-4156-459f-85b4-bf85a5dcbf07")).foreachL(_ => ()).onErrorHandle(_.printStackTrace()).runToFuture
-  }
+  val clients = Keycloak.Clients[Task, Source[ByteString, Any]]
+
+//  clients.fetchById(UUID.fromString("4dd218bf-ab82-4d5a-8c16-bee1fccee587")).foreachL(s => println(Serialization.writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.update(UUID.fromString("89a62f04-75da-4ca5-bc0b-fcc4b5ac004c"), Client.Update(clientId = "CreateTest3", enabled = Some(false)))
+      .foreachL(s => println(Serialization.writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
 
   Console.readBoolean()
 }

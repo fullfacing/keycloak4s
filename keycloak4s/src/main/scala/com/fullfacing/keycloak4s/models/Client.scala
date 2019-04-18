@@ -71,14 +71,15 @@ object Client {
                           protocolMappers: Option[List[ProtocolMapper]] = None,
                           publicClient: Option[Boolean] = None,
                           redirectUris: List[String] = List.empty[String],
-                          registeredNodes: List[Map[String, AnyRef]] = List.empty,
+                          registeredNodes: Option[List[Map[String, AnyRef]]] = None,
                           rootUrl: Option[String] = None,
                           serviceAccountsEnabled: Option[Boolean] = None,
                           standardFlowEnabled: Option[Boolean] = None,
                           surrogateAuthRequired: Option[Boolean] = None,
                           webOrigins: List[String] = List.empty[String])
 
-  final case class Update(access: Option[ClientAccess] = None,
+  final case class Update(clientId: String,
+                          access: Option[ClientAccess] = None,
                           adminUrl: Option[String] = None,
                           attributes: Option[Map[String, String]] = None,
                           authenticationFlowBindingOverrides: Option[Map[String, AnyRef]] = None, //Potential for stronger typing, requires example.
@@ -87,7 +88,6 @@ object Client {
                           baseUrl: Option[String] = None,
                           bearerOnly: Option[Boolean] = None,
                           clientAuthenticatorType: Option[String] = None,
-                          clientId: Option[String] = None,
                           consentRequired: Option[Boolean] = None,
                           defaultClientScopes: Option[List[String]] = None,
                           defaultRoles: Option[List[String]] = None,
@@ -105,8 +105,8 @@ object Client {
                           protocol: Option[Protocol] = None,
                           protocolMappers: Option[List[ProtocolMapper]] = None,
                           publicClient: Option[Boolean] = None,
-                          redirectUris: List[String] = List.empty[String],
-                          registeredNodes: List[Map[String, AnyRef]] = List.empty, //Potential for stronger typing, requires example.
+                          redirectUris: Option[List[String]] = None,
+                          registeredNodes: Option[List[Map[String, AnyRef]]] = None, //Potential for stronger typing, requires example.
                           registrationAccessToken: Option[String] = None,
                           rootUrl: Option[String] = None,
                           secret: Option[String] = None,
