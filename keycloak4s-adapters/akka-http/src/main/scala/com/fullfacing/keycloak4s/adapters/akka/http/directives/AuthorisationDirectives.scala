@@ -4,13 +4,14 @@ import akka.http.scaladsl.model.{HttpMethod, HttpMethods}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute._
 import akka.http.scaladsl.server._
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives._
 import akka.http.scaladsl.server.directives.{MethodDirectives, PathDirectives}
 import akka.http.scaladsl.server.util.Tuple._
-import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives._
-import com.fullfacing.keycloak4s.adapters.akka.http.directives.magents.{AuthoriseResourceMagnet, WithAuthMagnet}
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.magents.{AuthoriseResourceMagnet, PathWithAuthMagnet, WithAuthMagnet}
 import com.fullfacing.keycloak4s.adapters.akka.http.models.{Permissions, ResourceMethods}
 
 trait AuthorisationDirectives extends MethodDirectives with PathDirectives {
+
 
   //TODO Find way to implicitly call Permissions without breaking the subsequent closure.
   /**
@@ -24,8 +25,10 @@ trait AuthorisationDirectives extends MethodDirectives with PathDirectives {
   def patch(p: ResourceMethods): Directive0  = super.patch.tflatMap(_ => authoriseMethod(p))
   def delete(p: ResourceMethods): Directive0 = super.delete.tflatMap(_ => authoriseMethod(p))
 
+
   /** Authorises both the resource and operation */
   def withAuth(magnet: WithAuthMagnet): magnet.Result = magnet()
+
 
   /**
    * Uses the permissions from the user's validated token to determine the user's access to this resource.
@@ -34,13 +37,11 @@ trait AuthorisationDirectives extends MethodDirectives with PathDirectives {
    */
   def authoriseResource(magnet: AuthoriseResourceMagnet): magnet.Result = magnet()
 
+
   /**
-   * Creates a path directive after authorising the user's access to the resource using permissions
-   * from the validated access token.
+   *
    */
-  def path[L](resource: String, permissions: Permissions)(pm: PathMatcher[L]): Directive[Tuple1[(ResourceMethods, L)]] = {
-    checkPermissions(resource, permissions, v => super.path(pm).tmap(a => Tuple1((v, a))))
-  }
+  def path[A](magnet: PathWithAuthMagnet[A]): magnet.Result = magnet.apply()
 }
 
 object AuthorisationDirectives {
@@ -49,6 +50,7 @@ object AuthorisationDirectives {
     toDirective[A](route)(yes[A])
   }
 
+
   //TODO Determine if OPTIONS method will require authentication.
   def scopeMap(method: HttpMethod): List[String] = method match {
     case HttpMethods.GET    | HttpMethods.HEAD                     => List("delete", "create", "view")
@@ -56,6 +58,7 @@ object AuthorisationDirectives {
     case HttpMethods.DELETE                                        => List("delete")
     case _                                                         => List.empty[String]
   }
+
 
   /**
    * Looks for the requested resource in the user's permissions from the validated access token.
@@ -73,6 +76,7 @@ object AuthorisationDirectives {
       case None         => reject(AuthorizationFailedRejection)
     }
   }
+
 
   def authoriseMethod(accessLevel: ResourceMethods): Directive0 = {
     extractMethod.flatMap { method =>

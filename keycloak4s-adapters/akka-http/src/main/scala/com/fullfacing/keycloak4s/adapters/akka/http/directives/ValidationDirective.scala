@@ -15,9 +15,12 @@ import scala.util.{Failure, Success, Try}
 trait ValidationDirective {
 
   /**
-   * Extracts the token from the RequestContext and has it validated.
+   * Token Validation directive to secure all inner directives.
+   * Extracts the token and has it validated by the implicit instance of the TokenValidator.
+   * The resource_access field is extracted from the token and provided for authorisation on
+   * on inner directives.
    *
-   * @return        directive with the updated RequestContext containing the verified user's permissions
+   * @return  Directive with verified user's permissions
    */
   def validateToken(implicit tv: TokenValidator): Directive1[Permissions] = {
     extractCredentials.flatMap {
@@ -36,12 +39,12 @@ trait ValidationDirective {
 
   /** Handles the success/failure of the token validation. */
   private def handleValidationResponse(response: Either[Throwable, Payload]): Directive1[Permissions] = response match {
-    case Right(r) => provide(updateRequestContext(r))
+    case Right(r) => provide(getUserPermissions(r))
     case Left(t)  => complete(Errors.errorResponse(StatusCodes.Unauthorized.intValue, t.getMessage))
   }
 
-  /** Injects the user permissions from the unpacked token into the request context. */
-  private def updateRequestContext(result: Payload): Permissions = {
+  /** Gets the resource_access field from the token and parses it into the Permissions object */
+  private def getUserPermissions(result: Payload): Permissions = {
     val json = parse(result.toString)
 
     val access: Map[String, ResourceMethods] = Try {
