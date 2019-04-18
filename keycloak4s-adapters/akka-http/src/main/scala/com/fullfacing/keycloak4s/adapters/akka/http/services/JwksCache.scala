@@ -7,10 +7,7 @@ import cats.effect.IO
 import cats.implicits._
 import com.nimbusds.jose.jwk.JWKSet
 
-import scala.concurrent.ExecutionContext
-import scala.util.control.NonFatal
-
-abstract class JwksCache (host: String, port: String, realm: String)(implicit ec: ExecutionContext) {
+abstract class JwksCache (host: String, port: String, realm: String) {
 
   /* The URL to retrieve the ConnectID JWKS. **/
   private val url = new URL(s"http://$host:$port/auth/realms/$realm/protocol/openid-connect/certs")
@@ -19,24 +16,17 @@ abstract class JwksCache (host: String, port: String, realm: String)(implicit ec
   private val ref: AtomicReference[Either[Throwable, JWKSet]] = new AtomicReference()
 
   /* Retrieves a JWK set, caches it and returns it. **/
-  private def cacheKeys(): Either[Throwable, JWKSet] = {
+  private def cacheKeys(): IO[Either[Throwable, JWKSet]] = IO {
     val jwks = JWKSet.load(url).asRight[Throwable]
     ref.set(jwks)
     jwks
   }
 
-  /* Caches and returns an exception. **/
-  private def cacheException(ex: Throwable): Either[Throwable, JWKSet] = {
+  /* Retrieves the JWK set asynchronously and (re)caches it. Caches the exception in case of failure. **/
+  def updateCache(): IO[Either[Throwable, JWKSet]] = cacheKeys().handleError { ex =>
     ref.set(ex.asLeft[JWKSet])
     ex.asLeft
   }
-
-  /* Retrieves the JWK set asynchronously and (re)caches it. **/
-  def updateCache(): IO[Either[Throwable, JWKSet]] = IO.async[JWKSet] { cb =>
-    ec.execute { () =>
-      try cb(cacheKeys()) catch { case NonFatal(ex) => cb(cacheException(ex)) }
-    }
-  }.map(_.asRight[Throwable]).handleError(_.asLeft)
 
   /* Retrieves the cached value. Recaches if empty. **/
   def retrieveCachedValue(): IO[Either[Throwable, JWKSet]] = IO {
