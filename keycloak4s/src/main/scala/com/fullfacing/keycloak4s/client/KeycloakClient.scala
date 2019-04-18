@@ -49,7 +49,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
     }
 
     F.handleError[Either[KeycloakError, B]](response) {
-      case NonFatal(ex) => F.unit(KeycloakException(ex).asLeft[B])
+      case NonFatal(ex) => ex.printStackTrace(); F.unit(KeycloakException(ex).asLeft[B])
     }
   }
 

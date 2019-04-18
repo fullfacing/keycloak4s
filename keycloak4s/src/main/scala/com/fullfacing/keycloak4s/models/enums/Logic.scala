@@ -1,8 +1,17 @@
 package com.fullfacing.keycloak4s.models.enums
 
-object Logic {
-  val POSITIVE = "POSITIVE"
-  val NEGATIVE = "NEGATIVE"
+import enumeratum.Enum
+import enumeratum.EnumEntry
+
+import scala.collection.immutable
+
+sealed trait Logic extends EnumEntry
+
+case object LogicTypes extends Enum[Logic] {
+  case object POSITIVE  extends Logic
+  case object NEGATIVE  extends Logic
+
+  val values: immutable.IndexedSeq[Logic] = findValues
 }
 
 

@@ -2,6 +2,7 @@ package com.fullfacing.keycloak4s.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
+import com.fullfacing.keycloak4s.models.enums.{Direction, TriggerSyncAction}
 import com.fullfacing.keycloak4s.models.{KeycloakError, SimpleNameResponse, Synchronization}
 
 import scala.collection.immutable.Seq
@@ -52,9 +53,9 @@ class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient
    * @param action  com.fullfacing.keycloak4s.models.enums.TriggerSyncActions
    * @return
    */
-  def syncUsers(userStorageId: String, action: Option[String]): R[Either[KeycloakError, Synchronization]] = {
+  def syncUsers(userStorageId: String, action: Option[TriggerSyncAction]): R[Either[KeycloakError, Synchronization]] = {
     val path  = Seq(client.realm, user_storage, userStorageId, "sync")
-    val query = createQuery(("action", action))
+    val query = createQuery(("action", action.map(_.value)))
     client.post[Synchronization](path, query = query)
   }
 
@@ -78,9 +79,9 @@ class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient
    * @param direction com.fullfacing.keycloak4s.models.enums.MapperSyncDirections
    * @return
    */
-  def syncMapperData(mapperId: String, userStorageId: String, direction: Option[String]): R[Either[KeycloakError, Synchronization]] = {
+  def syncMapperData(mapperId: String, userStorageId: String, direction: Option[Direction]): R[Either[KeycloakError, Synchronization]] = {
     val path  = Seq(client.realm, user_storage, userStorageId, "mappers", mapperId, "sync")
-    val query = createQuery(("direction", direction))
+    val query = createQuery(("direction", direction.map(_.value)))
     client.post[Synchronization](path, query = query)
   }
 }
