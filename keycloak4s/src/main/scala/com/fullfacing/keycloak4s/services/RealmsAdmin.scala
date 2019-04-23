@@ -11,7 +11,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /**
    * Imports a realm from a full representation of that realm.
    */
-  def importRealm(realm: RealmRepresentation): R[Either[KeycloakError, Unit]] = {
+  def importRealm(realm: RealmRepresentation.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq.empty[String]
     client.post[Unit](path, realm)
   }

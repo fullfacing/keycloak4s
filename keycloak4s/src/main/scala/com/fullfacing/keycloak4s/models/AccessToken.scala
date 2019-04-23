@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.models
 
+import com.fullfacing.keycloak4s.models.enums.Category
+
 final case class AccessToken(acr: Option[String],
                              address: Option[AddressClaimSet],
                              allowed_origins: Option[List[String]],
@@ -9,7 +11,7 @@ final case class AccessToken(acr: Option[String],
                              azp: Option[String],
                              birthdate: Option[String],
                              c_hash: Option[String],
-                             category: Option[String],
+                             category: Option[Category],
                              claims_locales: Option[String],
                              cnf: Option[AccessTokenCertConf],
                              email: Option[String],
