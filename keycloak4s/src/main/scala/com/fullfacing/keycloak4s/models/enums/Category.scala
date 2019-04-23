@@ -1,18 +1,17 @@
 package com.fullfacing.keycloak4s.models.enums
 
-import enumeratum.Enum
-import enumeratum.EnumEntry
+import enumeratum.values.{StringEnum, StringEnumEntry}
 
 import scala.collection.immutable
 
-sealed trait Category extends EnumEntry
+sealed abstract class Category(val value: String) extends StringEnumEntry
 
-case object Categories extends Enum[Category] {
-  case object INTERNAL  extends Category
-  case object ACCESS    extends Category
-  case object ID        extends Category
-  case object ADMIN     extends Category
-  case object USERINFO  extends Category
+case object Categories extends StringEnum[Category] {
+  case object Internal  extends Category("INTERNAL")
+  case object Access    extends Category("ACCESS")
+  case object Id        extends Category("ID")
+  case object Admin     extends Category("ADMIN")
+  case object UserInfo  extends Category("USERINFO")
 
   val values: immutable.IndexedSeq[Category] = findValues
 }

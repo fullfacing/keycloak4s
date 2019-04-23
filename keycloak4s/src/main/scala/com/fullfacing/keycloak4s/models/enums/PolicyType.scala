@@ -1,15 +1,15 @@
 package com.fullfacing.keycloak4s.models.enums
 
-import enumeratum.{Enum, EnumEntry}
+import enumeratum.values.{StringEnum, StringEnumEntry}
 
 import scala.collection.immutable
 
-sealed trait PolicyType extends EnumEntry
+sealed abstract class PolicyType(val value: String) extends StringEnumEntry
 
-case object PolicyTypes extends Enum[PolicyType] {
-  case object SKIP      extends PolicyType
-  case object OVERWRITE extends PolicyType
-  case object FAIL      extends PolicyType
+case object PolicyTypes extends StringEnum[PolicyType] {
+  case object Skip      extends PolicyType("SKIP")
+  case object Overwrite extends PolicyType("OVERWRITE")
+  case object Fail      extends PolicyType("FAIL")
 
   val values: immutable.IndexedSeq[PolicyType] = findValues
 }
