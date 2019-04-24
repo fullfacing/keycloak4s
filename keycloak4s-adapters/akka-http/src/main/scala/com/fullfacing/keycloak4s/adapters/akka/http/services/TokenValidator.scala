@@ -21,10 +21,10 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
    */
   private def validateTime(token: SignedJWT): Either[Throwable, SignedJWT] = {
     val now = Instant.now()
-    val nbf = token.getJWTClaimsSet.getNotBeforeTime.toInstant
+    val nbf = Option(token.getJWTClaimsSet.getNotBeforeTime).map(_.toInstant)
     val exp = token.getJWTClaimsSet.getExpirationTime.toInstant
 
-    val nbfCond = nbf == Instant.EPOCH || now.isAfter(nbf)
+    val nbfCond = nbf.fold(true)(n => n == Instant.EPOCH || now.isAfter(n))
     val expCond = now.isBefore(exp)
 
     if (nbfCond && expCond) token.asRight

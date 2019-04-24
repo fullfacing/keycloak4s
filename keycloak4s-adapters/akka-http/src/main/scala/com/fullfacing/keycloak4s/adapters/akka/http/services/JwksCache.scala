@@ -23,13 +23,13 @@ abstract class JwksCache (host: String, port: String, realm: String) {
   }
 
   /* Retrieves the JWK set asynchronously and (re)caches it. Caches the exception in case of failure. **/
-  def updateCache(): IO[Either[Throwable, JWKSet]] = cacheKeys().handleError { ex =>
+  protected def updateCache(): IO[Either[Throwable, JWKSet]] = cacheKeys().handleError { ex =>
     ref.set(ex.asLeft[JWKSet])
     ex.asLeft
   }
 
   /* Retrieves the cached value. Recaches if empty. **/
-  def retrieveCachedValue(): IO[Either[Throwable, JWKSet]] = IO {
+  protected def retrieveCachedValue(): IO[Either[Throwable, JWKSet]] = IO {
     Option(ref.get).fold(updateCache())(IO(_))
   }.flatten
 }
