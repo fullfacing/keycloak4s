@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.StandardRoute._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.util.Tuple._
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives._
-import com.fullfacing.keycloak4s.adapters.akka.http.directives.magnets.{AuthoriseResourceMagnet, PathWithAuthMagnet, WithAuthMagnet}
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.magnets.{AuthoriseResourceMagnet, PathPrefixWithAuthMagnet, PathWithAuthMagnet, WithAuthMagnet}
 import com.fullfacing.keycloak4s.adapters.akka.http.models.{Permissions, ResourceRoles}
 
 trait AuthorisationDirectives {
@@ -32,8 +32,17 @@ trait AuthorisationDirectives {
    *
    * @return The allowed operations available to the user on this resource
    */
-  def authoriseResourceAccess(magnet: AuthoriseResourceMagnet): magnet.Result = magnet()
+  def authoriseResource(magnet: AuthoriseResourceMagnet): magnet.Result = magnet()
 
+
+  /** Authorises the operation based on the HTTP method and the authorised roles the user has on the resource */
+  def authoriseMethod(resource: ResourceRoles): Directive0 = {
+    extractMethod.flatMap { method =>
+      authorize {
+        resource.roles.intersect(scopeMap(method)).nonEmpty
+      }
+    }
+  }
 
   /**
    * Path directive that authorises access to the path resource.
@@ -42,7 +51,8 @@ trait AuthorisationDirectives {
    *  path((JavaUUID, "resource")) { (id, m) => ??? }
    *  path(("resource", JavaUUID)) { (id, m) => ??? }
    */
-  def pathA[A](magnet: PathWithAuthMagnet[A]): magnet.Result = magnet.apply()
+  def pathA[A](magnet: PathWithAuthMagnet[A]): magnet.Result = magnet()
+  def pathPrefixA[A](magnet: PathPrefixWithAuthMagnet[A]): magnet.Result = magnet()
 }
 
 object AuthorisationDirectives {
@@ -74,15 +84,6 @@ object AuthorisationDirectives {
     permissions.resources.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
       case Some((_, v)) => success(v)
       case None         => reject(AuthorizationFailedRejection)
-    }
-  }
-
-
-  def authoriseMethod(resource: ResourceRoles): Directive0 = {
-    extractMethod.flatMap { method =>
-      authorize {
-        resource.roles.intersect(scopeMap(method)).nonEmpty
-      }
     }
   }
 }

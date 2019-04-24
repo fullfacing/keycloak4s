@@ -2,6 +2,7 @@ package com.fullfacing.keycloak4s.adapters.akka.http.directives.magnets
 
 import akka.http.scaladsl.server.Directive0
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives._
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.Directives._
 import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
 
 trait WithAuthMagnet {

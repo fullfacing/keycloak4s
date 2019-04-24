@@ -47,4 +47,37 @@ object HttpApi extends SecurityDirectives {
       }
     }
   }
+
+  val api3: Route = secure("fng-api-test") { implicit permissions =>
+    path("cars") {
+      authoriseResource("cars") { roles =>
+        get {
+          authoriseMethod(roles) {
+            complete("Get /cars")
+          }
+        } ~
+        post {
+          authoriseMethod(roles) {
+            complete("Post /cars")
+          }
+        }
+      }
+    }
+  }
+
+  val api4: Route = secure("fng-api-test") { implicit permissions =>
+    pathPrefixA("cars") { roles =>
+      getA(roles) {
+        path(JavaUUID) { id =>
+          complete(s"GetById $id")
+        } ~
+        complete("GetByQuery")
+      } ~
+      deleteA(roles) {
+        path(JavaUUID) { id =>
+          complete(s"Delete $id")
+        }
+      }
+    }
+  }
 }
