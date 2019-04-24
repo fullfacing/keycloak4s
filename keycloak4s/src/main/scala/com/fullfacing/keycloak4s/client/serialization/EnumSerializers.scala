@@ -1,8 +1,7 @@
 package com.fullfacing.keycloak4s.client.serialization
 
 import com.fullfacing.keycloak4s.models.enums._
-import enumeratum.Json4s
-import enumeratum.values.{Json4s => Json4sValues}
+import enumeratum.values.Json4s
 
 object EnumSerializers {
   val all = List(
@@ -12,11 +11,11 @@ object EnumSerializers {
     Json4s.serializer(LogicTypes),
     Json4s.serializer(PolicyEnforcementModes),
     Json4s.serializer(PolicyTypes),
-    Json4sValues.serializer(CredentialTypes),
-    Json4sValues.serializer(Directions),
-    Json4sValues.serializer(InstallationProviders),
-    Json4sValues.serializer(Protocols),
-    Json4sValues.serializer(RequiredActions),
-    Json4sValues.serializer(TriggerSyncActions)
+    Json4s.serializer(CredentialTypes),
+    Json4s.serializer(Directions),
+    Json4s.serializer(InstallationProviders),
+    Json4s.serializer(Protocols),
+    Json4s.serializer(RequiredActions),
+    Json4s.serializer(TriggerSyncActions)
   )
 }

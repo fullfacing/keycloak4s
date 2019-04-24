@@ -133,7 +133,7 @@ object RealmRepresentation {
                           editUsernameAllowed: Option[Boolean] = None,
                           emailTheme: Option[String] = None,
                           enabled: Option[Boolean] = None,
-                          enabledEventTypes: List[String] = List.empty[String],
+                          enabledEventTypes: List[EventType] = List.empty[EventType],
                           eventsEnabled: Option[Boolean] = None,
                           eventsExpiration: Option[Long] = None,
                           eventsListeners: List[String] = List.empty[String],
