@@ -7,7 +7,7 @@ case class InstallationConfig(realm: String,
                               `ssl-required`: String,
                               resource: String,
                               `verify-token-audience`: Option[Boolean],
-                              credentials: Credentials,
+                              credentials: Option[Credentials],
                               `use-resource-role-mappings`: Option[Boolean],
                               `confidential-port`: Int,
                               `policy-enforcer`: Option[Map[Any, Any]])

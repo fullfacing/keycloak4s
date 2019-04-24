@@ -1,0 +1,40 @@
+package com.fullfacing.keycloak4s.adapters.akka.http.directives.magnets
+
+import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.Directives.provide
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives.checkPermissions
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.{AuthorisationDirectives, ValidationDirective}
+import com.fullfacing.keycloak4s.adapters.akka.http.models.{ResourceAccess, ResourceRoles}
+import com.fullfacing.keycloak4s.adapters.akka.http.services.TokenValidator
+
+trait ValidateRequestMagnet {
+  def apply(): Directive1[ResourceAccess]
+}
+
+object ValidateRequestMagnet extends AuthorisationDirectives with ValidationDirective {
+
+  implicit def validateRequest(resourceServer: String)(implicit tokenValidator: TokenValidator): ValidateRequestMagnet = () => {
+    validateToken(tokenValidator).flatMap { p =>
+      authoriseResourceServerAccess(p, resourceServer)
+    }
+  }
+
+  /**
+   * Top level authorisation.
+   * Authorises user's access to the service and returns only permissions specific to the service.
+   *
+   * @param permissions     All permissions in user's token.
+   * @param resourceServer  Name of the resource-server.
+   * @return                Permissions specific to given resource server.
+   */
+  private def authoriseResourceServerAccess(permissions: ResourceAccess, resourceServer: String): Directive1[ResourceAccess] = {
+    val f = { r: ResourceRoles =>
+      val rr = r.roles.map(_.split("-")).groupBy(_.headOption).map { case (Some(k), v) =>
+        k -> ResourceRoles(v.flatMap(_.lastOption))
+      }
+      ResourceAccess(rr)
+    }
+
+    checkPermissions(resourceServer, permissions, r => provide(f(r)))
+  }
+}

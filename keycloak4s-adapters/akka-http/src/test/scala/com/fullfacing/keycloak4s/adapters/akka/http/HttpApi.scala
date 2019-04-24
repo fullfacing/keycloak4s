@@ -1,32 +1,48 @@
 package com.fullfacing.keycloak4s.adapters.akka.http
 
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.Route
 import com.fullfacing.keycloak4s.adapters.akka.http.Implicits._
-import com.fullfacing.keycloak4s.adapters.akka.http.directives.{AuthorisationDirectives, ValidationDirective}
+import com.fullfacing.keycloak4s.adapters.akka.http.directives.SecurityDirectives
 
-object HttpApi extends ValidationDirective with AuthorisationDirectives {
+object HttpApi extends SecurityDirectives {
 
-  val api: Route = validateToken(tv) { implicit permissions =>
-    path("cars") { m =>
-      get(m) {
+  val api: Route = secure("fng-api-test") { implicit permissions =>
+    pathA("cars") { roles =>
+      getA(roles) {
         complete(s"GET /cars \n $permissions")
       } ~
-      post(m) {
+      postA(roles) {
         complete(s"POST /cars \n $permissions")
       } ~
-      put(m) {
+      putA(roles) {
         complete(s"PUT /cars \n $permissions")
       } ~
-      patch(m) {
+      patchA(roles) {
         complete(s"PATCH /cars \n $permissions")
       } ~
-      delete(m) {
+      deleteA(roles) {
         complete(s"DELETE /cars \n $permissions")
       }
+    }
+  }
+
+
+  val api2: Route = secure("fng-api-test") { implicit permissions =>
+    pathA((JavaUUID, "cars")) { (m, id) =>
+      complete(s"GetById $id | $m")
     } ~
-      path((JavaUUID, "cars")) { (id, m) =>
-        complete(s"GetById $id | $m")
+    pathA(("cars", JavaUUID)) { (m, id) =>
+      getA(m) {
+        complete(s"$id")
       }
+    } ~
+    path("cars") {
+      get {
+        withAuth("cars") {
+          complete("")
+        }
+      }
+    }
   }
 }
