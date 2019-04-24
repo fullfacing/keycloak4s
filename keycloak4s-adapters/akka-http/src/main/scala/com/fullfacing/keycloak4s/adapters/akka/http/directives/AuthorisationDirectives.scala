@@ -47,9 +47,9 @@ trait AuthorisationDirectives {
   /**
    * Path directive that authorises access to the path resource.
    * Example usage:
-   *  path("resource") { id => ??? }
-   *  path((JavaUUID, "resource")) { (id, m) => ??? }
-   *  path(("resource", JavaUUID)) { (id, m) => ??? }
+   *  pathA("resource") { id => ??? }
+   *  pathA((JavaUUID, "resource")) { (roles, id) => ??? }
+   *  pathA(("resource", JavaUUID)) { (roles, id) => ??? }
    */
   def pathA[A](magnet: PathWithAuthMagnet[A]): magnet.Result = magnet()
   def pathPrefixA[A](magnet: PathPrefixWithAuthMagnet[A]): magnet.Result = magnet()
