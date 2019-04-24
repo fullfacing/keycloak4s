@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.adapters.akka.http.directives
 
 import akka.http.scaladsl.server.Directive1
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.magnets.ValidateRequestMagnet
-import com.fullfacing.keycloak4s.adapters.akka.http.models.ResourceAccess
+import com.fullfacing.keycloak4s.adapters.akka.http.models.Permissions
 
 trait SecurityDirectives extends ValidationDirective with AuthorisationDirectives {
 
@@ -13,5 +13,5 @@ trait SecurityDirectives extends ValidationDirective with AuthorisationDirective
    * The permissions are checked to determine access to the service and lower level
    * user permissions specific to the service are returned.
    */
-  def secure(magnet: ValidateRequestMagnet): Directive1[ResourceAccess] = magnet()
+  def secure(magnet: ValidateRequestMagnet): Directive1[Permissions] = magnet()
 }

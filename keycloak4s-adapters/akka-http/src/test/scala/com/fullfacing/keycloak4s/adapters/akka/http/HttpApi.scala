@@ -29,18 +29,20 @@ object HttpApi extends SecurityDirectives {
 
 
   val api2: Route = secure("fng-api-test") { implicit permissions =>
-    pathA((JavaUUID, "cars")) { (m, id) =>
-      complete(s"GetById $id | $m")
+    pathA((JavaUUID, "cars")) { (roles, id) =>
+      getA(roles) {
+        complete(s"$id | $roles")
+      }
     } ~
-    pathA(("cars", JavaUUID)) { (m, id) =>
-      getA(m) {
-        complete(s"$id")
+    pathA(("cars", JavaUUID)) { (roles, id) =>
+      getA(roles) {
+        complete(s"GetById $id | $roles")
       }
     } ~
     path("cars") {
       get {
         withAuth("cars") {
-          complete("")
+          complete("Authorised")
         }
       }
     }

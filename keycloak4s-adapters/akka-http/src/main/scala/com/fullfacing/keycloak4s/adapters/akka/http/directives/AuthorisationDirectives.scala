@@ -7,7 +7,7 @@ import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.util.Tuple._
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.AuthorisationDirectives._
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.magnets.{AuthoriseResourceMagnet, PathWithAuthMagnet, WithAuthMagnet}
-import com.fullfacing.keycloak4s.adapters.akka.http.models.{ResourceAccess, ResourceRoles}
+import com.fullfacing.keycloak4s.adapters.akka.http.models.{Permissions, ResourceRoles}
 
 trait AuthorisationDirectives {
 
@@ -70,7 +70,7 @@ object AuthorisationDirectives {
    * @tparam A
    * @return             The resulting directive from the auth result and the function provided.
    */
-  def checkPermissions[A](resource: String, permissions: ResourceAccess, success: ResourceRoles => Directive[A]): Directive[A] = {
+  def checkPermissions[A](resource: String, permissions: Permissions, success: ResourceRoles => Directive[A]): Directive[A] = {
     permissions.resources.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
       case Some((_, v)) => success(v)
       case None         => reject(AuthorizationFailedRejection)
