@@ -36,7 +36,13 @@ object Main extends App {
     UUID.fromString("2b104a13-1c62-4c05-905c-8b3b20f695d0"),
     UUID.fromString("9eb80c83-5927-4e64-b47d-db52eeb034d3")
   )
-  clients.fetchCompositesAppLevelRoles(UUID.fromString("8c60089b-9065-40e2-b7ea-e6a5e57cef5b"), "NewRole", "account").foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
+
+  val ids3 = List(
+    UUID.fromString("90b01b51-6ccc-4890-b548-3c924f5e9849"),
+    UUID.fromString("19b664ff-c92b-4833-8297-580e74b3a263")
+  )
+
+  clients.ClientLevel.fetchUsers(UUID.fromString("8c60089b-9065-40e2-b7ea-e6a5e57cef5b"), "NewRole", None, None).foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
   Console.readBoolean()
 }
 
