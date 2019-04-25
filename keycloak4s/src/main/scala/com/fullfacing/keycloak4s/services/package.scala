@@ -2,6 +2,7 @@ package com.fullfacing.keycloak4s
 
 import java.io.File
 import java.nio.file.Files
+import java.util.UUID
 
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.{Multipart, multipart}
@@ -27,4 +28,6 @@ package object services {
   }
 
   def createMultipart(formData: Map[String, String]): Multipart = multipart("form", formData)
+
+  implicit def uuidToString: UUID => String = _.toString
 }

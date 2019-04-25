@@ -36,8 +36,8 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
   private def setResponse[A <: Any : Manifest](request: RequestT[Id, String, Nothing])(implicit tag: TypeTag[A])
   : F[Either[KeycloakAdminException, RequestT[Id, A, Nothing]]] = tag match {
-    case _ if tag == typeTag[Unit] => withAuth(request.mapResponse(_ => read[A]("null"))) //reading the string literal "null" is how to deserialize to a Unit with json4s
-    case _                         => withAuth(request.response(asJson[A]))
+    case _ if tag == typeTag[Unit] => withAuth(request.mapResponse(s => {println(s); read[A]("null")})) //reading the string literal "null" is how to deserialize to a Unit with json4s
+    case _                         => withAuth(request.mapResponse(s => {println(s); read[A](s)}))
   }
 
   private def call[B <: Any : Manifest](request: RequestT[Id, String, Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {

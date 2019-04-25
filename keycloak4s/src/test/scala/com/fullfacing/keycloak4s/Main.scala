@@ -7,12 +7,12 @@ import akka.util.ByteString
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.serialization.JsonFormats._
 import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
-import com.fullfacing.keycloak4s.models.Client
+import com.fullfacing.keycloak4s.models.{ManagementPermission, Role}
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization._
 
 import scala.concurrent.Future
 import scala.language.postfixOps
@@ -20,11 +20,23 @@ import scala.language.postfixOps
 object Main extends App {
 
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
-  val config = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
+  val config = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "395e93aa-fb15-4477-a46c-62e6e2114c69"))
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] = new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Clients[Task, Source[ByteString, Any]]
+  val clients = Keycloak.Roles[Task, Source[ByteString, Any]]("master")
 
+  val ids = List(
+    UUID.fromString("2b104a13-1c62-4c05-905c-8b3b20f695d0"),
+    UUID.fromString("65169b64-d469-4929-9c59-9014b13cfb56"),
+    UUID.fromString("68baab53-a396-4dd3-94a4-7579424c212d"),
+    UUID.fromString("dde5d460-d4e8-42a1-9d2a-6048fc971a2a")
+  )
+
+  val ids2 = List(
+    UUID.fromString("2b104a13-1c62-4c05-905c-8b3b20f695d0"),
+    UUID.fromString("9eb80c83-5927-4e64-b47d-db52eeb034d3")
+  )
+  clients.fetchCompositesAppLevelRoles(UUID.fromString("8c60089b-9065-40e2-b7ea-e6a5e57cef5b"), "NewRole", "account").foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
   Console.readBoolean()
 }
 
