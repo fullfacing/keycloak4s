@@ -16,7 +16,8 @@ object ProtocolMapper {
   final case class Create(config: Map[String, String] = Map.empty,
                           name: String,
                           protocol: Protocol,
-                          protocolMapper: String)
+                          protocolMapper: String,
+                          consentRequired: Boolean)
 
   final case class Update(config: Option[Map[String, String]] = None,
                           name: Option[String] = None,
