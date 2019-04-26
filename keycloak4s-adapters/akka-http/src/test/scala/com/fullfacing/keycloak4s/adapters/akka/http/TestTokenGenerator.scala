@@ -38,17 +38,31 @@ object TestTokenGenerator {
 
   val claims: JSONObject = JSONObjectUtils.parse(claimsRaw)
 
-  def generateData(withExp: Instant, withNbf: Option[Instant] = None): (SignedJWT, RSAKey, JWKSet) = {
+  def generateData(withExp: Instant, withNbf: Option[Instant] = None): (SignedJWT, SignedJWT, RSAKey, JWKSet) = {
 
     val claimsSetBuilder = new JWTClaimsSet.Builder()
       .expirationTime(Date.from(withExp))
       .issuer("http://localhost:8080/unit/test")
       .jwtID(UUID.randomUUID().toString)
       .issueTime(Date.from(withExp))
+      .subject("test_subject")
       .claim("resource-access", claims)
+      .claim("session_state", "test_state")
+
+    val idClaimsSetBuilder = new JWTClaimsSet.Builder()
+      .expirationTime(Date.from(withExp))
+      .issuer("http://localhost:8080/unit/test")
+      .jwtID(UUID.randomUUID().toString)
+      .issueTime(Date.from(withExp))
+      .subject("test_subject")
+      .claim("session_state", "test_state")
 
     val claimsSet = withNbf.fold(claimsSetBuilder.build()) { nbf =>
       claimsSetBuilder.notBeforeTime(Date.from(nbf)).build()
+    }
+
+    val idClaimsSet = withNbf.fold(idClaimsSetBuilder.build()) { nbf =>
+      idClaimsSetBuilder.notBeforeTime(Date.from(nbf)).build()
     }
 
     val rsaJwk = new RSAKeyGenerator(2048)
@@ -67,9 +81,11 @@ object TestTokenGenerator {
       .build()
 
     val jwt: SignedJWT = new SignedJWT(header, claimsSet)
+    val idToken: SignedJWT = new SignedJWT(header, idClaimsSet)
 
     jwt.sign(signer)
+    idToken.sign(signer)
 
-    (jwt, publicKey, jwkSet)
+    (jwt, idToken, publicKey, jwkSet)
   }
 }

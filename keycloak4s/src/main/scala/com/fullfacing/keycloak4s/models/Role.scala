@@ -1,12 +1,14 @@
 package com.fullfacing.keycloak4s.models
 
+import java.util.UUID
+
 final case class Role(attributes: Map[String, Seq[String]] = Map.empty[String, Seq[String]],
                       clientRole: Boolean,
                       composite: Boolean,
                       composites: Option[RoleComposites] = None,
                       containerId: Option[String] = None,
                       description: Option[String] = None,
-                      id: String,
+                      id: UUID,
                       name: String)
 
 object Role {
