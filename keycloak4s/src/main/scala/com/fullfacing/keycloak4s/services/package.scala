@@ -11,6 +11,8 @@ import scala.collection.immutable.{Seq => ImmutableSeq}
 
 package object services {
 
+  type Path = ImmutableSeq[String]
+
   def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = {
     queries.flatMap { case (key, value) =>
       value.map(v => KeyValue(key, v.toString))
