@@ -3,7 +3,7 @@ organization := "com.fullfacing"
 
 lazy val global = {
   Seq(
-    version       := "0.4.0-SNAPSHOT",
+    version       := "0.5.0-SNAPSHOT",
     scalaVersion  := "2.12.8",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts
@@ -125,7 +125,7 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
 // -------------------------------------------------------- //
 // Project and configuration for keycloak-akka-http-adapter //
 // -------------------------------------------------------- //
-lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ monix ++ nimbus
+lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ nimbus
 
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-adapters/akka-http"))
   .settings(global: _*)
