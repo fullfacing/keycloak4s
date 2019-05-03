@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.adapters.akka.http
+package com.fullfacing.keycloak4s.adapters.akka.http.sandbox
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http

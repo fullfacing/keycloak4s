@@ -61,14 +61,12 @@ object AuthorisationDirectives {
     toDirective[A](route)(yes[A])
   }
 
-
   def scopeMap(method: HttpMethod): List[String] = method match {
     case HttpMethods.GET    | HttpMethods.HEAD                     => List("delete", "create", "view")
     case HttpMethods.POST   | HttpMethods.PUT  | HttpMethods.PATCH => List("delete", "create")
     case HttpMethods.DELETE                                        => List("delete")
     case _                                                         => List.empty[String]
   }
-
 
   /**
    * Looks for the requested resource in the user's permissions from the validated access token.
