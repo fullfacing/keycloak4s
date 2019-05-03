@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.monix.services
 
-import com.fullfacing.keycloak4s.models.User
+import cats.implicits._
+import com.fullfacing.keycloak4s.models.{KeycloakError, User}
 import com.fullfacing.keycloak4s.monix.client.KeycloakClient
 import monix.eval.Task
 import monix.reactive.Observable
@@ -22,13 +23,14 @@ class Users(implicit client: KeycloakClient) {
    * @return
    */
   def fetch(first: Int = 0,
+            limit: Int = Integer.MAX_VALUE,
             briefRep: Option[Boolean] = None,
             email: Option[String] = None,
             firstName: Option[String] = None,
             lastName: Option[String] = None,
             search: Option[String] = None,
             username: Option[String] = None,
-            batchSize: Int = 100): Observable[User] = {
+            batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
 
     val query = createQuery(
       ("briefRepresentation", briefRep),
@@ -40,18 +42,19 @@ class Users(implicit client: KeycloakClient) {
     )
 
     val path = Seq(client.realm, "users")
-    client.getList[User](path, query, first, batchSize)
+    client.getList[User](path, query, first, limit, batchSize)
   }
 
   def fetchL(first: Int = 0,
+             limit: Int = Integer.MAX_VALUE,
              briefRep: Option[Boolean] = None,
              email: Option[String] = None,
              firstName: Option[String] = None,
              lastName: Option[String] = None,
              search: Option[String] = None,
-             username: Option[String] = None): Task[List[User]] = {
+             username: Option[String] = None): Task[Either[KeycloakError, Seq[User]]] = {
 
-    fetch(first, briefRep, email, firstName, lastName, search, username)
+    fetch(first, limit, briefRep, email, firstName, lastName, search, username)
       .consumeWith(consumer[User]())
   }
 }

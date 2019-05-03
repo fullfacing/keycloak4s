@@ -16,7 +16,7 @@ class Groups(implicit client: KeycloakClient) {
    * @param search
    * @return
    */
-  def fetch(first: Int = 0, search: Option[String] = None): Observable[Group] = {
+  /*def fetch(first: Int = 0, search: Option[String] = None): Observable[Group] = {
     val query = createQuery(("search", search))
     val path  = Seq(client.realm, "groups")
 
@@ -25,7 +25,7 @@ class Groups(implicit client: KeycloakClient) {
 
   def fetchL(first: Int = 0, search: Option[String] = None): Task[List[Group]] = {
     fetch(first, search).consumeWith(consumer())
-  }
+  }*/
 
   /**
    * Returns a list of users, filtered according to query parameters
@@ -33,7 +33,7 @@ class Groups(implicit client: KeycloakClient) {
    * @param first
    * @return
    */
-  def fetchUsers(groupId: String, first: Int = 0, batch: Int = 100): Observable[User] = {
+  /*def fetchUsers(groupId: String, first: Int = 0, batch: Int = 100): Observable[User] = {
     val path  = Seq(client.realm, "groups", groupId, "members")
 
     client.getList[User](path, offset = first, batch = batch)
@@ -41,5 +41,5 @@ class Groups(implicit client: KeycloakClient) {
 
   def fetchUsersL(groupId: String, first: Int = 0): Task[List[User]] = {
     fetchUsers(groupId, first).consumeWith(consumer())
-  }
+  }*/
 }
