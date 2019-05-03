@@ -71,7 +71,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
     val idTokenJson = idToken.getPayload.toJSONObject
 
     val subMatches = tokenJson.getAsString("sub") == idTokenJson.getAsString("sub")
-    val stateMatches = tokenJson.getAsString("session_state") == idTokenJson.getAsString("session_state")
+    lazy val stateMatches = tokenJson.getAsString("session_state") == idTokenJson.getAsString("session_state")
 
     if (subMatches && stateMatches) {
       validateSignature(idToken, publicKey) match {
