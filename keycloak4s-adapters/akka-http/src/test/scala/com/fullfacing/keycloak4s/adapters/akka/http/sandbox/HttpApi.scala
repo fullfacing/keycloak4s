@@ -1,8 +1,8 @@
-package com.fullfacing.keycloak4s.adapters.akka.http
+package com.fullfacing.keycloak4s.adapters.akka.http.sandbox
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.fullfacing.keycloak4s.adapters.akka.http.Implicits._
+import com.fullfacing.keycloak4s.adapters.akka.http.sandbox.Implicits._
 import com.fullfacing.keycloak4s.adapters.akka.http.directives.SecurityDirectives
 
 object HttpApi extends SecurityDirectives {

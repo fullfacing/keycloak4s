@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.adapters.akka.http
+package com.fullfacing.keycloak4s.adapters.akka.http.sandbox
 
 import com.fullfacing.keycloak4s.adapters.akka.http.services.TokenValidator
 import monix.execution.Scheduler

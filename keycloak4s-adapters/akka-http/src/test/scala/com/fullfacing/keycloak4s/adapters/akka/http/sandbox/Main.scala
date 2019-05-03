@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.adapters.akka.http
+package com.fullfacing.keycloak4s.adapters.akka.http.sandbox
 
 import cats.effect.ExitCode
 import monix.eval.{Task, TaskApp}
