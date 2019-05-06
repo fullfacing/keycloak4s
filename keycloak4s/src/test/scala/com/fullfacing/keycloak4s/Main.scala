@@ -7,12 +7,11 @@ import akka.util.ByteString
 import cats.implicits._
 import com.fullfacing.keycloak4s.client.serialization.JsonFormats._
 import com.fullfacing.keycloak4s.client.{Keycloak, KeycloakClient, KeycloakConfig}
-import com.fullfacing.keycloak4s.models.Client
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
-import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization._
 
 import scala.concurrent.Future
 import scala.language.postfixOps
@@ -20,11 +19,12 @@ import scala.language.postfixOps
 object Main extends App {
 
   implicit val sttpBackend: AkkaHttpBackendL = new AkkaHttpBackendL(AkkaHttpBackend())
-  val config = KeycloakConfig("http", "localhost", 8080, "demo", KeycloakConfig.Auth("master", "admin-cli", "6808820a-b662-4480-b832-f2d024eb6e03"))
+  val config = KeycloakConfig("http", "localhost", 8080, "master", KeycloakConfig.Auth("master", "admin-cli", "395e93aa-fb15-4477-a46c-62e6e2114c69"))
   implicit val client: KeycloakClient[Task, Source[ByteString, Any]] = new KeycloakClient[Task, Source[ByteString, Any]](config)
 
-  val clients = Keycloak.Clients[Task, Source[ByteString, Any]]
+//  val clients = Keycloak.???[Task, Source[ByteString, Any]]
 
+//  clients.???.foreachL(s => println(writePretty(s))).onErrorHandle(_.printStackTrace()).runToFuture
   Console.readBoolean()
 }
 

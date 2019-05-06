@@ -8,7 +8,6 @@ object Keycloak {
   def Keys[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new Keys[R, S]
   def Root[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new Root[R, S]
 
-
   def Components[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new Components[R, S]
 
   def RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new RealmsAdmin[R, S]

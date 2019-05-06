@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.services
 
+import java.util.UUID
+
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
 import com.fullfacing.keycloak4s.models.{BruteForceResponse, KeycloakError}
@@ -22,8 +24,8 @@ class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    * @param userId  ID of the User.
    * @return
    */
-  def getUserStatus(userId: String): R[Either[KeycloakError, BruteForceResponse]] = {
-    client.get[BruteForceResponse](client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
+  def getUserStatus(userId: UUID): R[Either[KeycloakError, BruteForceResponse]] = {
+    client.get[BruteForceResponse](client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId.toString :: Nil)
   }
 
   /**
@@ -32,7 +34,7 @@ class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
    *
    * @param userId  ID of the User.
    */
-  def clearUserLoginFailure(userId: String): R[Either[KeycloakError, Unit]] = {
-    client.delete[Unit](client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId :: Nil)
+  def clearUserLoginFailure(userId: UUID): R[Either[KeycloakError, Unit]] = {
+    client.delete[Unit](client.realm :: "attack-detection" :: "brute-force" :: "users" :: userId.toString :: Nil)
   }
 }
