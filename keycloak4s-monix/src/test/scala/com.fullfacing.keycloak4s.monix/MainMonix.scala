@@ -27,7 +27,7 @@ object MainMonix extends App {
   val clients = Keycloak.Users
   import scala.concurrent.duration._
   global.scheduleOnce(0 seconds) {
-    clients.fetch(/*batchSize = 50*/limit = 50).foreachL(s => {println(s.map(_.size)); Thread.sleep(2000)}).onErrorHandle(_.printStackTrace()).runToFuture
+    clients.fetch(/*batchSize = 50*/).foreachL(s => {println(s.map(_.size)); Thread.sleep(2000)}).onErrorHandle(_.printStackTrace()).runToFuture
   }
 
   StdIn.readLine()
