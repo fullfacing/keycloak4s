@@ -5,7 +5,7 @@ import com.fullfacing.keycloak4s.adapters.akka.http.Logging.logger
 
 object Errors {
 
-  case class AuthError(code: Int, status: String, message: String) extends Throwable {
+  final case class AuthError(code: Int, status: String, message: String) extends Throwable {
     override def toString = s"$code $status - $message"
   }
 

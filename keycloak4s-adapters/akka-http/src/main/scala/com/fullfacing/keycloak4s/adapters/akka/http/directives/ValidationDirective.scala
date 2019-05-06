@@ -24,7 +24,7 @@ trait ValidationDirective {
    * @return  Directive with verified user's permissions
    */
   def validateToken(implicit tv: TokenValidator): Directive1[Permissions] = {
-    optionalHeaderValueByName("id_token").flatMap { idToken =>
+    optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
         case Some(token)  => callValidation(token.token(), idToken)
         case None         => complete(Errors.errorResponse(StatusCodes.Unauthorized.intValue, "No token provided"))
