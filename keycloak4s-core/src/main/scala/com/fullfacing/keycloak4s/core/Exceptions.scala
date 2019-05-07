@@ -2,7 +2,6 @@ package com.fullfacing.keycloak4s.core
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.fullfacing.keycloak4s.core.logging.logger
 
 object Exceptions {
   val PARSE_FAILED          = KeycloakException(400, "Bad Request", "Bearer token is malformed.".some)

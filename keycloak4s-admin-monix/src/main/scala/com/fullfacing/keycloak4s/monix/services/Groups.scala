@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.monix.services
 
 import com.fullfacing.keycloak4s.admin.models.{Group, User}
-import com.fullfacing.keycloak4s.monix.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import monix.eval.Task
 import monix.reactive.Observable
 

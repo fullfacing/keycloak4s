@@ -110,10 +110,10 @@ lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
 // ---------------------------------------------//
 lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = `sttp-monix` ++ monix
 
-lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
+lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `keycloak-monix-dependencies`)
-  .settings(name := "keycloak4s-monix", publishArtifact := true)
+  .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
   .dependsOn(`keycloak4s-admin`)
 
 // -------------------------------------------------------- //

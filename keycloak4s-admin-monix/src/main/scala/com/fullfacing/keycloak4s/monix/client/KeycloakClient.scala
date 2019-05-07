@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.client
+package com.fullfacing.keycloak4s.admin.monix.client
 
 import java.nio.ByteBuffer
 

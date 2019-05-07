@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.client
+package com.fullfacing.keycloak4s.admin.monix.client
 
 import com.fullfacing.keycloak4s.monix.services._
 

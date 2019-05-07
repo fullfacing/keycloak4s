@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.client
+package com.fullfacing.keycloak4s.admin.monix.client
 
 import java.nio.ByteBuffer
 import java.time.Instant
@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, KeycloakSttpException, RequestInfo}
-import com.fullfacing.keycloak4s.monix.client.TokenManager.{Token, TokenResponse}
+import com.fullfacing.keycloak4s.admin.monix.client.TokenManager.{Token, TokenResponse}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import monix.eval.Task
