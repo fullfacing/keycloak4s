@@ -54,26 +54,26 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
   }
 
   /* REST Protocol Calls **/
-  def get[A: Anything](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
+  def get[A : Anything](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
     val request = sttp.get(createUri(path, query))
     call[A](request, buildRequestInfo(path, "GET", ()))
   }
 
-  def put[A: Anything](path: Seq[String], payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
+  def put[A : Anything](path: Seq[String], payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
     val request   = sttp.put(createUri(path, query))
     val injected  = payload.apply(request)
     call[A](injected, buildRequestInfo(path, "PUT", injected.body))
   }
 
-  def post[A: Anything](path: Seq[String], payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
+  def post[A : Anything](path: Seq[String], payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
     val request   = sttp.post(createUri(path, query))
     val injected  = payload.apply(request)
-    call[A](payload.apply(injected), buildRequestInfo(path, "POST", injected.body))
+    call[A](injected, buildRequestInfo(path, "POST", injected.body))
   }
 
-  def delete[A: Anything](path: Seq[String], payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
+  def delete[A : Anything](path: Seq[String], payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): F[Either[KeycloakError, A]] = {
     val request   = sttp.delete(createUri(path, query))
     val injected  = payload.apply(request)
-    call[A](payload.apply(injected), buildRequestInfo(path, "DELETE", injected.body))
+    call[A](injected, buildRequestInfo(path, "DELETE", injected.body))
   }
 }

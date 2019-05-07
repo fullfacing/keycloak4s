@@ -12,7 +12,7 @@ import scala.reflect.Manifest
 class Anything[T <: Any](implicit val manifest: Manifest[T])
 
 object Anything {
-  implicit def something[T: Manifest]: Anything[T] = new Anything[T]()
+  implicit def something[T : Manifest]: Anything[T] = new Anything[T]()
 
   @implicitAmbiguous("Generic return type must be specified.")
   implicit def nothingA: Anything[Nothing] = new Anything[Nothing]()
