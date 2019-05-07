@@ -4,126 +4,178 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.client.KeycloakClient
-import com.fullfacing.keycloak4s.models.{KeycloakError, ManagementPermission, Role, User}
+import com.fullfacing.keycloak4s.models._
 
 import scala.collection.immutable.Seq
 
-class Roles[R[+_]: Concurrent, S](realm: String)(implicit keyCloakClient: KeycloakClient[R, S]) {
+class Roles[R[+_]: Concurrent, S](realm: String)(implicit client: KeycloakClient[R, S]) {
 
   private val clients_path = "clients"
   private val roles_path   = "roles"
 
   // ------------------------------------------------------------------------------------------------------------------- //
-  // ------------------------------------------------ Client Roles CRUD ------------------------------------------------ //
+  // -------------------------------------------------- Client Roles --------------------------------------------------- //
   // ------------------------------------------------------------------------------------------------------------------- //
-  def createClientRole(clientId: UUID, role: Role.Create): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path)
-    keyCloakClient.post[Unit](path, role.copy(clientRole = true))
-  }
+  object ClientLevel {
 
-  def createCompositeClientRoles(clientId: UUID, name: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "composites")
-    keyCloakClient.post[Unit](path, roles)
-  }
+    // --- CRUD --- //
+    def create(clientId: UUID, role: Role.Create): R[Either[KeycloakError, Unit]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path)
+      client.post[Unit](path, role.copy(clientRole = true))
+    }
 
-  def fetchClientRoles(clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path)
-    keyCloakClient.get[List[Role]](path)
-  }
+    def fetch(clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path)
+      client.get[List[Role]](path)
+    }
 
-  def fetchClientRoleByName(clientId: UUID, name: String): R[Either[KeycloakError, Role]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name)
-    keyCloakClient.get[Role](path)
-  }
+    def fetchByName(clientId: UUID, name: String): R[Either[KeycloakError, Role]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name)
+      client.get[Role](path)
+    }
 
-  def fetchClientCompositeRoles(clientId: UUID, name: String): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "composites")
-    keyCloakClient.get[List[Role]](path)
-  }
+    def update(clientId: UUID, name: String, role: Role.Update): R[Either[KeycloakError, Unit]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name)
+      client.put[Unit](path, role)
+    }
 
-  def updateClientRoleByName(clientId: UUID, name: String, role: Role): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name)
-    keyCloakClient.put[Unit](path, role)
-  }
+    def remove(clientId: UUID, name: String): R[Either[KeycloakError, Unit]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name)
+      client.delete[Unit](path)
+    }
 
-  def removeClientRoleByName(clientId: UUID, name: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name)
-    keyCloakClient.delete[Unit](path)
-  }
+    def fetchUsers(clientId: UUID, name: String, first: Option[Int], max: Option[Int]): R[Either[KeycloakError, List[User]]] = {
+      val path: Path  = Seq(realm, clients_path, clientId, roles_path, name, "users")
+      val query = createQuery(("first", first), ("max", max))
+      client.get[List[User]](path, query = query)
+    }
 
-  def removeClientCompositeRoles(clientId: UUID, name: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "composites")
-    keyCloakClient.delete[Unit](path, roles)
-  }
+    def fetchGroups(clientId: UUID, name: String, first: Option[Int], max: Option[Int], full: Option[Boolean]): R[Either[KeycloakError, List[Group]]] = {
+      val path: Path  = Seq(realm, clients_path, clientId, roles_path, name, "groups")
+      val query = createQuery(("first", first), ("max", max), ("full", full))
+      client.get[List[Group]](path, query)
+    }
 
-  def fetchCompositesAppLevelRoles(clientId: UUID, name: String, client: String): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "composites", "clients", client)
-    keyCloakClient.get[List[Role]](path)
-  }
+    // --- Composites --- //
+    def addCompositeRoles(clientId: UUID, name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "composites")
+      client.post[Unit](path, body)
+    }
 
-  def fetchCompositesRealmLevelRoles(clientId: UUID, name: String): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "composites", "realm")
-    keyCloakClient.get[List[Role]](path)
-  }
+    def fetchCompositeRoles(clientId: UUID, name: String): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "composites")
+      client.get[List[Role]](path)
+    }
 
-  def clientRolePermissions(clientId: UUID, name: String): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "management", "permissions")
-    keyCloakClient.get[ManagementPermission](path)
-  }
+    def removeCompositeRoles(clientId: UUID, name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "composites")
+      client.delete[Unit](path, body)
+    }
 
-  def fetchUsersByClientRole(clientId: UUID, name: String, first: Option[Int], max: Option[Int]): R[Either[KeycloakError, List[User]]] = {
-    val path = Seq(realm, clients_path, clientId.toString, roles_path, name, "users")
-    val query = createQuery(("first", first), ("max", max))
-    keyCloakClient.get[List[User]](path, query = query)
-  }
+    def fetchClientCompositeRoles(clientId: UUID, name: String, compositeClientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "composites", "clients", compositeClientId)
+      client.get[List[Role]](path)
+    }
 
+    def fetchRealmCompositeRoles(clientId: UUID, name: String): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "composites", "realm")
+      client.get[List[Role]](path)
+    }
+
+    // --- Permissions --- //
+    def authPermissionsInitialised(clientId: UUID, name: String): R[Either[KeycloakError, ManagementPermission]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "management", "permissions")
+      client.get[ManagementPermission](path)
+    }
+
+    def initialiseAuthPermissions(clientId: UUID, name: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+      val path: Path = Seq(realm, clients_path, clientId, roles_path, name, "management", "permissions")
+      client.put[ManagementPermission](path, ref)
+    }
+  }
 
   // ------------------------------------------------------------------------------------------------------------------ //
-  // ------------------------------------------------ Realm Roles CRUD ------------------------------------------------ //
+  // -------------------------------------------------- Realm Roles --------------------------------------------------- //
   // ------------------------------------------------------------------------------------------------------------------ //
-  def createRealmRole(role: Role.Create): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, roles_path)
-    keyCloakClient.post[Unit](path, role.copy(clientRole = false))
-  }
+  object RealmLevel {
 
-  def fetchRealmRoles(): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, roles_path)
-    keyCloakClient.get[List[Role]](path)
-  }
+    // --- CRUD --- //
+    def create(role: Role.Create): R[Either[KeycloakError, Unit]] = {
+      val path: Path = Seq(realm, roles_path)
+      client.post[Unit](path, role.copy(clientRole = false))
+    }
 
-  def fetchRealmRoleByName(name: String): R[Either[KeycloakError, Role]] = {
-    val path = Seq(realm, roles_path, name)
-    keyCloakClient.get[Role](path)
-  }
+    def fetch(): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, roles_path)
+      client.get[List[Role]](path)
+    }
 
-  def updateRealmRoleByName(name: String, role: Role): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, roles_path, name)
-    keyCloakClient.put[Unit](path, role)
-  }
+    def fetchByName(name: String): R[Either[KeycloakError, Role]] = {
+      val path: Path = Seq(realm, roles_path, name)
+      client.get[Role](path)
+    }
 
-  def removeRealmRoleByName(name: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, roles_path, name)
-    keyCloakClient.delete[Unit](path)
-  }
+    def update(name: String, role: Role.Update): R[Either[KeycloakError, Unit]] = {
+      val path: Path = Seq(realm, roles_path, name)
+      client.put[Unit](path, role)
+    }
 
-  def createCompositeRealmRoles(name: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, roles_path, name, "composites")
-    keyCloakClient.post[Unit](path, roles)
-  }
+    def remove(name: String): R[Either[KeycloakError, Unit]] = {
+      val path: Path = Seq(realm, roles_path, name)
+      client.delete[Unit](path)
+    }
 
-  def fetchCompositeRealmRoles(name: String): R[Either[KeycloakError, List[Role]]] = {
-    val path = Seq(realm, roles_path, name, "composites")
-    keyCloakClient.get[List[Role]](path)
-  }
+    def fetchUsers(name: String, first: Option[Int], max: Option[Int]): R[Either[KeycloakError, List[User]]] = {
+      val path: Path = Seq(realm, roles_path, name, "users")
+      val query = createQuery(("first", first), ("max", max))
+      client.get[List[User]](path, query = query)
+    }
 
-  def removeCompositeRealmRoles(name: String, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, roles_path, name, "composites")
-    keyCloakClient.delete[Unit](path, roles)
-  }
+    def fetchGroups(name: String, first: Option[Int], max: Option[Int], full: Option[Boolean]): R[Either[KeycloakError, List[Group]]] = {
+      val path: Path = Seq(realm, roles_path, name, "groups")
+      val query = createQuery(("first", first), ("max", max), ("full", full))
+      client.get[List[Group]](path, query)
+    }
 
-  def fetchUsersByname(name: String, first: Option[Int], max: Option[Int]): R[Either[KeycloakError, User]] = {
-    val path  = Seq(realm, roles_path, name, "users")
-    val query = createQuery(("first", first), ("max", max))
-    keyCloakClient.get[User](path, query = query)
+    // --- Composites --- //
+    def addCompositeRoles(name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val path: Path = Seq(realm, roles_path, name, "composites")
+      client.post[Unit](path, body)
+    }
+
+    def removeCompositeRoles(name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val path: Path = Seq(realm, roles_path, name, "composites")
+      client.delete[Unit](path, body)
+    }
+
+    def fetchCompositeRoles(name: String): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, roles_path, name, "composites")
+      client.get[List[Role]](path)
+    }
+
+    def fetchClientCompositeRoles(name: String, clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, roles_path, name, "composites", "clients", clientId)
+      client.get[List[Role]](path)
+    }
+
+    def fetchRealmCompositeRoles(name: String): R[Either[KeycloakError, List[Role]]] = {
+      val path: Path = Seq(realm, roles_path, name, "composites", "realm")
+      client.get[List[Role]](path)
+    }
+
+    // --- Permissions --- //
+    def authPermissionsInitialised(name: String): R[Either[KeycloakError, ManagementPermission]] = {
+      val path: Path = Seq(realm, roles_path, name, "management", "permissions")
+      client.get[ManagementPermission](path)
+    }
+
+    def initialiseAuthPermissions(name: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+      val path: Path = Seq(realm, roles_path, name, "management", "permissions")
+      client.put[ManagementPermission](path, ref)
+    }
   }
 }
