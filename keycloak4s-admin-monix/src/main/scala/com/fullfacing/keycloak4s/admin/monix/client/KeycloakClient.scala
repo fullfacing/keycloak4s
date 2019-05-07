@@ -5,8 +5,8 @@ import java.nio.ByteBuffer
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.models.enums.ContentTypes
 import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.monix.utilities.ObservableExtensions.ObservableExtensions
-import com.fullfacing.keycloak4s.monix.utilities.State
+import com.fullfacing.keycloak4s.admin.monix.utilities.ObservableExtensions.ObservableExtensions
+import com.fullfacing.keycloak4s.admin.monix.utilities.State
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
 import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, SttpBackend, Uri, sttp}

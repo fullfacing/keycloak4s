@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.services
+package com.fullfacing.keycloak4s.admin.monix.services
 
 import com.fullfacing.keycloak4s.admin.models.KeysMetadata
 import com.fullfacing.keycloak4s.core.models.KeycloakError

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.handles
+package com.fullfacing.keycloak4s.admin.monix.handles
 
 import org.slf4j.{Logger, LoggerFactory}
 

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix
+package com.fullfacing.keycloak4s.admin.monix
 
 import java.io.File
 import java.nio.file.Files

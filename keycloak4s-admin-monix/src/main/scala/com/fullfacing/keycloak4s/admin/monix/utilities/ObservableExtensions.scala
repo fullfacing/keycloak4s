@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.monix.utilities
+package com.fullfacing.keycloak4s.admin.monix.utilities
 
 import monix.eval.Task
 import monix.reactive.Observable
