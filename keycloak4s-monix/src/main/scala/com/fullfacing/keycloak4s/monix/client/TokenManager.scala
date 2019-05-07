@@ -5,8 +5,7 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.implicits._
-import com.fullfacing.keycloak4s.client.KeycloakConfig
-import com.fullfacing.keycloak4s.models.{KeycloakAdminException, RequestInfo}
+import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, KeycloakSttpException, RequestInfo}
 import com.fullfacing.keycloak4s.monix.client.TokenManager.{Token, TokenResponse}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
@@ -32,8 +31,8 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     )
   }
 
-  protected def buildError(response: Response[_], requestInfo: RequestInfo): KeycloakAdminException = {
-    KeycloakAdminException(
+  protected def buildError(response: Response[_], requestInfo: RequestInfo): KeycloakSttpException = {
+    KeycloakSttpException(
       code        = response.code,
       body        = response.body.fold(e => e, _ => "N/A"),
       headers     = response.headers,
@@ -42,7 +41,7 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     )
   }
 
-  protected def liftM[A](response: Response[A], requestInfo: RequestInfo): Either[KeycloakAdminException, A] = {
+  protected def liftM[A](response: Response[A], requestInfo: RequestInfo): Either[KeycloakSttpException, A] = {
     response.body.leftMap(_ => buildError(response, requestInfo))
   }
 
@@ -70,7 +69,7 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     *
     * @return
     */
-  private def issueAccessToken(): Task[Either[KeycloakAdminException, Token]] = {
+  private def issueAccessToken(): Task[Either[KeycloakSttpException, Token]] = {
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
 
     val a = sttp.post(tokenEndpoint)
@@ -82,7 +81,7 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     a.map(liftM(_, requestInfo))
   }
 
-  private def refreshAccessToken(t: Token): Task[Either[KeycloakAdminException, Token]] = {
+  private def refreshAccessToken(t: Token): Task[Either[KeycloakSttpException, Token]] = {
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
 
     val a = sttp.post(tokenEndpoint)
@@ -120,9 +119,9 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     * If the access token is still valid it simply returns the token unchanged.
     * @return
     */
-  private def validateToken(): Task[Either[KeycloakAdminException, Token]] = {
+  private def validateToken(): Task[Either[KeycloakSttpException, Token]] = {
 
-    def setToken(a: Either[KeycloakAdminException, Token]): Either[KeycloakAdminException, Token] = {
+    def setToken(a: Either[KeycloakSttpException, Token]): Either[KeycloakSttpException, Token] = {
       a.map { nToken =>
         ref.set(nToken)
         nToken
@@ -148,7 +147,7 @@ abstract class TokenManager(config: KeycloakConfig)(implicit client: SttpBackend
     *
     * @tparam A
     */
-  def withAuth[A](request: RequestT[Id, A, Nothing]): Task[Either[KeycloakAdminException, RequestT[Id, A, Nothing]]] = {
+  def withAuth[A](request: RequestT[Id, A, Nothing]): Task[Either[KeycloakSttpException, RequestT[Id, A, Nothing]]] = {
     validateToken().map(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 }

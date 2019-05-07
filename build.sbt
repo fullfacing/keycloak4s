@@ -78,45 +78,62 @@ val `sttp-monix`: Seq[ModuleID] = Seq(
 )
 
 val `akka-http`: Seq[ModuleID] = Seq(
-  "com.typesafe.akka" %% "akka-http" % "10.1.8"
+  "com.typesafe.akka" %% "akka-stream"  % "2.5.21",
+  "com.typesafe.akka" %% "akka-http"    % "10.1.8"
 )
 
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % "7.0.1"
 )
 
-// ----------------------------------------------- //
-// Project and configuration for keycloak-monix    //
-// ----------------------------------------------- //
-lazy val `keycloak-dependencies`: Seq[ModuleID] = `sttp-akka` ++ cats ++ json4s ++ logback ++ monix ++ enumeratum
+// --------------------------------------------//
+// Project and configuration for keycloak-core //
+// --------------------------------------------//
+lazy val `keycloak-dependencies`: Seq[ModuleID] = cats ++ json4s ++ logback ++ enumeratum
 
-lazy val keycloak4s = (project in file("./keycloak4s"))
+lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `keycloak-dependencies`)
-  .settings(name := "keycloak4s", publishArtifact := true)
+  .settings(name := "keycloak4s-core", publishArtifact := true)
 
+// ---------------------------------------------//
+// Project and configuration for keycloak-monix //
+// ---------------------------------------------//
+lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= `sttp-akka`)
+  .settings(name := "keycloak4s-admin", publishArtifact := true)
+  .dependsOn(`keycloak4s-core`)
 
-// ----------------------------------------------- //
-// Project and configuration for keycloak-monix    //
-// ----------------------------------------------- //
+// ---------------------------------------------//
+// Project and configuration for keycloak-monix //
+// ---------------------------------------------//
 lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = `sttp-monix` ++ monix
 
 lazy val `keycloak4s-monix` = (project in file("./keycloak4s-monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `keycloak-monix-dependencies`)
   .settings(name := "keycloak4s-monix", publishArtifact := true)
-  .dependsOn(keycloak4s)
+  .dependsOn(`keycloak4s-admin`)
 
 // -------------------------------------------------------- //
 // Project and configuration for keycloak-akka-http-adapter //
 // -------------------------------------------------------- //
 lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ nimbus ++ scalatest
 
-lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-adapters/akka-http"))
+lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `keycloak-akka-http-dependencies`)
-  .settings(name := "keycloak4s-akka-http-adapter", publishArtifact := true)
-  .dependsOn(keycloak4s)
+  .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
+  .dependsOn(`keycloak4s-core`)
+
+// --------------------------------------------------//
+// Project and configuration for keycloak-playground //
+// --------------------------------------------------//
+lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
+  .settings(global: _*)
+  .settings(name := "keycloak4s-playground", publishArtifact := false)
+  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
 
 // ---------------------------------------------- //
 // Project and configuration for the root project //
@@ -124,4 +141,9 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-adapters/akka-h
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
-  .aggregate(keycloak4s, `keycloak4s-monix`, `keycloak4s-akka-http`)
+  .aggregate(
+    `keycloak4s-core`,
+    `keycloak4s-admin`,
+    `keycloak4s-monix`,
+    `keycloak4s-akka-http`
+  )

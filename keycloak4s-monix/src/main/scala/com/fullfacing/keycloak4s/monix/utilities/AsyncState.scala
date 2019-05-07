@@ -20,7 +20,7 @@ class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Obse
 
       Task.defer(loop(subscriber, init))
         .executeWithOptions(_.enableAutoCancelableRunLoops)
-        .runAsync(Callback.empty)
+        .runAsync(_ => Callback.empty)
     }
     catch {
       case ex if NonFatal(ex) =>

@@ -3,11 +3,10 @@ package com.fullfacing.keycloak4s.monix.client
 import java.nio.ByteBuffer
 
 import cats.implicits._
-import com.fullfacing.keycloak4s.client.KeycloakConfig
-import com.fullfacing.keycloak4s.models.enums.ContentTypes
-import com.fullfacing.keycloak4s.models.{KeycloakAdminException, KeycloakError, KeycloakException, RequestInfo}
-import com.fullfacing.keycloak4s.monix.utilities.State
+import com.fullfacing.keycloak4s.admin.models.enums.ContentTypes
+import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.monix.utilities.ObservableExtensions.ObservableExtensions
+import com.fullfacing.keycloak4s.monix.utilities.State
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
 import com.softwaremill.sttp.{Id, Multipart, Request, RequestT, SttpBackend, Uri, sttp}
@@ -46,7 +45,7 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
   }
 
   private def setResponse[A <: Any : Manifest](request: RequestT[Id, String, Nothing])(implicit tag: TypeTag[A])
-  : Task[Either[KeycloakAdminException, RequestT[Id, A, Nothing]]] = tag match {
+  : Task[Either[KeycloakSttpException, RequestT[Id, A, Nothing]]] = tag match {
     case _ if tag == typeTag[Unit] => withAuth(request.mapResponse(_ => read[A]("null"))) //reading the string literal "null" is how you deserialize to a Unit with json4s
     case _                         => withAuth(request.response(asJson[A]))
   }
@@ -60,7 +59,7 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
     }
 
     F.handleError[Either[KeycloakError, B]](response) {
-      case NonFatal(ex) => F.unit(KeycloakException(ex).asLeft[B])
+      case NonFatal(ex) => F.unit(KeycloakThrowable(ex).asLeft[B])
     }
   }
 
