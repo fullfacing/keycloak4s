@@ -12,5 +12,6 @@ All notable changes to this project will be documented in this file.
 ###Changed
 - Renamed "keycloak4s" module to "keycloak4s-admin".
 - Renamed "keycloak4s-adapters" module to "keycloak4s-auth".
-- Moved core functionality from the auth and admin modules to the newly created core module. Refactored as necessary.
-- Moved sandbox code from the auth and admin modules to the newly created playground module. Expanded sandbox code.
+- Renamed "keycloak4s-monix" module to "keycloak4s-admin-monix".
+- Moved core functionality from the auth, admin and monix modules to the newly created core module. Refactored as necessary.
+- Moved sandbox code from the auth, admin and monix modules to the newly created playground module. Expanded sandbox code.
