@@ -5,7 +5,7 @@ import java.time.Instant
 import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
-import com.fullfacing.keycloak4s.auth.akka.http.Logging.logger
+import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logger
 import com.fullfacing.keycloak4s.auth.akka.http.models.ValidationResult
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException

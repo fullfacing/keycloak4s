@@ -9,7 +9,11 @@ object Logging {
     }
 
     def writeDebug(msg: String): Unit = {
-      if (!logger.isTraceEnabled()) logger.debug(msg)
+      if (logger.isDebugEnabled()) logger.debug(msg)
+    }
+
+    def writeInfo(msg: String): Unit = {
+      if (logger.isInfoEnabled()) logger.info(msg)
     }
   }
 }

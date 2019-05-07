@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http
+package com.fullfacing.keycloak4s.auth.akka.http.handles
 
 import org.slf4j.{Logger, LoggerFactory}
 
