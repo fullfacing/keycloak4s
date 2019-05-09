@@ -40,13 +40,13 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
    * @param first
    * @return
    */
-  def fetchUsers(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
+  def fetchUsersB(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
     val path  = Seq(client.realm, "groups", groupId, "members")
 
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
   }
 
   def fetchUsersL(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Either[KeycloakError, Seq[User]]] = {
-    fetchUsers(groupId, first).consumeWith(consumer())
+    fetchUsersB(groupId, first).consumeWith(consumer())
   }
 }
