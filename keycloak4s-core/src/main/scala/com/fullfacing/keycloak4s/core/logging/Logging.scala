@@ -4,16 +4,24 @@ import org.slf4j.Logger
 
 object Logging {
   implicit class Levels(private val logger: Logger) {
-    def writeTrace(msg: String): Unit = {
+    def logTrace(msg: String): Unit = {
       if (logger.isTraceEnabled()) logger.trace(msg)
     }
 
-    def writeDebug(msg: String): Unit = {
+    def logDebug(msg: String): Unit = {
       if (logger.isDebugEnabled()) logger.debug(msg)
     }
 
-    def writeInfo(msg: String): Unit = {
+    def logDebugIff(msg: String): Unit = {
+      if (logger.isDebugEnabled() && !logger.isTraceEnabled()) logger.debug(msg)
+    }
+
+    def logInfo(msg: String): Unit = {
       if (logger.isInfoEnabled()) logger.info(msg)
+    }
+
+    def logInfoIff(msg: String): Unit = {
+      if (logger.isInfoEnabled() & !logger.isDebugEnabled()) logger.info(msg)
     }
   }
 }
