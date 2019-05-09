@@ -23,7 +23,7 @@ trait ValidationDirective {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken(implicit tv: TokenValidator): Directive1[Permissions] = {
+  def validateToken()(implicit tv: TokenValidator): Directive1[Permissions] = {
     optionalHeaderValueByName("id_token").flatMap { idToken =>
       extractCredentials.flatMap {
         case Some(token)  => callValidation(token.token(), idToken)
