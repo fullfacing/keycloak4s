@@ -46,9 +46,10 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
   private def call[B <: Any : Manifest](request: RequestT[Id, String, Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
     implicit val cId: UUID = UUID.randomUUID()
-    Logging.requestSent(requestInfo, cId)
 
     val resp = setResponse[B](request)
+
+    Logging.requestSent(requestInfo, cId)
 
     val response = F.flatMap(resp) {
       case Right(r) => F.map(r.send())(liftM(_, requestInfo))
