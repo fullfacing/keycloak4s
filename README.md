@@ -5,6 +5,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.9.0]
+### Added
+- Added proper logging for the Admin module.
+###Changed
+- Injected a correlation ID into the Admin API calls.
+
 ## [0.8.0]
 ### Added
 - Created core module.
