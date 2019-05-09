@@ -19,14 +19,12 @@ class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, 
   type EitherSeqA[A] = Either[KeycloakError, Seq[A]]
 
   /**
+   * Used for calls that return a sequence of items, this sequentially makes calls to retrieve and process
+   * a set number of items until the limit is reached or all items have been retrieved.
    *
-   *
-   * @param path
-   * @param query
-   * @param offset
-   * @param batch
-   * @tparam A
-   * @return
+   * @param offset Used for pagination, skips the specified number of items.
+   * @param limit  The max amount of items to return.
+   * @param batch  The amount of items each call should return.
    */
   def getList[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue], offset: Int = 0, limit: Int, batch: Int = 100): Observable[EitherSeqA[A]] = {
     val call = { i: Int =>

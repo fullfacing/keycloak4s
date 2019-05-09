@@ -16,11 +16,13 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
   /**
    * Retrieves all groups for a Realm. Only name and ids are returned.
    *
-   * @param first
+   * @param first      Used for pagination, skips the specified number of groups.
+   * @param limit      The max amount of groups to return.
+   * @param batchSize  The amount of groups each call should return.
    * @param search
    * @return
    */
-  def fetchB(first: Int = 0,
+  def fetchS(first: Int = 0,
              limit: Int = Integer.MAX_VALUE,
              search: Option[String] = None,
              batchSize: Int = 100): Observable[Either[KeycloakError, Seq[Group]]] = {
@@ -32,22 +34,24 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
   }
 
   def fetchL(first: Int = 0, limit: Int = Integer.MAX_VALUE, search: Option[String] = None): Task[Either[KeycloakError, Seq[Group]]] = {
-    fetchB(first, limit, search).consumeWith(consumer())
+    fetchS(first, limit, search).consumeWith(consumer())
   }
 
   /**
    * Returns a list of users, filtered according to query parameters
    *
-   * @param first
+   * @param first      Used for pagination, skips the specified number of users.
+   * @param limit      The max amount of users to return.
+   * @param batchSize  The amount of users each call should return.
    * @return
    */
-  def fetchUsersB(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
+  def fetchUsersS(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
     val path  = Seq(client.realm, "groups", groupId, "members")
 
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
   }
 
   def fetchUsersL(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Either[KeycloakError, Seq[User]]] = {
-    fetchUsersB(groupId, first, limit).consumeWith(consumer())
+    fetchUsersS(groupId, first, limit).consumeWith(consumer())
   }
 }

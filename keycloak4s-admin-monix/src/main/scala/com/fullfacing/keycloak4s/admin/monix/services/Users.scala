@@ -1,8 +1,9 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
 import java.nio.ByteBuffer
+import java.util.UUID
 
-import com.fullfacing.keycloak4s.admin.models.User
+import com.fullfacing.keycloak4s.admin.models.{Group, User}
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import com.fullfacing.keycloak4s.core.models.KeycloakError
@@ -14,18 +15,19 @@ import scala.collection.immutable.Seq
 class Users(implicit client: KeycloakClient) extends services.Users[Task, Observable[ByteBuffer]] {
 
   /**
-   * Get users Returns a list of users, filtered according to query parameters
+   * Get all realm users. Returns a list of users, filtered according to query parameters
    *
    * @param briefRep
    * @param email
-   * @param first
    * @param firstName
    * @param lastName
-   * @param search    A String contained in username, first or last name, or email
+   * @param search     A String contained in username, first or last name, or email
    * @param username
-   * @return
+   * @param first      Used for pagination, skips the specified number of users.
+   * @param limit      The max amount of users to return.
+   * @param batchSize  The amount of users each call should return.
    */
-  def fetchB(first: Int = 0,
+  def fetchS(first: Int = 0,
              limit: Int = Integer.MAX_VALUE,
              briefRep: Option[Boolean] = None,
              email: Option[String] = None,
@@ -57,7 +59,32 @@ class Users(implicit client: KeycloakClient) extends services.Users[Task, Observ
              search: Option[String] = None,
              username: Option[String] = None): Task[Either[KeycloakError, Seq[User]]] = {
 
-    fetchB(first, limit, briefRep, email, firstName, lastName, search, username)
-      .consumeWith(consumer[User]())
+    fetchS(first, limit, briefRep, email, firstName, lastName, search, username)
+      .consumeWith(consumer())
+  }
+
+  /**
+   *
+   *
+   * @param userId
+   * @param search
+   * @param first      Used for pagination, skips the specified number of groups.
+   * @param limit      The max amount of groups to return.
+   * @param batchSize  The amount of groups each call should return.
+   * @return
+   */
+  def fetchGroupsS(first: Int = 0,
+                   limit: Int = Integer.MAX_VALUE,
+                   userId: UUID,
+                   search: Option[String] = None,
+                   batchSize: Int = 100): Observable[Either[KeycloakError, Seq[Group]]] = {
+
+    val path = Seq(client.realm, "users", userId.toString, "groups")
+    client.getList[Group](path, createQuery(("search", search)), first, limit, batchSize)
+  }
+
+  def fetchGroupsL(first: Int = 0, limit: Int = Integer.MAX_VALUE, userId: UUID, search: Option[String] = None): Task[Either[KeycloakError, Seq[Group]]] = {
+    fetchGroupsS(first, limit, userId, search)
+      .consumeWith(consumer())
   }
 }
