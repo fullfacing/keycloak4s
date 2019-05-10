@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.admin.client.implicits
 
 import com.fullfacing.keycloak4s.core.models.enums.ContentTypes
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.softwaremill.sttp.json4s._
 import com.softwaremill.sttp.{Id, Multipart, Request, RequestT}
 import org.json4s.jackson.Serialization
