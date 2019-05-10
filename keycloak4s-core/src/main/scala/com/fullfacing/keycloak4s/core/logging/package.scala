@@ -1,7 +1,13 @@
 package com.fullfacing.keycloak4s.core
 
-import org.slf4j.{Logger, LoggerFactory}
+import java.util.UUID
 
 package object logging {
-  implicit val logger: Logger = LoggerFactory.getLogger("keycloak4s.core")
+
+  val cy: String = Console.CYAN
+  val gr: String = Console.GREEN
+  val rs: String = Console.RESET
+  val ye: String = Console.YELLOW
+
+  def cIdLog(cId: UUID): String = s"${ye}keycloak4s - ${cy}Internal Correlation ID: $gr$cId $cy- "
 }

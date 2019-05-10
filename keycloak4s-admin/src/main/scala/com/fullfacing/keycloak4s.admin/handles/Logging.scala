@@ -3,23 +3,17 @@ package com.fullfacing.keycloak4s.admin.handles
 import java.util.UUID
 
 import com.fullfacing.keycloak4s.core.logging.Logging._
+import com.fullfacing.keycloak4s.core.logging._
 import com.fullfacing.keycloak4s.core.models.RequestInfo
 import org.slf4j.{Logger, LoggerFactory}
 
 object Logging {
 
-  private val cy = Console.CYAN
-  private val gr = Console.GREEN
-  private val rs = Console.RESET
-  private val ye = Console.YELLOW
-
   implicit val logger: Logger = LoggerFactory.getLogger("keycloak4s.admin")
-
-  private def cIdLog(cId: UUID): String = s"${ye}keycloak4s - ${cy}Internal Correlation ID: $gr$cId $cy- "
 
   /* ACCESS TOKEN LOGGING **/
 
-  def tokenRequest[A](realm: => String, cId: => UUID): Unit =
+  def tokenRequest(realm: => String, cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Requesting Access Token from Keycloak for Realm $gr$realm$rs.")
 
   def tokenReceived(realm: => String, cId: => UUID): Unit =
