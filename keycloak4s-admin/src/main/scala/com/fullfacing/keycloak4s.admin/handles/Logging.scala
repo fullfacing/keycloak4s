@@ -42,19 +42,25 @@ object Logging {
     logger.logTrace(s"${cIdLog(cId)}$gr${requestInfo.protocol} ${requestInfo.path}$cy request sent to Keycloak Admin API. $bodyTrace$rs")
   }
 
-  def requestSuccessful[A](response: A, cId: => UUID): Unit = {
-    //lazy val bodyTrace: String = if (response.toString == "") s"${gr}NoContent" else s"$gr$response" TODO Fix serialization error.
-
+  def requestSuccessful(response: => String, cId: => UUID): Unit = {
+    lazy val resp = if (response == "") "NoContent" else response
     logger.logDebugIff(s"${cIdLog(cId)}Request was successful.$rs")
-    logger.logTrace(s"${cIdLog(cId)}Request was successful.$rs")
+    logger.logTrace(s"${cIdLog(cId)}Request was successful. Response received: $resp$rs")
   }
 
   def requestFailed(cId: UUID, ex: Throwable): Unit =
     logger.error(s"Correlation ID: $cId - Request to Keycloak Admin API failed.", ex)
 
-  /* Logging Helper **/
+  /* Logging Helpers **/
   def handleLogging[A, B <: Throwable](resp: Either[B, A])(success: A => Unit, failure: B => Unit): Either[B, A] = resp match {
     case Left(e)  => failure(e); resp
     case Right(r) => success(r); resp
+  }
+
+  def logLeft[A, B <: Throwable](either: Either[B, A])(partialLog: B => Unit): Either[B, A] = {
+    either.left.map { ex =>
+      partialLog(ex)
+      ex
+    }
   }
 }
