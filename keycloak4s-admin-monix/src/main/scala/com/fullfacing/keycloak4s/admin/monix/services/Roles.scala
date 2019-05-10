@@ -3,10 +3,9 @@ package com.fullfacing.keycloak4s.admin.monix.services
 import java.nio.ByteBuffer
 import java.util.UUID
 
-import com.fullfacing.keycloak4s.admin.models.{Group, User}
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{Group, KeycloakError, User}
 import monix.eval.Task
 import monix.reactive.Observable
 

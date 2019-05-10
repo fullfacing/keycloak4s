@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.admin.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.admin.models.KeysMetadata
+import com.fullfacing.keycloak4s.core.models.KeysMetadata
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
 import scala.collection.immutable.Seq

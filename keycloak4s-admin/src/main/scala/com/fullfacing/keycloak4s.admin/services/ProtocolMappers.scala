@@ -4,8 +4,8 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.admin.models._
-import com.fullfacing.keycloak4s.admin.models.enums.ProtocolMapperEntity
+import com.fullfacing.keycloak4s.core.models._
+import com.fullfacing.keycloak4s.core.models.enums.ProtocolMapperEntity
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
 import scala.collection.immutable.Seq

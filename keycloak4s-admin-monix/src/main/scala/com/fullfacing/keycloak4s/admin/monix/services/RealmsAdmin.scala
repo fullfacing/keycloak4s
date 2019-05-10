@@ -2,10 +2,9 @@ package com.fullfacing.keycloak4s.admin.monix.services
 
 import java.nio.ByteBuffer
 
-import com.fullfacing.keycloak4s.admin.models.{AdminEvent, EventRepresentation}
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{AdminEvent, EventRepresentation, KeycloakError}
 import monix.eval.Task
 import monix.reactive.Observable
 

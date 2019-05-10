@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.admin.monix.services
 import java.nio.ByteBuffer
 import java.util.UUID
 
-import com.fullfacing.keycloak4s.admin.models.UserSession
+import com.fullfacing.keycloak4s.core.models.UserSession
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import com.fullfacing.keycloak4s.core.models.KeycloakError
