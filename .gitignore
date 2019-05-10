@@ -18,5 +18,5 @@ project/plugins/project/
 # Mac stuff
 .DS_Store
 project/project/
-src/main/java/
-src/main/scala-2.11/
+keycloak4s-admin/src/main/java/
+keycloak4s-admin/src/main/scala-2.11/
