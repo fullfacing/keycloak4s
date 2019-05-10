@@ -5,6 +5,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.10.3]
+###Changed
+- Modified the logging for successful Admin API requests to log the raw response instead of the deserialized response.
+
 ## [0.9.0]
 ### Added
 - Added proper logging for the Admin module.
