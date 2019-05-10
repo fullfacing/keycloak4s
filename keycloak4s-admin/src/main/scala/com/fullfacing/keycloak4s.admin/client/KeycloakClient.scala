@@ -1,9 +1,13 @@
 package com.fullfacing.keycloak4s.admin.client
 
+import java.util.UUID
+
 import cats.effect.Concurrent
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.implicits.{Anything, BodyMagnet}
-import com.fullfacing.keycloak4s.admin.serialization.JsonFormats.default
+import com.fullfacing.keycloak4s.admin.handles.Logging
+import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.core.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._
@@ -34,14 +38,18 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
   /* HTTP Call Builders **/
 
-  private def setResponse[A <: Any : Manifest](request: RequestT[Id, String, Nothing])(implicit tag: TypeTag[A])
+  private def setResponse[A <: Any : Manifest](request: RequestT[Id, String, Nothing])(implicit tag: TypeTag[A], cid: UUID)
   : F[Either[KeycloakSttpException, RequestT[Id, A, Nothing]]] = tag match {
     case _ if tag == typeTag[Unit] => withAuth(request.mapResponse(_ => read[A]("null"))) //reading the string literal "null" is how to deserialize to a Unit with json4s
     case _                         => withAuth(request.response(asJson[A]))
   }
 
   private def call[B <: Any : Manifest](request: RequestT[Id, String, Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
+    implicit val cId: UUID = UUID.randomUUID()
+
     val resp = setResponse[B](request)
+
+    Logging.requestSent(requestInfo, cId)
 
     val response = F.flatMap(resp) {
       case Right(r) => F.map(r.send())(liftM(_, requestInfo))
@@ -50,6 +58,11 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
     F.handleError[Either[KeycloakError, B]](response) {
       case NonFatal(ex) => F.unit(KeycloakThrowable(ex).asLeft[B])
+    }.map {
+      handleLogging(_)(
+        success = Logging.requestSuccessful(_, cId),
+        failure = Logging.requestFailed(cId, _)
+      )
     }
   }
 

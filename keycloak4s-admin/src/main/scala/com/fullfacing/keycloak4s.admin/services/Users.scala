@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.admin.models._
+import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
 import scala.collection.immutable.Seq
@@ -49,8 +49,8 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.put[Unit](path, user)
   }
 
-  def delete(userId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId)
+  def delete(userId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(client.realm, users_path, userId.toString)
     client.delete[Unit](path)
   }
 

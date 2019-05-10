@@ -19,6 +19,8 @@ package object services {
     }.to[ImmutableSeq]
   }
 
+  def toCsvList(list: Option[List[String]]): Option[String] = list.map(_.mkString(","))
+
   def flattenOptionMap(map: Map[String, Option[Any]]): Map[String, String] =
     map.flatMap { case (key, value) =>
       value.map(v => (key, v.toString))

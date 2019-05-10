@@ -5,7 +5,7 @@ import akka.util.ByteString
 import cats.effect.ExitCode
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak => KeycloakM, KeycloakClient => KeycloakClientM}
-import com.fullfacing.keycloak4s.admin.serialization.JsonFormats.default
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.transport.backends.{AkkaHttpBackendL, MonixHttpBackendL}
 import com.fullfacing.transport.handles.Akka
@@ -50,7 +50,7 @@ object Main extends TaskApp {
     val users = Keycloak.Users[Task, Source[ByteString, Any]]
     val usersM = KeycloakM.Users
 
-    usersM.fetchB(limit = 200).foreach(println)
+    usersM.fetchS().foreachL(println).onErrorHandle(_.printStackTrace())
 
     /* Example Usage: Returns and prints all Users for the given Realm. **/
     users.fetch().foreachL {

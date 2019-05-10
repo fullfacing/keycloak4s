@@ -18,9 +18,9 @@
     </appender>
 
     <logger name="io.netty"                 level="error"/>
-    <logger name="keycloak4s.admin"         level="info"/>
+    <logger name="keycloak4s.admin"         level="trace"/>
     <logger name="keycloak4s.admin.monix"   level="trace"/>
-    <logger name="keycloak4s.auth"          level="debug"/>
+    <logger name="keycloak4s.auth"          level="trace"/>
 
     <root>
         <appender-ref ref="STDOUT"/>
