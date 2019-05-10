@@ -5,17 +5,28 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.11.0]
+### Added
+- Observable streaming to relevant get calls in Roles, Clients and RealmsAdmin in the monix module.
+### Changed
+- Updated the getList streaming call to return Eithers in accordance with update to all other calls.
+- Renamed functions in RealmsAdmin to match project standards.
+
+## [0.10.1]
+### Changed
+- Moved models from admin module to core.
+
 ## [0.9.0]
 ### Added
 - Added proper logging for the Admin module.
-###Changed
+### Changed
 - Injected a correlation ID into the Admin API calls.
 
 ## [0.8.0]
 ### Added
 - Created core module.
 - Created playground module.
-###Changed
+### Changed
 - Renamed "keycloak4s" module to "keycloak4s-admin".
 - Renamed "keycloak4s-adapters" module to "keycloak4s-auth".
 - Renamed "keycloak4s-monix" module to "keycloak4s-admin-monix".
