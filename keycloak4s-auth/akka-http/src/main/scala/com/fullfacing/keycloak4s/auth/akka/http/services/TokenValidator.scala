@@ -1,15 +1,16 @@
 package com.fullfacing.keycloak4s.auth.akka.http.services
 
 import java.time.Instant
+import java.util.UUID
 
 import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logger
+import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
+import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationException
 import com.fullfacing.keycloak4s.auth.akka.http.models.ValidationResult
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.fullfacing.keycloak4s.core.utilities.IoImplicits._
 import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
@@ -37,7 +38,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
   /**
    * Checks the key set cache for valid keys, re-caches once (and only once) if invalid.
    */
-  private def checkKeySet(): IO[Either[KeycloakException, JWKSet]] = retrieveCachedValue().flatMap {
+  private def checkKeySet()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = retrieveCachedValue().flatMap {
     case r @ Right(_) => IO(r)
     case Left(_)      => updateCache().map(_.left.map(_ => Exceptions.JWKS_SERVER_ERROR))
   }
@@ -46,13 +47,13 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
    * Attempts to obtain the public key matching the key ID in the token header.
    * Re-caches the key set once (and only once) if the key was not found.
    */
-  private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false): IO[Either[KeycloakException, RSAKey]] = {
+  private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, RSAKey]] = {
     Option(keys.getKeyByKeyId(keyId)) match {
       case None if !reattempted => updateCache().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
       case None                 => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)
       case Some(k: RSAKey)      => IO(k.asRight)
     }
-  }.handleErrorWithLogging(_ => Exceptions.UNEXPECTED.asLeft)
+  }.handleError(_ => Exceptions.UNEXPECTED.asLeft)
 
   /**
    * Validates the token with the public key obtained from the Keycloak server.
@@ -65,7 +66,8 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
   /**
    * Parses an ID token, validates its signature and checks if its states and subject is the same as the bearer token.
    */
-  private def parseAndValidateIdToken(rawIdToken: String, publicKey: RSAKey, payload: Payload): IO[Either[KeycloakException, Option[SignedJWT]]] = IO {
+  private def parseAndValidateIdToken(rawIdToken: String, publicKey: RSAKey, payload: Payload)
+  : IO[Either[KeycloakException, Option[SignedJWT]]] = IO {
     val idToken = parse(rawIdToken)
     val tokenJson = payload.toJSONObject
     val idTokenJson = idToken.getPayload.toJSONObject
@@ -79,13 +81,14 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
         case Right(r) => Some(r).asRight
       }
     } else Exceptions.ID_TOKEN_MISMATCH.asLeft
-  }.handleErrorWithLogging(_ => Exceptions.PARSE_FAILED_ID.asLeft)
+  }.handleError(_ => Exceptions.PARSE_FAILED_ID.asLeft)
 
   /**
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
    * Additionally parses, validates and returns an optional ID token.
    */
-  def validate(rawToken: String, rawIdToken: Option[String] = None): IO[Either[KeycloakException, ValidationResult]] = {
+  def validate(rawToken: String, rawIdToken: Option[String] = None)(implicit cId: UUID): IO[Either[KeycloakException, ValidationResult]] = {
+    Logging.tokenValidating(cId)
 
     val token = IO {
       validateTime(parse(rawToken))
@@ -93,14 +96,17 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
 
     lazy val idTokenNull = IO.pure(none[SignedJWT].asRight[KeycloakException])
 
-    for {
-      t     <- EitherT(token)
-      keys  <- EitherT(checkKeySet())
-      key   <- EitherT(matchPublicKey(t.getHeader.getKeyID, keys))
-      _     <- EitherT.fromEither[IO](validateSignature(t, key))
-      id    <- EitherT(rawIdToken.fold(idTokenNull)(parseAndValidateIdToken(_, key, t.getPayload)))
-    } yield ValidationResult(t.getPayload, id)
-  }.value.handleErrorWithLogging(_ => Exceptions.UNEXPECTED.asLeft)
+    (for {
+      parsed  <- EitherT(token)
+      keys    <- EitherT(checkKeySet())
+      key     <- EitherT(matchPublicKey(parsed.getHeader.getKeyID, keys))
+      _       <- EitherT.fromEither[IO](validateSignature(parsed, key))
+      id      <- EitherT(rawIdToken.fold(idTokenNull)(parseAndValidateIdToken(_, key, parsed.getPayload)))
+    } yield {
+      Logging.tokenValidated(cId)
+      ValidationResult(parsed.getPayload, id)
+    }).leftMap(logValidationException).value
+  }.handleError(_ => logValidationException(Exceptions.UNEXPECTED).asLeft)
 }
 
 object TokenValidator {

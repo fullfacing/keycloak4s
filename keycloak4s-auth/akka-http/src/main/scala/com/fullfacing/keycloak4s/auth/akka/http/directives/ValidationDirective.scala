@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
@@ -22,7 +24,7 @@ trait ValidationDirective {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken(implicit tv: TokenValidator): Directive1[Permissions] = {
+  def validateToken()(implicit tv: TokenValidator, cId: UUID): Directive1[Permissions] = {
     optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
         case Some(token)  => callValidation(token.token(), idToken)
@@ -32,7 +34,7 @@ trait ValidationDirective {
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[Permissions] = {
+  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator, cId: UUID): Directive1[Permissions] = {
     onComplete(validator.validate(token, idToken).unsafeToFuture()).flatMap {
       case Success(r) => handleValidationResponse(r)
       case Failure(_) => complete(HttpResponse(StatusCodes.InternalServerError, entity = "An unexpected error occurred"))
