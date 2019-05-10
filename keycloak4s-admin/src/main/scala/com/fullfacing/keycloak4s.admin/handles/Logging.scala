@@ -43,10 +43,10 @@ object Logging {
   }
 
   def requestSuccessful[A](response: A, cId: => UUID): Unit = {
-    lazy val bodyTrace: String = if (response.toString == "") s"${gr}NoContent" else s"$gr$response"
+    //lazy val bodyTrace: String = if (response.toString == "") s"${gr}NoContent" else s"$gr$response" TODO Fix serialization error.
 
     logger.logDebugIff(s"${cIdLog(cId)}Request was successful.$rs")
-    logger.logTrace(s"${cIdLog(cId)}Request was successful. Response received: $bodyTrace$rs")
+    logger.logTrace(s"${cIdLog(cId)}Request was successful.$rs")
   }
 
   def requestFailed(cId: UUID, ex: Throwable): Unit =
