@@ -5,6 +5,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.12.0]
+### Added
+- New security directive that handles auth at the top level, using a json config object.
+
 ## [0.11.0]
 ### Added
 - Observable streaming to relevant get calls in Roles, Clients and RealmsAdmin in the monix module.
