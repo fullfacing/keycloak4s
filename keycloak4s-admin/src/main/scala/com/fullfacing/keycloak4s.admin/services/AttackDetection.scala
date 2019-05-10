@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.admin.models.BruteForceResponse
+import com.fullfacing.keycloak4s.core.models.BruteForceResponse
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
 class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {

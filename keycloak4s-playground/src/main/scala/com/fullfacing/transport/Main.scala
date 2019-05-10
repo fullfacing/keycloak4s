@@ -4,7 +4,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.effect.ExitCode
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
-import com.fullfacing.keycloak4s.admin.serialization.JsonFormats.default
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.transport.backends.{AkkaHttpBackendL, MonixHttpBackendL}
 import com.fullfacing.transport.handles.Akka

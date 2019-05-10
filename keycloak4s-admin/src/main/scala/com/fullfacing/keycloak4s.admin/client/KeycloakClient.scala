@@ -7,7 +7,7 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
-import com.fullfacing.keycloak4s.admin.serialization.JsonFormats.default
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.core.models._
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import com.softwaremill.sttp.json4s._

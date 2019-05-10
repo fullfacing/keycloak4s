@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import com.fullfacing.keycloak4s.admin.models.KeysMetadata
+import com.fullfacing.keycloak4s.core.models.KeysMetadata
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import monix.eval.Task
