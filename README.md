@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Updated the getList streaming call to return Eithers in accordance with update to all other calls.
 - Renamed functions in RealmsAdmin to match project standards.
+- Modified KeycloakClient in the monix module to extend that in the base module instead of duplicating code.
 
 ## [0.10.1]
 ### Changed
