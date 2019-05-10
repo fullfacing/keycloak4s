@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Renamed functions in RealmsAdmin to match project standards.
 - Modified KeycloakClient in the monix module to extend that in the base module instead of duplicating code.
 
+## [0.10.3]
+### Changed
+- Modified the logging for successful Admin API requests to log the raw response instead of the deserialized response.
+
 ## [0.10.1]
 ### Changed
 - Moved models from admin module to core.
