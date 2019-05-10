@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import com.fullfacing.keycloak4s.admin.models.User
+import com.fullfacing.keycloak4s.core.models.User
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import monix.eval.Task
 import monix.reactive.Observable

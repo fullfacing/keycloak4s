@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.admin.monix.client
 import java.nio.ByteBuffer
 
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.models.enums.ContentTypes
+import com.fullfacing.keycloak4s.core.models.enums.ContentTypes
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.admin.monix.utilities.ObservableExtensions.ObservableExtensions
 import com.fullfacing.keycloak4s.admin.monix.utilities.State

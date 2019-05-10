@@ -10,7 +10,7 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse}
 import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
-import com.fullfacing.keycloak4s.admin.serialization.JsonFormats.default
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, KeycloakSttpException, RequestInfo}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
