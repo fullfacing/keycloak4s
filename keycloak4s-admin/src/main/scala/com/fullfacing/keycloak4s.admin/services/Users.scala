@@ -49,8 +49,8 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.put[Unit](path, user)
   }
 
-  def delete(userId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, users_path, userId)
+  def delete(userId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(client.realm, users_path, userId.toString)
     client.delete[Unit](path)
   }
 
