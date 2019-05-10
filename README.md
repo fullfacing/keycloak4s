@@ -6,7 +6,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.10.3]
-###Changed
+### Changed
 - Modified the logging for successful Admin API requests to log the raw response instead of the deserialized response.
 
 ## [0.9.0]
@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Created core module.
 - Created playground module.
-###Changed
+### Changed
 - Renamed "keycloak4s" module to "keycloak4s-admin".
 - Renamed "keycloak4s-adapters" module to "keycloak4s-auth".
 - Renamed "keycloak4s-monix" module to "keycloak4s-admin-monix".
