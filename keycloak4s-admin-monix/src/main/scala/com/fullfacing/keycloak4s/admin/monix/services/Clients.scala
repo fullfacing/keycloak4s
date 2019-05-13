@@ -46,7 +46,6 @@ class Clients(implicit client: KeycloakClient) extends services.Clients[Task, Ob
                          id: UUID,
                          batchSize: Int = 100): Observable[Either[KeycloakError, Seq[UserSession]]] = {
 
-
     val path = Seq(client.realm, "clients", id.toString, "user-sessions")
     client.getList[UserSession](path, offset = first, limit = limit, batch = batchSize)
   }
