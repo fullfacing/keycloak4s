@@ -1,45 +1,57 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
+import java.nio.ByteBuffer
+
 import com.fullfacing.keycloak4s.core.models.{Group, User}
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.services
+import com.fullfacing.keycloak4s.core.models.KeycloakError
 import monix.eval.Task
 import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Groups(implicit client: KeycloakClient) {
+class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Observable[ByteBuffer]] {
 
   /**
    * Retrieves all groups for a Realm. Only name and ids are returned.
    *
-   * @param first
+   * @param first      Used for pagination, skips the specified number of groups.
+   * @param limit      The max amount of groups to return.
+   * @param batchSize  The amount of groups each call should return.
    * @param search
    * @return
    */
-  def fetch(first: Int = 0, search: Option[String] = None): Observable[Group] = {
+  def fetchS(first: Int = 0,
+             limit: Int = Integer.MAX_VALUE,
+             search: Option[String] = None,
+             batchSize: Int = 100): Observable[Either[KeycloakError, Seq[Group]]] = {
+
     val query = createQuery(("search", search))
     val path  = Seq(client.realm, "groups")
 
-    client.getList[Group](path, query, first)
+    client.getList[Group](path, query, first, limit, batchSize)
   }
 
-  def fetchL(first: Int = 0, search: Option[String] = None): Task[List[Group]] = {
-    fetch(first, search).consumeWith(consumer())
+  def fetchL(first: Int = 0, limit: Int = Integer.MAX_VALUE, search: Option[String] = None): Task[Either[KeycloakError, Seq[Group]]] = {
+    fetchS(first, limit, search).consumeWith(consumer())
   }
 
   /**
    * Returns a list of users, filtered according to query parameters
    *
-   * @param first
+   * @param first      Used for pagination, skips the specified number of users.
+   * @param limit      The max amount of users to return.
+   * @param batchSize  The amount of users each call should return.
    * @return
    */
-  def fetchUsers(groupId: String, first: Int = 0, batch: Int = 100): Observable[User] = {
+  def fetchUsersS(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
     val path  = Seq(client.realm, "groups", groupId, "members")
 
-    client.getList[User](path, offset = first, batch = batch)
+    client.getList[User](path, offset = first, limit = limit, batch = batchSize)
   }
 
-  def fetchUsersL(groupId: String, first: Int = 0): Task[List[User]] = {
-    fetchUsers(groupId, first).consumeWith(consumer())
+  def fetchUsersL(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Either[KeycloakError, Seq[User]]] = {
+    fetchUsersS(groupId, first, limit).consumeWith(consumer())
   }
 }
