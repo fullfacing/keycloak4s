@@ -5,7 +5,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.12.0]
+## [0.12.0]
 ### Added
 - New security directive that handles auth at the top level, using a json config object.
 
