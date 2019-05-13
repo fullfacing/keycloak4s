@@ -8,9 +8,10 @@ import com.fullfacing.transport.Implicits._
 
 object SensorThingsApi extends SecurityDirectives {
 
-  val api: Route = secure(apiSecurityConfig) {
+  val api: Route =
     pathPrefix("sensorthings") {
-      thing ~ obs ~ sensor ~ ds
+      secure(apiSecurityConfig) {
+        thing ~ obs ~ sensor ~ ds
     }
   }
 

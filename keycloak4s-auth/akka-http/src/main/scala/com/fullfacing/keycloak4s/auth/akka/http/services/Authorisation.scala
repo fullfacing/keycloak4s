@@ -1,9 +1,8 @@
 package com.fullfacing.keycloak4s.auth.akka.http.services
 
-import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.server.Directives.{authorize, extractMethod, extractUnmatchedPath, pass, provide}
-import akka.http.scaladsl.server.{Directive0, Directive1}
+import akka.http.scaladsl.server.Directives.{authorize, extractMethod, extractUnmatchedPath, pass, provide, reject}
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directive1}
 import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.{checkPermissions, scopeMap}
 import com.fullfacing.keycloak4s.auth.akka.http.models.{Permissions, ResourceNode, ResourceRoles}
 
@@ -36,7 +35,7 @@ object Authorisation {
   def authoriseRequest(nodes: List[ResourceNode], permissions: Permissions): Directive0 = {
     extractUnmatchedPath.flatMap { path =>
       extractMethod.flatMap { method =>
-        evaluate(nodes, permissions, path, method)
+        evaluate(nodes, permissions, path, scopeMap(method))
       }
     }
   }
@@ -49,9 +48,9 @@ object Authorisation {
    * @param nodes       A config object containing all secured paths.
    * @param permissions The user's permissions to access the service.
    * @param path        The path of the request.
-   * @param method      The HTTP method of the request.
+   * @param scopes      The required access to the resource(s) based on the HTTP method of the request.
    */
-  private def evaluate(nodes: List[ResourceNode], permissions: Permissions, path: Path, method: HttpMethod): Directive0 = {
+  private def evaluate(nodes: List[ResourceNode], permissions: Permissions, path: Path, scopes: List[String]): Directive0 = {
 
     def loop(p: Path, nodes: List[ResourceNode]): Directive0 = if (p.isEmpty) pass else {
       val head = p.head.toString
@@ -59,23 +58,28 @@ object Authorisation {
       if (p.startsWithSegment && validUuid.unapplySeq(head).isEmpty) {
         nodes.find(_.resource == head) match {
           case Some(node) =>
-            checkPermissions(head, permissions, r => authoriseMethod(r, method))
+            checkPermissions(head, permissions, r => authoriseMethod(r, scopes))
               .tflatMap(_ => loop(p.tail, node.nodes))
-          case None       =>
-            loop(p.tail, nodes)
+          case None =>
+            reject(AuthorizationFailedRejection)
         }
       } else {
         loop(p.tail, nodes)
       }
     }
 
-    loop(path, nodes)
+    //Check if user has a global role that defines access to all resources in the service
+    if (permissions.resources.exists { case (k, _) => scopes.contains(k) }) {
+      pass
+    } else {
+      loop(path, nodes)
+    }
   }
 
   /** Authorises the operation based on the HTTP method and the authorised roles the user has on the resource */
-  private def authoriseMethod(resource: ResourceRoles, method: HttpMethod): Directive0 = {
+  private def authoriseMethod(resource: ResourceRoles, scopes: List[String]): Directive0 = {
     authorize {
-      resource.roles.intersect(scopeMap(method)).nonEmpty
+      resource.roles.intersect(scopes).nonEmpty
     }
   }
 }
