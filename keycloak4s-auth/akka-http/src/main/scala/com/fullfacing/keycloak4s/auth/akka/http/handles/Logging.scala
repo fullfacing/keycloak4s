@@ -13,22 +13,43 @@ object Logging {
 
   /* VALIDATION LOGGING **/
   def jwksRequest(realm: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Requesting public keys from Keycloak for Realm $gr$realm$rs.")
+    logger.logTrace(s"${cIdLog(cId)}Requesting public keys from Keycloak for Realm $gr$realm.$rs")
+
+  def jwksCache(realm: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Cached public keys for Realm $gr$realm$cy found.$rs")
 
   def jwksRetrieved(realm: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Public keys retrieved for Realm $gr$realm$rs.")
+    logger.logTrace(s"${cIdLog(cId)}Public keys retrieved for Realm $gr$realm.$rs")
 
   def jwksRequestFailed(cId: => UUID, ex: Throwable): Unit =
-    logger.error(s"${cIdLog(cId)}$rs", ex)
+    logger.error(s"${cIdErr(cId)}", ex)
 
   def tokenValidating(cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Validating bearer token...")
+    logger.logTrace(s"${cIdLog(cId)}Validating bearer token...$rs")
 
   def tokenValidated(cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Bearer token successfully validated.")
+    logger.logTrace(s"${cIdLog(cId)}Bearer token successfully validated.$rs")
 
   def tokenValidationFailed(cId: => UUID, ex: Throwable): Unit =
-    logger.error(s"${cIdLog(cId)}${rs}Token validation failed.", ex)
+    logger.error(s"${cIdErr(cId)}Token validation failed.", ex)
+
+  def resourceAuthorizing(resource: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Checking resource $gr$resource ${cy}authorization...$rs")
+
+  def resourceAuthorized(resource: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Resource $gr$resource ${cy}authorized.$rs")
+
+  def resourceAuthorizationFailed(resource: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdErr(cId)}Resource $resource is not authorized.")
+
+  def methodAuthorizing(method: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Checking method $gr$method ${cy}authorization...$rs")
+
+  def methodAuthorized(method: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Method $gr$method ${cy}authorized.$rs")
+
+  def methodAuthorizationFailed(method: => String, cId: => UUID): Unit =
+    logger.logTrace(s"${cIdErr(cId)}Method $method is not authorized.")
 
   /* Logging Helper **/
   def logException(exception: KeycloakException)(log: => Unit): KeycloakException = {

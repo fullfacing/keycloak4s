@@ -21,10 +21,8 @@ trait AuthorisationDirectives {
   def patchA(p: ResourceRoles): Directive0  = patch.tflatMap(_ => authoriseMethod(p))
   def deleteA(p: ResourceRoles): Directive0 = delete.tflatMap(_ => authoriseMethod(p))
 
-
   /** Authorises both the resource and operation */
   def withAuth(magnet: WithAuthMagnet): magnet.Result = magnet()
-
 
   /**
    * Uses the service specific permissions from the user's validated token to determine the user's access to this resource.
@@ -32,7 +30,6 @@ trait AuthorisationDirectives {
    * @return The allowed operations available to the user on this resource
    */
   def authoriseResource(magnet: AuthoriseResourceMagnet): magnet.Result = magnet()
-
 
   /** Authorises the operation based on the HTTP method and the authorised roles the user has on the resource */
   def authoriseMethod(resource: ResourceRoles): Directive0 = {

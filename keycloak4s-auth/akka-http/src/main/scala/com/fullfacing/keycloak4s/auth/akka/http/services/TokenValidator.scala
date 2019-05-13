@@ -8,7 +8,7 @@ import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationException
-import com.fullfacing.keycloak4s.auth.akka.http.models.ValidationResult
+import com.fullfacing.keycloak4s.auth.akka.http.models.Permissions
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 import com.nimbusds.jose.Payload
@@ -53,7 +53,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
       case None                 => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)
       case Some(k: RSAKey)      => IO(k.asRight)
     }
-  }.handleError(_ => Exceptions.UNEXPECTED.asLeft)
+  }.handleError(ex => Exceptions.UNEXPECTED(ex.getMessage).asLeft)
 
   /**
    * Validates the token with the public key obtained from the Keycloak server.
@@ -68,26 +68,27 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
    */
   private def parseAndValidateIdToken(rawIdToken: String, publicKey: RSAKey, payload: Payload)
   : IO[Either[KeycloakException, Option[SignedJWT]]] = IO {
-    val idToken = parse(rawIdToken)
-    val tokenJson = payload.toJSONObject
+    val idToken     = parse(rawIdToken)
+    val tokenJson   = payload.toJSONObject
     val idTokenJson = idToken.getPayload.toJSONObject
 
-    val subMatches = tokenJson.getAsString("sub") == idTokenJson.getAsString("sub")
-    val stateMatches = tokenJson.getAsString("session_state") == idTokenJson.getAsString("session_state")
+    val subMatches    = tokenJson.getAsString("sub") == idTokenJson.getAsString("sub")
+    val stateMatches  = tokenJson.getAsString("session_state") == idTokenJson.getAsString("session_state")
 
-    if (subMatches && stateMatches) {
-      validateSignature(idToken, publicKey) match {
-        case Left(_)  => Exceptions.SIG_INVALID_ID.asLeft
-        case Right(r) => Some(r).asRight
-      }
-    } else Exceptions.ID_TOKEN_MISMATCH.asLeft
-  }.handleError(_ => Exceptions.PARSE_FAILED_ID.asLeft)
+    def validate() = validateSignature(idToken, publicKey) match {
+      case Left(_)  => Exceptions.SIG_INVALID_ID.asLeft
+      case Right(r) => Some(r).asRight
+    }
+
+    if (subMatches && stateMatches) validate() else Exceptions.ID_TOKEN_MISMATCH.asLeft
+  }.handleError(ex => Exceptions.PARSE_FAILED_ID(ex.getMessage).asLeft)
 
   /**
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
    * Additionally parses, validates and returns an optional ID token.
    */
-  def validate(rawToken: String, rawIdToken: Option[String] = None)(implicit cId: UUID): IO[Either[KeycloakException, ValidationResult]] = {
+  def validate(rawToken: String, rawIdToken: Option[String] = None): IO[Either[KeycloakException, Permissions]] = {
+    implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
     val token = IO {
@@ -104,9 +105,11 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
       id      <- EitherT(rawIdToken.fold(idTokenNull)(parseAndValidateIdToken(_, key, parsed.getPayload)))
     } yield {
       Logging.tokenValidated(cId)
-      ValidationResult(parsed.getPayload, id)
-    }).leftMap(logValidationException).value
-  }.handleError(_ => logValidationException(Exceptions.UNEXPECTED).asLeft)
+      Permissions(payload = parsed.getPayload, idToken = id)
+    }).leftMap(logValidationException).value.handleError { ex =>
+      logValidationException(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
+    }
+  }
 }
 
 object TokenValidator {

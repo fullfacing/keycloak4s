@@ -35,7 +35,7 @@ object ValidateRequestMagnet extends ValidationDirective {
       val rr = r.roles.map(_.split("-")).groupBy(_.headOption).collect { case (Some(k), v) =>
         k -> ResourceRoles(v.flatMap(_.lastOption))
       }
-      Permissions(rr)
+      permissions.copy(resources = rr)
     }
 
     checkPermissions(resourceServer, permissions, r => provide(f(r)))

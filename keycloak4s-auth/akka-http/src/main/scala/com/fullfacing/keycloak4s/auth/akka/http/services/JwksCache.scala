@@ -41,6 +41,11 @@ abstract class JwksCache(host: String, port: String, realm: String) {
 
   /* Retrieves the cached value. Recaches if empty. **/
   protected def retrieveCachedValue()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = IO {
-    Option(ref.get).fold(updateCache())(IO(_))
+    Option(ref.get).fold(updateCache()) { jwks =>
+      IO {
+        Logging.jwksCache(realm, cId)
+        jwks
+      }
+    }
   }.flatten
 }
