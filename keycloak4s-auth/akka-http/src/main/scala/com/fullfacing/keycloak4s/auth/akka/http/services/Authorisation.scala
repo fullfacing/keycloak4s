@@ -1,9 +1,9 @@
 package com.fullfacing.keycloak4s.auth.akka.http.services
 
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.server.Directives.{authorize, extractMethod, extractUnmatchedPath, pass, provide, reject}
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directive1}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.{checkPermissions, scopeMap}
+import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass, provide}
+import akka.http.scaladsl.server.{Directive0, Directive1}
+import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives._
 import com.fullfacing.keycloak4s.auth.akka.http.models.{Permissions, ResourceNode, ResourceRoles}
 
 import scala.util.matching.Regex
@@ -52,19 +52,19 @@ object Authorisation {
    */
   private def evaluate(nodes: List[ResourceNode], permissions: Permissions, path: Path, scopes: List[String]): Directive0 = {
 
-    def loop(p: Path, nodes: List[ResourceNode]): Directive0 = if (p.isEmpty) pass else {
+    def loop(p: Path, nodes: List[ResourceNode], directive: Directive0 = pass): Directive0 = if (p.isEmpty) directive else {
       val head = p.head.toString
       //Ignore segments that do not refer to resources
       if (p.startsWithSegment && validUuid.unapplySeq(head).isEmpty) {
         nodes.find(_.resource == head) match {
           case Some(node) =>
-            checkPermissions(head, permissions, r => authoriseMethod(r, scopes))
-              .tflatMap(_ => loop(p.tail, node.nodes))
+            val d = checkPermissions(head, permissions, r => authoriseMethod(r, scopes))
+            loop(p.tail, node.nodes, directive.tflatMap(_ => d))
           case None =>
-            reject(AuthorizationFailedRejection)
+            authorisationFailed()
         }
       } else {
-        loop(p.tail, nodes)
+        loop(p.tail, nodes, directive)
       }
     }
 
@@ -78,8 +78,6 @@ object Authorisation {
 
   /** Authorises the operation based on the HTTP method and the authorised roles the user has on the resource */
   private def authoriseMethod(resource: ResourceRoles, scopes: List[String]): Directive0 = {
-    authorize {
-      resource.roles.intersect(scopes).nonEmpty
-    }
+    if (resource.roles.intersect(scopes).nonEmpty) pass else authorisationFailed()
   }
 }
