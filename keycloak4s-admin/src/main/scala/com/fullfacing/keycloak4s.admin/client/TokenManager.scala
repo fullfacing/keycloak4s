@@ -49,7 +49,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
   }
 
   private val tokenEndpoint =
-    uri"http://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/token"
+    uri"${config.scheme}://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/token"
 
   private val password = Map(
     "grant_type"    -> "client_credentials",
