@@ -3,14 +3,14 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
-import com.fullfacing.keycloak4s.auth.akka.http.models.{Permissions, ResourceRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
+import com.fullfacing.keycloak4s.auth.akka.http.models.Permissions
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import org.json4s.jackson.JsonMethods.parse
 import org.json4s.jackson.Serialization.write
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 trait ValidationDirective {
 
@@ -41,18 +41,7 @@ trait ValidationDirective {
 
   /** Handles the success/failure of the token validation. */
   private def handleValidationResponse(response: Either[KeycloakException, Permissions]): Directive1[Permissions] = response match {
-    case Right(r) => provide(getUserPermissions(r))
+    case Right(r) => provide(r.copy(resources = r.payload.extractResources))
     case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`application/json`, write(t))))
-  }
-
-  /** Gets the resource_access field from the token and parses it into the Permissions object */
-  private def getUserPermissions(result: Permissions): Permissions = {
-    val json = parse(result.payload.toString)
-
-    val access: Map[String, ResourceRoles] = Try {
-      (json \\ "resource_access").extract[Map[String, ResourceRoles]]
-    }.getOrElse(Map.empty)
-
-    result.copy(resources = access)
   }
 }
