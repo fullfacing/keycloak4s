@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http
 
 import java.time.Instant
+import java.util.UUID
 
 import cats.effect.IO
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
@@ -14,13 +15,14 @@ import org.scalatest.{AsyncFlatSpec, Matchers, PrivateMethodTester}
 class ValidationTestsAsync extends AsyncFlatSpec with Matchers with PrivateMethodTester {
 
   val validator = TokenValidator("","","")
+  val cId: UUID = UUID.randomUUID()
 
   "matchPublicKey" should "successfully return a RSAKey from a JWKSet if the bearer token's KeyID matches a key in the set" in {
     val matchPublicKey = PrivateMethod[IO[Either[Throwable, RSAKey]]]('matchPublicKey)
 
     val (token, _, publicKey, keySet) = TestTokenGenerator.generateData(Instant.now().plusSeconds(60 * 5), Some(Instant.now()))
 
-    (validator invokePrivate matchPublicKey(token.getHeader.getKeyID, keySet, true))
+    (validator invokePrivate matchPublicKey(token.getHeader.getKeyID, keySet, true, cId))
       .unsafeToFuture().map(x => assert(x.map(_.toJSONObject) == Right(publicKey.toJSONObject)))
   }
 
@@ -29,7 +31,7 @@ class ValidationTestsAsync extends AsyncFlatSpec with Matchers with PrivateMetho
 
     val (_, _, _, keySet) = TestTokenGenerator.generateData(Instant.now().plusSeconds(60 * 5), Some(Instant.now()))
 
-    (validator invokePrivate matchPublicKey("567890", keySet, true))
+    (validator invokePrivate matchPublicKey("567890", keySet, true, cId))
       .unsafeToFuture().map(x => assert(x == Left(Exceptions.PUBLIC_KEY_NOT_FOUND)))
   }
 
