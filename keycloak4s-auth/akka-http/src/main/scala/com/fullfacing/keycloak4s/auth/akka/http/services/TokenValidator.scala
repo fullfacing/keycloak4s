@@ -8,7 +8,7 @@ import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationException
-import com.fullfacing.keycloak4s.auth.akka.http.models.Permissions
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 import com.nimbusds.jose.Payload
@@ -87,7 +87,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
    * Additionally parses, validates and returns an optional ID token.
    */
-  def validate(rawToken: String, rawIdToken: Option[String] = None): IO[Either[KeycloakException, Permissions]] = {
+  def validate(rawToken: String, rawIdToken: Option[String] = None): IO[Either[KeycloakException, AuthPayload]] = {
     implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
@@ -105,7 +105,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
       id      <- EitherT(rawIdToken.fold(idTokenNull)(parseAndValidateIdToken(_, key, parsed.getPayload)))
     } yield {
       Logging.tokenValidated(cId)
-      Permissions(payload = parsed.getPayload, idToken = id)
+      AuthPayload(accessToken = parsed.getPayload, idToken = id.map(_.getPayload))
     }).leftMap(logValidationException).value.handleError { ex =>
       logValidationException(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
     }

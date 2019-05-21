@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusC
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
 import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
-import com.fullfacing.keycloak4s.auth.akka.http.models.Permissions
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
@@ -22,7 +22,7 @@ trait ValidationDirective {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken()(implicit tv: TokenValidator): Directive1[Permissions] = {
+  def validateToken()(implicit tv: TokenValidator): Directive1[AuthPayload] = {
     optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
         case Some(token)  => callValidation(token.token(), idToken)
@@ -32,7 +32,7 @@ trait ValidationDirective {
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[Permissions] = {
+  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[AuthPayload] = {
     onComplete(validator.validate(token, idToken).unsafeToFuture()).flatMap {
       case Success(r) => handleValidationResponse(r)
       case Failure(_) => complete(HttpResponse(StatusCodes.InternalServerError, entity = "An unexpected error occurred"))
@@ -40,8 +40,8 @@ trait ValidationDirective {
   }
 
   /** Handles the success/failure of the token validation. */
-  private def handleValidationResponse(response: Either[KeycloakException, Permissions]): Directive1[Permissions] = response match {
-    case Right(r) => provide(r.copy(resources = r.payload.extractResources))
+  private def handleValidationResponse(response: Either[KeycloakException, AuthPayload]): Directive1[AuthPayload] = response match {
+    case Right(r) => provide(r.copy(resourceRoles = r.accessToken.extractResources))
     case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`application/json`, write(t))))
   }
 }
