@@ -56,10 +56,11 @@ val scalatest: Seq[ModuleID] = Seq(
 )
 
 val `sttp-akka`: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "core"              % "1.5.11",
-  "com.softwaremill.sttp" %% "akka-http-backend" % "1.5.11",
-  "com.typesafe.akka"     %% "akka-stream"       % "2.5.21",
-  "com.softwaremill.sttp" %% "json4s"            % "1.5.11"
+  "com.softwaremill.sttp" %% "core"                           % "1.5.11",
+  "com.softwaremill.sttp" %% "akka-http-backend"              % "1.5.11",
+  "com.softwaremill.sttp" %% "async-http-client-backend-cats" % "1.5.11",
+  "com.typesafe.akka"     %% "akka-stream"                    % "2.5.21",
+  "com.softwaremill.sttp" %% "json4s"                         % "1.5.11"
 )
 
 val cats: Seq[ModuleID] = Seq(
@@ -86,9 +87,9 @@ val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % "7.0.1"
 )
 
-// --------------------------------------------//
-// Project and configuration for keycloak-core //
-// --------------------------------------------//
+// --------------------------------------------- //
+// Project and configuration for keycloak4s-core //
+// --------------------------------------------- //
 lazy val `keycloak-dependencies`: Seq[ModuleID] = cats ++ json4s ++ logback ++ enumeratum
 
 lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
@@ -96,18 +97,18 @@ lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
   .settings(libraryDependencies ++= `keycloak-dependencies`)
   .settings(name := "keycloak4s-core", publishArtifact := true)
 
-// ---------------------------------------------//
-// Project and configuration for keycloak-monix //
-// ---------------------------------------------//
+// ---------------------------------------------- //
+// Project and configuration for keycloak4s-admin //
+// ---------------------------------------------- //
 lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `sttp-akka`)
+  .settings(libraryDependencies ++= `sttp-akka` ++ scalatest)
   .settings(name := "keycloak4s-admin", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
-// ---------------------------------------------//
-// Project and configuration for keycloak-monix //
-// ---------------------------------------------//
+// ---------------------------------------------------- //
+// Project and configuration for keycloak4s-admin-monix //
+// ---------------------------------------------------- //
 lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = `sttp-monix` ++ monix
 
 lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
@@ -116,9 +117,9 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
   .dependsOn(`keycloak4s-admin`)
 
-// -------------------------------------------------------- //
-// Project and configuration for keycloak-akka-http-adapter //
-// -------------------------------------------------------- //
+// ------------------------------------------------------- //
+// Project and configuration for keycloak4s-auth-akka-http //
+// ------------------------------------------------------- //
 lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ nimbus ++ scalatest
 
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"))
@@ -127,9 +128,9 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
-// --------------------------------------------------//
-// Project and configuration for keycloak-playground //
-// --------------------------------------------------//
+// --------------------------------------------------- //
+// Project and configuration for keycloak4s-playground //
+// --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(global: _*)
   .settings(name := "keycloak4s-playground", publishArtifact := false)
