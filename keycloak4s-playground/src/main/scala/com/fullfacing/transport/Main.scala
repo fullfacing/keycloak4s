@@ -4,6 +4,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.effect.ExitCode
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
+import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak => KeycloakM, KeycloakClient => KeycloakClientM}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.transport.backends.{AkkaHttpBackendL, MonixHttpBackendL}
@@ -11,6 +12,7 @@ import com.fullfacing.transport.handles.Akka
 import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
 import monix.eval.{Task, TaskApp}
+import monix.execution.Scheduler.Implicits.global
 import org.json4s.jackson.Serialization.writePretty
 
 object Main extends TaskApp {
@@ -37,15 +39,18 @@ object Main extends TaskApp {
     }
 
     /* Monix-specific alternative for Admin API calls. Includes additional Observable functionality. **/
-    lazy val monixClient: KeycloakClient[Task, Source[ByteString, Any]] = {
+    lazy val monixClient: KeycloakClientM = {
       implicit val backend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
-      ??? //Client to be added after Monix submodule refactoring.
+      new KeycloakClientM(config)
     }
 
     implicit val client: KeycloakClient[Task, Source[ByteString, Any]] = genericClient //slot in preferred client
-
+    implicit val clientM: KeycloakClientM = monixClient
     /* Example Usage: Provides access to the Users calls using the implicit client. **/
     val users = Keycloak.Users[Task, Source[ByteString, Any]]
+    val usersM = KeycloakM.Users
+
+    usersM.fetchS().foreachL(println).onErrorHandle(_.printStackTrace())
 
     /* Example Usage: Returns and prints all Users for the given Realm. **/
     users.fetch().foreachL {

@@ -10,17 +10,16 @@ import scala.util.control.NonFatal
 
 /* Created by https://github.com/Executioner1939  */
 
-class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Observable[A] {
+class AsyncState[A, B](initial: B)(f: B => Task[Either[A, (A, B)]]) extends Observable[A] {
   def unsafeSubscribeFn(subscriber: Subscriber[A]): Cancelable = {
     import subscriber.scheduler
     var streamErrors = true
     try {
-      val init = seed
       streamErrors = false
 
-      Task.defer(loop(subscriber, init))
+      Task.defer(loop(subscriber, initial))
         .executeWithOptions(_.enableAutoCancelableRunLoops)
-        .runAsync(_ => Callback.empty)
+        .runAsync(Callback.empty)
     }
     catch {
       case ex if NonFatal(ex) =>
@@ -30,8 +29,8 @@ class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Obse
     }
   }
 
-  def loop(subscriber: Subscriber[A], state: S): Task[Unit] =
-    try f(state).redeemWith(
+  def loop(subscriber: Subscriber[A], next: B): Task[Unit] =
+    try f(next).redeemWith(
       { ex =>
         subscriber.onError(ex)
         Task.unit
@@ -53,10 +52,4 @@ class AsyncState[S, A](seed: => S, f: S => Task[Either[A, (A, S)]]) extends Obse
       case ex if NonFatal(ex) =>
         Task.raiseError(ex)
     }
-}
-
-sealed trait State
-object State {
-  case object Init extends State
-  case class Continue(offset: Int) extends State
 }
