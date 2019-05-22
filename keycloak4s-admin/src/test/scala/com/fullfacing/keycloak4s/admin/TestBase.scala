@@ -10,8 +10,10 @@ import org.scalatest.{Assertion, AsyncFlatSpec, Matchers}
 import scala.concurrent.ExecutionContext.global
 
 class TestBase extends AsyncFlatSpec with Matchers {
-  val authConfig = KeycloakConfig.Auth("master", "admin-cli", "ade6263d-2f16-405e-8c64-ea810ef536d0")
-  val keycloakConfig = KeycloakConfig("http", "127.0.0.1", 8088, "test", authConfig)
+  val clientSecret: String = ServerInitializer.clientSecret.unsafeRunSync()
+
+  val authConfig = KeycloakConfig.Auth("master", "admin-cli", clientSecret)
+  val keycloakConfig = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   implicit val context: ContextShift[IO] = IO.contextShift(global)
   implicit val backend: SttpBackend[IO, Nothing] = new CatsIoHttpBackendL(AsyncHttpClientCatsBackend[IO]())

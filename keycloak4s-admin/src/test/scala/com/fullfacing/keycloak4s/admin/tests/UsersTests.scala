@@ -1,6 +1,7 @@
-package com.fullfacing.keycloak4s.admin
+package com.fullfacing.keycloak4s.admin.tests
 
 import cats.effect.IO
+import com.fullfacing.keycloak4s.admin.TestBase
 import com.fullfacing.keycloak4s.admin.client.Keycloak
 import com.fullfacing.keycloak4s.admin.services.Users
 
