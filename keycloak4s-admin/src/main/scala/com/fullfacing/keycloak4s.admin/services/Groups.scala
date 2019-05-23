@@ -14,9 +14,9 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
-  def create(group: Group.Create): R[Either[KeycloakError, Group]] = {
+  def create(group: Group.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups")
-    client.post[Group](path, group)
+    client.post[Unit](path, group)
   }
 
   def createSubGroup(groupId: UUID, group: Group.Create): R[Either[KeycloakError, Group]] = {

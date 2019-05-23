@@ -22,9 +22,6 @@ object Role {
 
   /** Testing revealed name must be included in the update body */
   final case class Update(attributes: Option[Map[String, Seq[String]]] = None,
-                          clientRole: Option[Boolean] = None,
-                          composite: Option[Boolean] = None,
-                          composites: Option[RoleComposites] = None,
                           containerId: Option[String] = None,
                           description: Option[String] = None,
                           name: String)
