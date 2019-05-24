@@ -10,7 +10,7 @@ import org.scalatest._
 import scala.concurrent.ExecutionContext.global
 
 class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
-  val clientSecret: String = "ed66f43c-2434-4380-b067-ffb4253eea03" //ServerInitializer.clientSecret.unsafeRunSync()
+  val clientSecret: String = ServerInitializer.clientSecret.unsafeRunSync()
 
   /* Keycloak Server Configuration **/
   val authConfig = KeycloakConfig.Auth("master", "admin-cli", clientSecret)
