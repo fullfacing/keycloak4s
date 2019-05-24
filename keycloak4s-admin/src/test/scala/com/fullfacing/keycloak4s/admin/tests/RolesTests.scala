@@ -9,9 +9,10 @@ import com.fullfacing.keycloak4s.admin.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models.{Client, Group, KeycloakError, ManagementPermission, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.writePretty
+import org.scalatest.DoNotDiscover
 
+@DoNotDiscover
 class RolesTests extends IntegrationSpec {
-
 
   //Test Data////////////////////////////////////////////////////////////////////
   private def mapToRole(id: UUID, role: Role.Create): Role =
@@ -192,7 +193,6 @@ class RolesTests extends IntegrationSpec {
     task.value.map(isSuccessful).unsafeToFuture()
   }
 
-
   "Composite Realm Role" should "successfully add sub roles to a realm role" in {
     realmRoleService.addCompositeRoles(rRole1Name, List(rRole2.get(), cRole1.get))
       .map(isSuccessful).unsafeToFuture()
@@ -252,8 +252,6 @@ class RolesTests extends IntegrationSpec {
 
     task.value.map(isSuccessful).unsafeToFuture()
   }
-
-
 
   "Management Permissions" should "do something or another to a realm role" in {
     val task =
