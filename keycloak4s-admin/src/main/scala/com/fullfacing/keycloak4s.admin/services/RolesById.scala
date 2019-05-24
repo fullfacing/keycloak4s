@@ -74,7 +74,7 @@ class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[ManagementPermission](path)
   }
 
-  def initialiseRoleAuthPermissions(id: UUID, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+  def initialiseRoleAuthPermissions(id: UUID, ref: ManagementPermission.Enable): R[Either[KeycloakError, ManagementPermission]] = {
     val path: Path = Seq(client.realm, `roles-by-id`, id, "management", "permissions")
     client.put[ManagementPermission](path, ref)
   }
