@@ -33,6 +33,7 @@ val scalacOpts = Seq(
   "-Xfuture"
 )
 
+parallelExecution in Test := false
 
 addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
 addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.2.4")
@@ -51,8 +52,7 @@ val enumeratum: Seq[ModuleID] = Seq(
 )
 
 val scalatest: Seq[ModuleID] = Seq(
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
-  "org.scalamock" %% "scalamock" % "4.1.0" % Test
+  "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
 val `sttp-akka`: Seq[ModuleID] = Seq(
