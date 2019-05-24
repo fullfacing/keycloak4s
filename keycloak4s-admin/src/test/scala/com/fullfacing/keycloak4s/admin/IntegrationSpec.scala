@@ -5,20 +5,20 @@ import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.services.{Clients, Groups, IdentityProviders, Roles, RolesById, Users}
 import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, KeycloakError}
 import com.softwaremill.sttp.SttpBackend
+import com.softwaremill.sttp.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import org.scalatest._
 
 import scala.concurrent.ExecutionContext.global
 
 class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
-  val clientSecret: String = "93e66ea6-9e1f-4079-a76b-4d5b0530a1b4"//ServerInitializer.clientSecret.unsafeRunSync()
 
   /* Keycloak Server Configuration **/
-  val authConfig = KeycloakConfig.Auth("master", "admin-cli", clientSecret)
+  val authConfig = KeycloakConfig.Auth("master", "admin-cli", ServerInitializer.clientSecret)
   val keycloakConfig = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
   implicit val context: ContextShift[IO] = IO.contextShift(global)
-  implicit val backend: SttpBackend[IO, Nothing] = ServerInitializer.backend
+  implicit val backend: SttpBackend[IO, Nothing] = new CatsIoHttpBackendL(AsyncHttpClientCatsBackend[IO]())
   implicit val client: KeycloakClient[IO, Nothing] = new KeycloakClient[IO, Nothing](keycloakConfig)
 
   /* Keycloak Services **/

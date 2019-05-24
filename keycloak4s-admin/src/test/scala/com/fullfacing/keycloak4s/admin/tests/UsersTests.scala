@@ -8,7 +8,9 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
+import org.scalatest.DoNotDiscover
 
+@DoNotDiscover
 class UsersTests extends IntegrationSpec {
 
   val storedUsers: AtomicReference[List[User]] = new AtomicReference[List[User]]()
