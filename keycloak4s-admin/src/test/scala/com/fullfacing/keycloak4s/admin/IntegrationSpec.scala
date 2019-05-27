@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.admin
 
 import cats.effect.{ContextShift, IO}
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
-import com.fullfacing.keycloak4s.admin.services.{Clients, Groups, IdentityProviders, RealmsAdmin, Roles, Users}
+import com.fullfacing.keycloak4s.admin.services.{Clients, Groups, IdentityProviders, RealmsAdmin, Roles, RolesById, Users}
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.softwaremill.sttp.SttpBackend
 import com.softwaremill.sttp.asynchttpclient.cats.AsyncHttpClientCatsBackend
@@ -29,6 +29,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors with I
   val groupService: Groups[IO, Nothing]             = Keycloak.Groups[IO, Nothing]
   val clientService: Clients[IO, Nothing]           = Keycloak.Clients[IO, Nothing]
   val idProvService: IdentityProviders[IO, Nothing] = Keycloak.IdentityProviders[IO, Nothing]
+  val rolesByIdService: RolesById[IO, Nothing]      = Keycloak.RolesById[IO, Nothing]
 
   /* Sub-Services **/
   val realmRoleService: roleService.RealmLevel.type   = roleService.RealmLevel
