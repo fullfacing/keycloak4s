@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.global
 class TestBase extends AsyncFlatSpec with Matchers with Inspectors {
   val clientSecret: String = ServerInitializer.clientSecret
 
-  val authConfig = KeycloakConfig.Auth("Demo", "Demo_client", clientSecret)
+  val authConfig = KeycloakConfig.Auth("master", "admin_cli", clientSecret)
   val keycloakConfig = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   implicit val context: ContextShift[IO] = IO.contextShift(global)
