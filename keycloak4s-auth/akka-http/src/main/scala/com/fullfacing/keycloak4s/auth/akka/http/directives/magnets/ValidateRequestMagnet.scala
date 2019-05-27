@@ -1,12 +1,12 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
 import akka.http.scaladsl.server.Directive1
-import com.fullfacing.keycloak4s.auth.akka.http.models.Permissions
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.services.{Authorisation, TokenValidator}
 
 trait ValidateRequestMagnet {
-  def apply(): Directive1[Permissions]
+  def apply(): Directive1[AuthPayload]
 }
 
 object ValidateRequestMagnet {

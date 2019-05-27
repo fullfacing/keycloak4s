@@ -5,5 +5,5 @@ import monix.execution.Scheduler
 
 object Implicits {
   implicit val scheduler: Scheduler = Scheduler.io("io")
-  implicit val tv: TokenValidator = new TokenValidator("localhost", "8080", "master")
+  implicit val tv: TokenValidator = new TokenValidator("localhost", "8088", "test")
 }

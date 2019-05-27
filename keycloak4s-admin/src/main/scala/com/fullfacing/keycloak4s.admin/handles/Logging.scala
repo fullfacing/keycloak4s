@@ -20,7 +20,7 @@ object Logging {
     logger.logTrace(s"${cIdLog(cId)}Access Token retrieved for Realm $gr$realm$rs.")
 
   def tokenRequestFailed(realm: String, cId: UUID, ex: Throwable): Unit =
-    logger.error(s"Correlation ID: $cId - Access Token could not be retrieved for Realm $realm.", ex)
+    logger.error(s"${cIdErr(cId)}Access Token could not be retrieved for Realm $realm.", ex)
 
   /* REFRESH TOKEN LOGGING **/
 
@@ -31,7 +31,7 @@ object Logging {
     logger.logTrace(s"${cIdLog(cId)}Access Token refreshed for Realm $gr$realm$rs.")
 
   def tokenRefreshFailed(realm: String, cId: UUID, ex: Throwable): Unit =
-    logger.error(s"Correlation ID: $cId - Access Token could not be refreshed for Realm $realm.", ex)
+    logger.error(s"${cIdErr(cId)}Access Token could not be refreshed for Realm $realm.", ex)
 
   /* ADMIN API REST LOGGING **/
 
@@ -49,7 +49,7 @@ object Logging {
   }
 
   def requestFailed(cId: UUID, ex: Throwable): Unit =
-    logger.error(s"Correlation ID: $cId - Request to Keycloak Admin API failed.", ex)
+    logger.error(s"${cIdErr(cId)}Request to Keycloak Admin API failed.", ex)
 
   /* Logging Helpers **/
   def handleLogging[A, B <: Throwable](resp: Either[B, A])(success: A => Unit, failure: B => Unit): Either[B, A] = resp match {

@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.http.scaladsl.server.directives.PathDirectives._
 import akka.http.scaladsl.server.{Directive, Directive1, PathMatcher}
 import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.checkPermissions
-import com.fullfacing.keycloak4s.auth.akka.http.models.{Permissions, ResourceRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, ResourceRoles}
 
 trait PathPrefixWithAuthMagnet[A] {
   type Result = Directive[A]
@@ -15,7 +15,7 @@ trait PathPrefixWithAuthMagnet[A] {
 
 object PathPrefixWithAuthMagnet {
 
-  implicit def simplePathPrefix(resource: String)(implicit permissions: Permissions): PathPrefixWithAuthMagnet[Tuple1[ResourceRoles]] =
+  implicit def simplePathPrefix(resource: String)(implicit permissions: AuthPayload): PathPrefixWithAuthMagnet[Tuple1[ResourceRoles]] =
     new PathPrefixWithAuthMagnet[Tuple1[ResourceRoles]] {
       override type Result = Directive1[ResourceRoles]
 
@@ -24,7 +24,7 @@ object PathPrefixWithAuthMagnet {
       }
     }
 
-  implicit def tuplePathPrefix1(params: (String, PathMatcher[Tuple1[UUID]]))(implicit permissions: Permissions): PathPrefixWithAuthMagnet[(ResourceRoles, UUID)] =
+  implicit def tuplePathPrefix1(params: (String, PathMatcher[Tuple1[UUID]]))(implicit permissions: AuthPayload): PathPrefixWithAuthMagnet[(ResourceRoles, UUID)] =
     new PathPrefixWithAuthMagnet[(ResourceRoles, UUID)] {
       override type Result = Directive[(ResourceRoles, UUID)]
 
@@ -34,7 +34,7 @@ object PathPrefixWithAuthMagnet {
       }
     }
 
-  implicit def tuplePathPrefix2(params: (PathMatcher[Tuple1[UUID]], String))(implicit permissions: Permissions): PathPrefixWithAuthMagnet[(ResourceRoles, UUID)] =
+  implicit def tuplePathPrefix2(params: (PathMatcher[Tuple1[UUID]], String))(implicit permissions: AuthPayload): PathPrefixWithAuthMagnet[(ResourceRoles, UUID)] =
     new PathPrefixWithAuthMagnet[(ResourceRoles, UUID)] {
       override type Result = Directive[(ResourceRoles, UUID)]
 
