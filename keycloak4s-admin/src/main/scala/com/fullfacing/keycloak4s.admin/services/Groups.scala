@@ -133,7 +133,7 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Permissions ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------------- //
-  def getManagementPermissions(groupId: UUID): R[Either[KeycloakError, ManagementPermission]] = {
+  def fetchManagementPermissions(groupId: UUID): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(client.realm, "groups", groupId.toString, "management", "permissions")
     client.get[ManagementPermission](path)
   }
