@@ -14,13 +14,13 @@ import scala.concurrent.Future
 class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors with Inside {
 
   /* Keycloak Server Configuration **/
-  val authConfig = KeycloakConfig.Auth("master", "admin-cli", ServerInitializer.clientSecret)
-  val keycloakConfig = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
+  val authConfig      = KeycloakConfig.Auth("master", "admin-cli", ServerInitializer.clientSecret)
+  val keycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
-  implicit val context: ContextShift[IO] = IO.contextShift(global)
-  implicit val backend: SttpBackend[IO, Nothing] = new IoHttpBackend(AsyncHttpClientCatsBackend[IO]())
-  implicit val client: KeycloakClient[IO, Nothing] = new KeycloakClient[IO, Nothing](keycloakConfig)
+  implicit val context: ContextShift[IO]            = IO.contextShift(global)
+  implicit val backend: SttpBackend[IO, Nothing]    = new IoHttpBackend(AsyncHttpClientCatsBackend[IO]())
+  implicit val client: KeycloakClient[IO, Nothing]  = new KeycloakClient[IO, Nothing](keycloakConfig)
 
   /* Keycloak Services **/
   val userService: Users[IO, Nothing]               = Keycloak.Users[IO, Nothing]

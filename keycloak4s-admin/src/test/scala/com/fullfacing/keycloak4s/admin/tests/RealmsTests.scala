@@ -18,6 +18,7 @@ class RealmsTests extends IntegrationSpec {
    *
    * logoutAll                  - The call seems to be broken on Keycloak's side.
    * clientDescriptionConverter - The exact purpose or use cases for the call is unknown.
+   * partialImport              - The structure/contents of the JSON file to be POSTed is not sufficiently explained.
    * testLdapConnection         - Requires setup not feasible for testing.
    * testSmtpConnection         - Requires setup not feasible for testing.
    */
