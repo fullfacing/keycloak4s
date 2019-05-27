@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.admin.services
 
+import java.util.UUID
+
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.core.models._
@@ -12,7 +14,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /**
    * Imports a realm from a full representation of that realm.
    */
-  def importRealm(realm: RealmRepresentation.Create): R[Either[KeycloakError, Unit]] = {
+  def create(realm: RealmRepresentation.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq.empty[String]
     client.post[Unit](path, realm)
   }
@@ -21,9 +23,18 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * Get the top-level representation of the realm.
    * It will not include nested information like User and Client representations.
    */
-  def fetchTopLevelRepresentation(): R[Either[KeycloakError, RealmRepresentation]] = {
-    val path = Seq(client.realm)
+  def fetch(realm: String = client.realm): R[Either[KeycloakError, RealmRepresentation]] = {
+    val path = Seq(realm)
     client.get[RealmRepresentation](path)
+  }
+
+  /**
+   * Get the top-level representation of the realm.
+   * It will not include nested information like User and Client representations.
+   */
+  def fetchAll(): R[Either[KeycloakError, List[RealmRepresentation]]] = {
+    val path = Seq()
+    client.get[List[RealmRepresentation]](path)
   }
 
   /**
@@ -32,16 +43,16 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    *
    * @param update  Representation of the realm.
    */
-  def updateTopLevelRepresentation(update: RealmRepresentation): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm)
+  def update(update: RealmRepresentation.Update, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm)
     client.put[Unit](path, update)
   }
 
   /**
    * Delete the realm.
    */
-  def deleteRealm(): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm)
+  def delete(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm)
     client.delete[Unit](path)
   }
 
@@ -61,7 +72,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param resourceTypes
    * @return
    */
-  def fetchAdminEvents(authClient: Option[String] = None,
+  def fetchAdminEvents(realm: String = client.realm,
+                       authClient: Option[String] = None,
                        authIpAddress: Option[String] = None,
                        authRealm: Option[String] = None,
                        authUser: Option[String] = None,
@@ -87,37 +99,37 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       ("resourceTypes", toCsvList(resourceTypes))
     )
 
-    val path = Seq(client.realm, "admin-events")
+    val path = Seq(realm, "admin-events")
     client.get[List[AdminEvent]](path, query = query)
   }
 
   /** Delete all admin events. */
-  def deleteAdminEvents(): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "admin-events")
+  def deleteAdminEvents(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "admin-events")
     client.delete[Unit](path)
   }
 
   /** Clear cache of external public keys (Public keys of clients or Identity providers). */
-  def clearKeysCache(): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "clear-keys-cache")
+  def clearKeysCache(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "clear-keys-cache")
     client.post[Unit](path)
   }
 
   /** Clears realm cache. */
-  def clearRealmCache(): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "clear-realm-cache")
+  def clearRealmCache(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "clear-realm-cache")
     client.post[Unit](path)
   }
 
   /** Clears user cache. */
-  def clearUserCache(): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "clear-user-cache")
+  def clearUserCache(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "clear-user-cache")
     client.post[Unit](path)
   }
 
-  /** Base path for importing clients under this realm. */
-  def importClientViaDescription(description: String): R[Either[KeycloakError, Client]] = {
-    val path = Seq(client.realm, "client-description-converter")
+  /* PURPOSE OR USE CASES FOR THIS ENDPOINT IS NOT YET KNOWN **/
+  def clientDescriptionConverter(description: String, realm: String = client.realm): R[Either[KeycloakError, Client]] = {
+    val path = Seq(realm, "client-description-converter")
     client.post[Client](path, description)
   }
 
@@ -128,8 +140,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    *
    * @return
    */
-  def fetchClientSessionStats(): R[Either[KeycloakError, Seq[ClientSessionStatistics]]] = {
-    val path = Seq(client.realm, "client-session-stats")
+  def fetchClientSessionStats(realm: String = client.realm): R[Either[KeycloakError, Seq[ClientSessionStatistics]]] = {
+    val path = Seq(realm, "client-session-stats")
     client.get[Seq[ClientSessionStatistics]](path)
   }
 
@@ -138,56 +150,56 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    *
    * @return
    */
-  def fetchDefaultClientScopes(): R[Either[KeycloakError, Seq[ClientScope]]] = {
-    val path = Seq(client.realm, "default-default-client-scopes")
+  def fetchDefaultClientScopes(realm: String = client.realm): R[Either[KeycloakError, Seq[ClientScope]]] = {
+    val path = Seq(realm, "default-default-client-scopes")
     client.get[Seq[ClientScope]](path)
   }
 
   /** Update a default client scope. */
-  def updateDefaultClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "default-default-client-scopes", scopeId)
+  def assignClientScopeAsDefault(scopeId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "default-default-client-scopes", scopeId.toString)
     client.put[Unit](path)
   }
 
   /** Deletes a default client scope. */
-  def deleteDefaultClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "default-default-client-scopes", scopeId)
+  def unassignClientScopeAsDefault(scopeId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "default-default-client-scopes", scopeId.toString)
     client.delete[Unit](path)
   }
 
-  /** Get group hierarchy. Only name and ids are returned.  */
-  def fetchGroupHierarchy(): R[Either[KeycloakError, Seq[Group]]] = {
-    val path = Seq(client.realm, "default-groups")
+  /** Returns all default groups. Only name, path and ids are returned.  */
+  def fetchDefaultGroups(realm: String = client.realm): R[Either[KeycloakError, Seq[Group]]] = {
+    val path = Seq(realm, "default-groups")
     client.get[Seq[Group]](path)
   }
 
-  /** Updates group hierarchy. */
-  def updateGroupHierarchy(groupId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "default-groups", groupId)
+  /** Assigns a Group as default. */
+  def assignGroupAsDefault(groupId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "default-groups", groupId.toString)
     client.put[Unit](path)
   }
 
-  /** Deletes group hierarchy. */
-  def deleteGroupHierarchy(groupId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "default-groups", groupId)
+  /** Unassigns a Group as default. */
+  def unassignGroupAsDefault(groupId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "default-groups", groupId.toString)
     client.delete[Unit](path)
   }
 
   /** Get realm optional client scopes. */
-  def fetchOptionalClientScopes(): R[Either[KeycloakError, Seq[ClientScope]]] = {
-    val path = Seq(client.realm, "default-Optional-client-scopes")
+  def fetchOptionalClientScopes(realm: String = client.realm): R[Either[KeycloakError, Seq[ClientScope]]] = {
+    val path = Seq(realm, "default-optional-client-scopes")
     client.get[Seq[ClientScope]](path)
   }
 
   /** Update a optional client scope. */
-  def updateOptionalClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "default-Optional-client-scopes", scopeId)
+  def assignClientScopeAsOptional(scopeId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "default-optional-client-scopes", scopeId.toString)
     client.put[Unit](path)
   }
 
   /** Deletes a optional client scope. */
-  def deleteOptionalClientScope(scopeId: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "default-Optional-client-scopes", scopeId)
+  def unassignClientScopeAsOptional(scopeId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "default-optional-client-scopes", scopeId.toString)
     client.delete[Unit](path)
   }
 
@@ -204,7 +216,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param user        User id.
    * @return
    */
-  def fetchEvents(clientName: Option[String] = None,
+  def fetchEvents(realm: String = client.realm,
+                  clientName: Option[String] = None,
                   dateFrom: Option[String] = None,
                   dateTo: Option[String] = None,
                   first: Option[Int] = None,
@@ -224,13 +237,13 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       ("user", user)
     )
 
-    val path = Seq(client.realm, "events")
+    val path = Seq(realm, "events")
     client.get[Seq[EventRepresentation]](path, query = query)
   }
 
   /** Delete all events */
-  def deleteAllEvents(): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "events")
+  def deleteAllEvents(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "events")
     client.delete[Unit](path)
   }
 
@@ -238,8 +251,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * Get the events provider configuration
    * Returns JSON object with events provider configuration
    */
-  def fetchEventsConfig(): R[Either[KeycloakError, RealmEventsConfig]] = {
-    val path = Seq(client.realm, "events", "config")
+  def fetchEventsConfig(realm: String = client.realm): R[Either[KeycloakError, RealmEventsConfig]] = {
+    val path = Seq(realm, "events", "config")
     client.get[RealmEventsConfig](path)
   }
 
@@ -247,8 +260,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * Update the events provider.
    * Change the events provider and/or its configuration.
    */
-  def updateEventsConfig(config: RealmEventsConfig): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "events", "config")
+  def updateEventsConfig(config: RealmEventsConfig.Update, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "events", "config")
     client.put[Unit](path, config)
   }
 
@@ -257,16 +270,16 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    *
    * @param path
    */
-  def fetchGroupByPath(path: String): R[Either[KeycloakError, Group]] = {
-    client.get[Group](Seq(client.realm, "group-by-path", path))
+  def fetchGroupByPath(path: String, realm: String = client.realm): R[Either[KeycloakError, Group]] = {
+    client.get[Group](Seq(realm, "group-by-path", path))
   }
 
   /**
    * Removes all user sessions.
    * Any client that has an admin url will also be told to invalidate any sessions they have.
    */
-  def logoutAll(): R[Either[KeycloakError, GlobalRequestResult]] = {
-    val path = Seq(client.realm, "logout-all")
+  def logoutAll(realm: String = client.realm): R[Either[KeycloakError, GlobalRequestResult]] = {
+    val path = Seq(realm, "logout-all")
     client.post[GlobalRequestResult](path)
   }
 
@@ -277,23 +290,24 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param exportGroupsAndRoles
    * @return
    */
-  def partialExport(exportClients: Option[Boolean] = None,
+  def partialExport(realm: String = client.realm,
+                    exportClients: Option[Boolean] = None,
                     exportGroupsAndRoles: Option[Boolean] = None): R[Either[KeycloakError, RealmRepresentation]] = {
-    val path    = Seq(client.realm, "partial-export")
+    val path    = Seq(realm, "partial-export")
     val queries = createQuery(("exportClients", exportClients), ("exportGroupsAndRoles", exportGroupsAndRoles))
 
     client.post[RealmRepresentation](path, query = queries)
   }
 
   /** Partial import from a JSON file to an existing realm. */
-  def partialImport(rep: PartialImport): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "partialImport")
+  def partialImport(rep: PartialImport, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "partialImport")
     client.post[Unit](path, rep)
   }
 
   /** Push the realm’s revocation policy to any client that has an admin url associated with it. */
-  def pushRevocation(): R[Either[KeycloakError, GlobalRequestResult]] = {
-    val path = Seq(client.realm, "push-revocation")
+  def pushRevocation(realm: String = client.realm): R[Either[KeycloakError, GlobalRequestResult]] = {
+    val path = Seq(realm, "push-revocation")
     client.post[GlobalRequestResult](path)
   }
 
@@ -301,8 +315,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * Remove a specific user session.
    * Any client that has an admin url will also be told to invalidate this particular session.
    */
-  def removeUserSession(session: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "sessions", session)
+  def removeUserSession(session: String, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "sessions", session)
     client.delete[Unit](path)
   }
 
@@ -318,7 +332,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param useTruststoreSpi
    * @return
    */
-  def testLdapConnection(action: Option[String] = None,
+  def testLdapConnection(realm: String = client.realm,
+                         action: Option[String] = None,
                          bindCredential: Option[String] = None,
                          bindDn: Option[String] = None,
                          componentId: Option[String] = None,
@@ -326,7 +341,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
                          connectionUrl: Option[String] = None,
                          useTruststoreSpi: Option[String] = None): R[Either[KeycloakError, Unit]] = {
 
-    val path = Seq(client.realm, "testLDAPConnection")
+    val path = Seq(realm, "testLDAPConnection")
     val queries = Map(
       "action"            -> action,
       "bindCredential"    -> bindCredential,
@@ -349,16 +364,16 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param config SMTP server configuration
    * @return
    */
-  def testSmtpConnection(config: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "testSMTPConnection", config)
+  def testSmtpConnection(config: String, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "testSMTPConnection", config)
     client.post[Unit](path)
   }
 
   /**
    * GET /{realm}/users-management-permissions
    */
-  def fetchUsersManagementPermissions(): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(client.realm, "users-management-permissions")
+  def fetchUsersManagementPermissions(realm: String = client.realm): R[Either[KeycloakError, ManagementPermission]] = {
+    val path = Seq(realm, "users-management-permissions")
     client.get[ManagementPermission](path)
   }
 
@@ -368,8 +383,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param ref
    * @return
    */
-  def updateUsersManagementPermissions(ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(client.realm, "users-management-permissions")
+  def updateUsersManagementPermissions(ref: ManagementPermission, realm: String = client.realm): R[Either[KeycloakError, ManagementPermission]] = {
+    val path = Seq(realm, "users-management-permissions")
     client.put[ManagementPermission](path, ref)
   }
 
@@ -378,8 +393,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
 
   /** Base path for retrieving providers with the configProperties properly filled. */
-  def fetchClientRegistrationPolicyProviders(): R[Either[KeycloakError, List[ComponentType]]] = {
-    val path = Seq(client.realm, "client-registration-policy", "providers")
+  def fetchClientRegistrationPolicyProviders(realm: String = client.realm): R[Either[KeycloakError, List[ComponentType]]] = {
+    val path = Seq(realm, "client-registration-policy", "providers")
     client.get[List[ComponentType]](path)
   }
 
@@ -388,17 +403,17 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
 
   /** Create a new initial access token. */
-  def createInitialAccessToken(config: ClientInitialAccessCreate): R[Either[KeycloakError, ClientInitialAccess]] = {
-    client.post[ClientInitialAccess](client.realm :: "clients-initial-access" :: Nil, config)
+  def createInitialAccessToken(config: ClientInitialAccessCreate, realm: String = client.realm): R[Either[KeycloakError, ClientInitialAccess]] = {
+    client.post[ClientInitialAccess](realm :: "clients-initial-access" :: Nil, config)
   }
 
   /** Retrieve all access tokens for the Realm. */
-  def fetchInitialAccessTokens(): R[Either[KeycloakError, Seq[ClientInitialAccess]]] = {
-    client.get[Seq[ClientInitialAccess]](client.realm :: "clients-initial-access" :: Nil)
+  def fetchInitialAccessTokens(realm: String = client.realm): R[Either[KeycloakError, Seq[ClientInitialAccess]]] = {
+    client.get[Seq[ClientInitialAccess]](realm :: "clients-initial-access" :: Nil)
   }
 
   /** Delete an initial access token. */
-  def deleteInitialAccessToken(tokenId: String): R[Either[KeycloakError, Unit]] = {
-    client.delete[Unit](client.realm :: "clients-initial-access" :: tokenId :: Nil)
+  def deleteInitialAccessToken(tokenId: String, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    client.delete[Unit](realm :: "clients-initial-access" :: tokenId :: Nil)
   }
 }

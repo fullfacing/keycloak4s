@@ -13,6 +13,14 @@ import org.scalatest.DoNotDiscover
 @DoNotDiscover
 class UsersTests extends IntegrationSpec {
 
+  /**
+   * Calls in the Users service not covered by the below tests:
+   *
+   * sendVerificationEmail  - Requires setup not feasible for testing.
+   * sendActionsEmail       - Requires setup not feasible for testing.
+   * impersonate            - Changes permissions, causing interference with subsequent tests.
+   */
+
   val storedUsers: AtomicReference[List[User]] = new AtomicReference[List[User]]()
   val storedGroups: AtomicReference[List[Group]] = new AtomicReference[List[Group]]()
   val storedRoleId: AtomicReference[UUID] = new AtomicReference[UUID]()
@@ -25,14 +33,13 @@ class UsersTests extends IntegrationSpec {
       _ <- EitherT(userService.create(User.Create(username = "test_user3", enabled = true)))
       _ <- EitherT(userService.create(User.Create(username = "test_user4", enabled = true)))
       _ <- EitherT(userService.create(User.Create(username = "test_user5", enabled = true)))
-    } yield ()).value.map(isSuccessful).unsafeToFuture()
+    } yield ()).value.shouldReturnSuccess
   }
 
   "fetch" should "successfully retrieve all Users" in {
     userService.fetch().map { response =>
       response.map(users => storedUsers.set(users))
-      isSuccessful(response)
-    }.unsafeToFuture()
+    }.shouldReturnSuccess
   }
 
   it should "also be able to retrieve a User by username" in {
@@ -41,7 +48,7 @@ class UsersTests extends IntegrationSpec {
     EitherT(userService.fetch(username = userToFetch.map(_.username))).map { user =>
       user.headOption shouldNot be(None)
       user.headOption.map(_.id) shouldBe userToFetch.map(_.id)
-    }.value.map(isSuccessful).unsafeToFuture()
+    }.value.shouldReturnSuccess
   }
 
   "fetchById" should "successfully retrieve an existing User with a given ID" in {
@@ -51,13 +58,13 @@ class UsersTests extends IntegrationSpec {
 
     EitherT(userService.fetchById(userToFetch.id)).map { user =>
       user.username shouldBe userToFetch.username
-    }.value.map(isSuccessful).unsafeToFuture()
+    }.value.shouldReturnSuccess
   }
 
   "count" should "correctly return the amount of Users" in {
     userService.count().map(_.map { num =>
       num shouldBe 6
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "update" should "successfully update an existing User with a given ID" in {
@@ -69,7 +76,7 @@ class UsersTests extends IntegrationSpec {
       _     <- EitherT(userService.update(userToUpdate.id, User.Update(enabled = Some(false))))
       user  <- EitherT(userService.fetch(username = Some("test_user5")))
     } yield user.headOption.map(_.id) shouldBe Some(userToUpdate.id)
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "addToGroup" should "successfully add a Group to a User" in {
     val group1 = Group.Create(name = "test_group1")
@@ -90,7 +97,7 @@ class UsersTests extends IntegrationSpec {
       _       <- EitherT(userService.addToGroup(user2, groups(2).id))
     } yield {
       storedGroups.set(groups.toList)
-    }).value.map(isSuccessful).unsafeToFuture()
+    }).value.shouldReturnSuccess
   }
 
   "fetchGroups" should "successfully retrieve all Groups a User is added to" in {
@@ -104,7 +111,7 @@ class UsersTests extends IntegrationSpec {
     } yield {
       groups1.map(_.name) should contain only "test_group1"
       groups2.map(_.name) should contain only ("test_group2", "test_group3")
-    }).value.map(isSuccessful).unsafeToFuture()
+    }).value.shouldReturnSuccess
   }
 
   "countGroups" should "accurately return the amount of Groups a User is added to" in {
@@ -118,7 +125,7 @@ class UsersTests extends IntegrationSpec {
     } yield {
       groups1 shouldBe Count(1)
       groups2 shouldBe Count(2)
-    }).value.map(isSuccessful).unsafeToFuture()
+    }).value.shouldReturnSuccess
   }
 
   "removeFromGroup" should "successfully remove a Group from a User" in {
@@ -135,7 +142,7 @@ class UsersTests extends IntegrationSpec {
       num <- EitherT(userService.countGroups(user.id))
       _   <- EitherT(deleteGroups)
     } yield num shouldBe Count(0)
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "createFederatedIdentity" should "successfully link a federated identity to a User" in {
     val config = Map(
@@ -154,17 +161,17 @@ class UsersTests extends IntegrationSpec {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
     for {
-      _ <- EitherT(identityProviderService.create(identityProvider))
+      _ <- EitherT(idProvService.create(identityProvider))
       _ <- EitherT(userService.createFederatedIdentity(user.id, "oidc", FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))))
     } yield ()
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchFederatedIdentities" should "successfully retrieve all federated identities linked to a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
     userService.fetchFederatedIdentities(user.id).map(_.map { fi =>
       fi should contain only FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "removeFederatedIdentityProvider" should "successfully unlink a federated identity to a User" in {
@@ -172,9 +179,9 @@ class UsersTests extends IntegrationSpec {
 
     for {
       _ <- EitherT(userService.removeFederatedIdentityProvider(user.id, "oidc"))
-      _ <- EitherT(identityProviderService.delete("oidc"))
+      _ <- EitherT(idProvService.delete("oidc"))
     } yield ()
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchRoles" should "successfully retrieve all Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
@@ -182,7 +189,7 @@ class UsersTests extends IntegrationSpec {
     userService.fetchRoles(user.id).map(_.map { roles =>
       roles.realmMappings shouldNot be (empty)
       roles.clientMappings.get("account") shouldNot be (None)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
@@ -190,7 +197,7 @@ class UsersTests extends IntegrationSpec {
 
     userService.fetchRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "addRealmRoles" should "successfully map a Realm Role to a User" in {
@@ -201,7 +208,7 @@ class UsersTests extends IntegrationSpec {
       id  <- EitherT(realmRoleService.fetchByName("test_role")).map(_.id)
       _   <- EitherT(userService.addRealmRoles(user.id, List(Role.Mapping(Some(id), Some("test_role")))))
     } yield storedRoleId.set(id)
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "removeRealmRoles" should "successfully unmap a Realm Role from a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
@@ -211,14 +218,14 @@ class UsersTests extends IntegrationSpec {
       _ <- EitherT(userService.removeRealmRoles(user.id, List(role)))
       _ <- EitherT(realmRoleService.remove("test_role"))
     } yield ()
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchAvailableRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
     userService.fetchAvailableRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchEffectiveRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
@@ -226,7 +233,7 @@ class UsersTests extends IntegrationSpec {
 
     userService.fetchEffectiveRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchClientsRoles" should "successfully retrieve all Client Roles mapped to a User" in {
@@ -239,7 +246,7 @@ class UsersTests extends IntegrationSpec {
       roles shouldNot be (empty)
       storedClientId.set(id)
     }
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "addClientRoles" should "successfully map a Client Role to a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
@@ -249,14 +256,14 @@ class UsersTests extends IntegrationSpec {
       id  <- EitherT(clientRoleService.fetchByName(storedClientId.get(), "test_role")).map(_.id)
       _   <- EitherT(userService.addClientRoles(storedClientId.get(), user.id, List(Role.Mapping(Some(id), Some("test_role")))))
     } yield storedRoleId.set(id)
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchAvailableClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
     userService.fetchAvailableClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "removeClientRoles" should "successfully unmap a Client Role from a User" in {
@@ -267,14 +274,14 @@ class UsersTests extends IntegrationSpec {
       _ <- EitherT(userService.removeClientRoles(storedClientId.get(), user.id, List(role)))
       _ <- EitherT(clientRoleService.remove(storedClientId.get(), "test_role"))
     } yield ()
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchEffectiveClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
 
     userService.fetchEffectiveClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchSessions" should "successfully retrieve all login sessions for a User" in {
@@ -282,32 +289,32 @@ class UsersTests extends IntegrationSpec {
 
     userService.fetchSessions(user.id).map(_.map { sessions =>
       sessions shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchOfflineSessions" should "successfully retrieve all offline sessions for a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
 
-    userService.fetchOfflineSessions(user.id, storedClientId.get()).map(isSuccessful).unsafeToFuture()
+    userService.fetchOfflineSessions(user.id, storedClientId.get()).shouldReturnSuccess
   }
 
   "removeTotp" should "successfully disable time-based one-time password for a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
-    userService.removeTotp(user.id).map(isSuccessful).unsafeToFuture()
+    userService.removeTotp(user.id).shouldReturnSuccess
   }
 
   "resetPassword" should "successfully reset the password for a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
     val cred = Credential(`type` = CredentialTypes.Password, value = "test_pass")
 
-    userService.resetPassword(user.id, cred).map(isSuccessful).unsafeToFuture()
+    userService.resetPassword(user.id, cred).shouldReturnSuccess
   }
 
   "disableUserCredentials" should "successfully disable the specified credential types for a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
-    userService.disableUserCredentials(user.id, List("password")).map(isSuccessful).unsafeToFuture()
+    userService.disableUserCredentials(user.id, List("password")).shouldReturnSuccess
   }
 
   "delete" should "successfully delete an existing User with a given ID" in {
@@ -318,13 +325,13 @@ class UsersTests extends IntegrationSpec {
     }.parSequence
 
     ioResults.map { results =>
-      forAll(results)(isSuccessful)
+      forAll(results)(_ shouldBe a [scala.util.Right[_, _]])
     }.unsafeToFuture()
   }
 
   "logout" should "successfully log out a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
 
-    userService.logout(user.id).map(isSuccessful).unsafeToFuture()
+    userService.logout(user.id).shouldReturnSuccess
   }
 }

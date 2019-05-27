@@ -15,6 +15,7 @@ object ServerInitializer {
 
   private implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
+  /* Synchronous Sttp Backend **/
   implicit val backend: SttpBackend[Id, Nothing] = HttpURLConnectionBackend()
 
   /* Step 1: Retrieve an access token for the admin user. **/
@@ -35,7 +36,7 @@ object ServerInitializer {
       .map(_.body)
   }
 
-  /* Step 2: Retrieve the ID for the admin-cli client. **/
+  /* Step 2: Retrieve the ID of the admin-cli client. **/
   private def fetchClientId(token: String): Either[String, UUID] = {
     sttp
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients?clientId=admin-cli")
@@ -64,7 +65,7 @@ object ServerInitializer {
       .map(_.body)
   }
 
-  /* Step 4: Retrieve the ID of the service account user. Can be performed asynchronously with step 5. **/
+  /* Step 4: Retrieve the ID of the service account user. (Steps 4 and 5 can be swapped or executed asynchronously) **/
   private def fetchServiceAccountUserId(token: String, clientId: UUID): Either[String, UUID] = {
     sttp
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/service-account-user")
@@ -75,7 +76,7 @@ object ServerInitializer {
       .map(_.body)
   }
 
-  /* Step 5: Retrieve the ID of the admin role. Can be performed asynchronously with step 4. **/
+  /* Step 5: Retrieve the ID of the admin role. (Steps 4 and 5 can be swapped or executed asynchronously) **/
   private def fetchAdminRoleId(token: String): Either[String, UUID] = {
     sttp
       .get(uri"http://localhost:8080/auth/admin/realms/master/roles/admin")
@@ -115,10 +116,10 @@ object ServerInitializer {
 
   /**
    * Executes all actions required to setup a newly created Keycloak server instance.
-   * Not intended for an already initialized server, in such a case failure is probable.
+   * Not intended for an already initialized server, in such a case it is probable that initialize() will fail.
    *
    * The fetchToken() call expects a user to already have been created, with "admin" as its username and password.
-   * If the username and/or password differs, fetchToken() will have to be modified accordingly.
+   * If the username and/or password differs the form in fetchToken() will have to be modified accordingly.
    */
   private def initialize(): String = {
     for {

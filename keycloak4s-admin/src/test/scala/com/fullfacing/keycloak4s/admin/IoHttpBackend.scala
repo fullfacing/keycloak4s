@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.implicits._
 import com.softwaremill.sttp.{MonadError, Request, Response, SttpBackend}
 
-class CatsIoHttpBackendL(delegate: SttpBackend[IO, Nothing]) extends SttpBackend[IO, Nothing] {
+class IoHttpBackend(delegate: SttpBackend[IO, Nothing]) extends SttpBackend[IO, Nothing] {
   override def send[T](request: Request[T, Nothing]): IO[Response[T]] =
     delegate.send(request)
 

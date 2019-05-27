@@ -86,7 +86,7 @@ class RolesTests extends IntegrationSpec {
         r <- userService.create(user2Create)
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   "Fetch Ancillary Object's UUIDs" should "retrieve the created objects and store their IDs" in {
@@ -103,7 +103,7 @@ class RolesTests extends IntegrationSpec {
         user2.set(u.find(_.username == user2Create.username).get.id)
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Create" should "successfully create realm level roles" in {
@@ -113,7 +113,7 @@ class RolesTests extends IntegrationSpec {
         r <- realmRoleService.create(rRole2Create)
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   it should "successfully create a client and client level roles for that client" in {
@@ -123,7 +123,7 @@ class RolesTests extends IntegrationSpec {
         r <- clientRoleService.create(clientUuid.get(), cRole2Create)
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   "Fetch" should "successfully fetch the previously created realm roles" in {
@@ -137,7 +137,7 @@ class RolesTests extends IntegrationSpec {
         rRole2.set(r2.id)
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   it should "successfully fetch the previously created client roles" in {
@@ -154,7 +154,7 @@ class RolesTests extends IntegrationSpec {
         c2.name shouldBe cRole2Name
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Update" should "successfully update a realm role" in {
@@ -172,7 +172,7 @@ class RolesTests extends IntegrationSpec {
         r2.name        shouldBe updatedName
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   it should "successfully update a client role" in {
@@ -190,12 +190,12 @@ class RolesTests extends IntegrationSpec {
         c2.name        shouldBe updatedName
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Composite Realm Role" should "successfully add sub roles to a realm role" in {
     realmRoleService.addCompositeRoles(rRole1Name, List(rRole2.get(), cRole1.get))
-      .map(isSuccessful).unsafeToFuture()
+      .shouldReturnSuccess
   }
 
   it should "successfully retrieve sub roles added to the realm role" in {
@@ -210,7 +210,7 @@ class RolesTests extends IntegrationSpec {
         c.exists(_.id == cRole1.get()) shouldBe true
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   it should "successfully remove all sub roles from the realm role" in {
@@ -220,12 +220,12 @@ class RolesTests extends IntegrationSpec {
         r  <- EitherT(realmRoleService.fetchCompositeRoles(rRole1Name))
       } yield r.isEmpty shouldBe true
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Composite Client Role" should "successfully add sub roles to a client role" in {
     clientRoleService.addCompositeRoles(clientUuid.get(), cRole1Name, List(rRole1.get(), cRole2.get))
-      .map(isSuccessful).unsafeToFuture()
+      .shouldReturnSuccess
   }
 
   it should "successfully retrieve sub roles added to the client role" in {
@@ -240,7 +240,7 @@ class RolesTests extends IntegrationSpec {
         c.exists(_.id == cRole2.get()) shouldBe true
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   it should "successfully remove all sub roles from the client role" in {
@@ -250,7 +250,7 @@ class RolesTests extends IntegrationSpec {
         r  <- EitherT(clientRoleService.fetchCompositeRoles(clientUuid.get(), cRole1Name))
       } yield r.isEmpty shouldBe true
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Management Permissions" should "do something or another to a realm role" in {
@@ -261,7 +261,7 @@ class RolesTests extends IntegrationSpec {
         c <- EitherT(realmRoleService.initialiseAuthPermissions(rRole1Name, ManagementPermission.Enable(false)))
       } yield println(writePretty((a, b, c)))).value
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   it should "do something or another to a client role" in {
@@ -272,7 +272,7 @@ class RolesTests extends IntegrationSpec {
         c <- EitherT(clientRoleService.initialiseAuthPermissions(clientUuid.get(), cRole1Name, ManagementPermission.Enable(false)))
       } yield println(writePretty((a, b, c)))).value
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
 
@@ -292,7 +292,7 @@ class RolesTests extends IntegrationSpec {
         b.size shouldBe 1
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   it should "successfully retrieve all users who have a client role" in {
@@ -311,7 +311,7 @@ class RolesTests extends IntegrationSpec {
         b.size shouldBe 1
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Fetch Groups" should "successfully retrieve all groups that a given realm role" in {
@@ -330,7 +330,7 @@ class RolesTests extends IntegrationSpec {
         b.size shouldBe 1
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   it should "successfully retrieve all groups that have a client role" in {
@@ -349,7 +349,7 @@ class RolesTests extends IntegrationSpec {
         b.size shouldBe 1
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "Delete" should "successfully remove roles from the realm" in {
@@ -359,7 +359,7 @@ class RolesTests extends IntegrationSpec {
         _ <- realmRoleService.remove(rRole2Name)
       } yield Right(())
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   it should "successfully remove roles from the client" in {
@@ -369,7 +369,7 @@ class RolesTests extends IntegrationSpec {
         r <- clientRoleService.remove(clientUuid.get(), cRole2Name)
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   "Delete Ancillary Objects" should "remove all the ancillary objects created for testing Roles" in {
@@ -382,6 +382,6 @@ class RolesTests extends IntegrationSpec {
         r <- groupService.delete(group2.get())
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 }
