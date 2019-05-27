@@ -35,7 +35,7 @@ class GroupsTests extends IntegrationSpec {
         r <- userService.create(User.Create("Demo User 1", enabled = true))
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   "Fetch Ancillary Object's UUIDs" should "retrieve the created objects and store their IDs" in {
@@ -51,26 +51,26 @@ class GroupsTests extends IntegrationSpec {
         user1.set(u.find(_.username == "Demo User 1").get.id)
       }
 
-    task.value.map(isSuccessful).unsafeToFuture()
+    task.value.shouldReturnSuccess
   }
 
   "fetch" should "successfully retrieve all groups" in {
     groupService.fetch().map { response =>
       response.map(groups => storedGroups.set(groups))
-      isSuccessful(response)
+      response shouldBe a [Right[_, _]]
     }.unsafeToFuture()
   }
 
   "fetchByName" should "successfully return a sequence of Group model" in {
-    groupService.fetch(search = Some("Demo Group 1")).map(isSuccessful).unsafeToFuture()
+    groupService.fetch(search = Some("Demo Group 1")).shouldReturnSuccess
   }
 
   "fetchById" should "successfully return a sequence of Group model" in {
-    groupService.fetchById(group1.get).map(isSuccessful).unsafeToFuture()
+    groupService.fetchById(group1.get).shouldReturnSuccess
   }
 
   "count" should "successfully return a sequence of Groups count" in {
-    groupService.count(top = true).map(isSuccessful).unsafeToFuture()
+    groupService.count(top = true).shouldReturnSuccess
   }
 
   "Group CRUD" should "successfully fire different requests for a group" in {
@@ -81,7 +81,7 @@ class GroupsTests extends IntegrationSpec {
     } yield {
         ug.asInstanceOf[Group].name should contain("Demo Group 2")
       }).value
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   "Group level User calls" should "successfully fire different requests for users belonging to a specific group" in {
@@ -91,11 +91,11 @@ class GroupsTests extends IntegrationSpec {
         _     <- EitherT(groupService.fetchUsers(group2.get))
         _     <- EitherT(groupService.removeUserFromGroup(user1.get, group2.get))
     } yield ()).value
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
   "createSubGroup" should "successfully return a sequence of a Group Model with the new sub-group" in {
-    groupService.createSubGroup(group2.get, Group.Create("Demo Sub-Group 2")).map(isSuccessful).unsafeToFuture()
+    groupService.createSubGroup(group2.get, Group.Create("Demo Sub-Group 2")).shouldReturnSuccess
   }
 
   "fetchRoles" should "successfully retrieve all Roles mapped to a User" in {
@@ -104,7 +104,7 @@ class GroupsTests extends IntegrationSpec {
     groupService.fetchRoles(user.id).map(_.map { roles =>
       roles.realmMappings shouldNot be (empty)
       roles.clientMappings.get("account") shouldNot be (None)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
@@ -112,7 +112,7 @@ class GroupsTests extends IntegrationSpec {
 
     groupService.fetchRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "addRealmRoles" should "successfully map a Realm Role to a User" in {
@@ -123,7 +123,7 @@ class GroupsTests extends IntegrationSpec {
       id  <- EitherT(realmRoleService.fetchByName("test_role")).map(_.id)
       _   <- EitherT(groupService.addRealmRoles(user.id, List(Role(id = id, name = "test_role", clientRole = false, composite = false))))
     } yield storedRoleId.set(id)
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "removeRealmRoles" should "successfully unmap a Realm Role from a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
@@ -133,14 +133,14 @@ class GroupsTests extends IntegrationSpec {
       _ <- EitherT(groupService.removeRealmRoles(user.id, List(role)))
       _ <- EitherT(realmRoleService.remove("test_role"))
     } yield ()
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchAvailableRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
     groupService.fetchAvailableRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchEffectiveRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
@@ -148,7 +148,7 @@ class GroupsTests extends IntegrationSpec {
 
     groupService.fetchEffectiveRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "fetchClientsRoles" should "successfully retrieve all Client Roles mapped to a User" in {
@@ -161,7 +161,7 @@ class GroupsTests extends IntegrationSpec {
       roles shouldNot be (empty)
       storedClientId.set(id)
     }
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "addClientRoles" should "successfully map a Client Role to a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
@@ -171,14 +171,14 @@ class GroupsTests extends IntegrationSpec {
       id  <- EitherT(clientRoleService.fetchByName(storedClientId.get(), "test_role")).map(_.id)
       _   <- EitherT(groupService.addClientRoles(storedClientId.get(), user.id, List(Role(id = id, name = "test_role", clientRole = false, composite = false))))
     } yield storedRoleId.set(id)
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchAvailableClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "test_user1").get
 
     groupService.fetchAvailableClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "removeClientRoles" should "successfully unmap a Client Role from a User" in {
@@ -189,14 +189,14 @@ class GroupsTests extends IntegrationSpec {
       _ <- EitherT(groupService.removeClientRoles(storedClientId.get(), user.id, List(role)))
       _ <- EitherT(realmRoleService.remove("test_role"))
     } yield ()
-  }.value.map(isSuccessful).unsafeToFuture()
+  }.value.shouldReturnSuccess
 
   "fetchEffectiveClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
     val user = storedUsers.get().find(_.username == "admin").get
 
     groupService.fetchEffectiveClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
-    }).map(isSuccessful).unsafeToFuture()
+    }).shouldReturnSuccess
   }
 
   "ManagementPermissions" should "fire fetch and update requests for ManagementPermission model" in {
@@ -208,7 +208,7 @@ class GroupsTests extends IntegrationSpec {
       } yield {
         up.enabled should equal(false)
       }).value
-      task.map(isSuccessful).unsafeToFuture()
+      task.shouldReturnSuccess
   }
 
   "Count a specific number of groups" should "successfully return an expected number of groups" in {
@@ -227,7 +227,7 @@ class GroupsTests extends IntegrationSpec {
         r <- userService.delete(user1.get())
       } yield r
 
-    task.map(isSuccessful).unsafeToFuture()
+    task.shouldReturnSuccess
   }
 
 }
