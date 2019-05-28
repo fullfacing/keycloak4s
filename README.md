@@ -5,6 +5,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.13.0]
+### Added
+- Added an integration test suite and a bootstrap for a fresh Keycloak server instance to test on.
+- Added integration tests for User, Realm, Role, Group and Client calls.
+### Changed
+- Many minor model and function fixes and tweaks for issues exposed by the integration tests.
+
+## [0.12.0]
+### Added
+- Added detailed logging for the token validation in the Admin module.
+- Created an implicit Class for Payload that adds extraction helper functions.
+### Changed
+- Modified the token validation process to return the full payloads of the bearer and ID tokens.
+- Fixed failing unit tests caused by lack of an implicit correlationId in the tests.
+
+## [0.11.1]
+### Changed
+- Fixed token endpoint scheme to use the scheme defined in KeycloakConfig as opposed to being hard coded.
+
 ## [0.11.0]
 ### Added
 - Observable streaming to relevant get calls in Roles, Clients and RealmsAdmin in the monix module.

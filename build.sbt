@@ -3,7 +3,7 @@ organization := "com.fullfacing"
 
 lazy val global = {
   Seq(
-    version       := "0.11.1-SNAPSHOT",
+    version       := "0.13.0-SNAPSHOT",
     scalaVersion  := "2.12.8",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts
@@ -33,98 +33,118 @@ val scalacOpts = Seq(
   "-Xfuture"
 )
 
-parallelExecution in Test := false
-
 addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
 addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.2.4")
 
-val logback: Seq[ModuleID] = Seq(
-  "ch.qos.logback" % "logback-core"    % "1.2.3",
-  "ch.qos.logback" % "logback-classic" % "1.2.3"
-)
+parallelExecution in Test := false
 
-val json4s: Seq[ModuleID] = Seq(
-  "org.json4s" %% "json4s-jackson" % "3.6.5"
-)
+// ---------------------------------- //
+//          Library Versions          //
+// ---------------------------------- //
+val akkaHttpVersion     = "10.1.8"
+val akkaStreamsVersion  = "2.5.23"
+val catsCoreVersion     = "1.6.0"
+val catsEffectVersion   = "1.3.0"
+val enumeratumVersion   = "1.5.14"
+val json4sVersion       = "3.6.5"
+val logbackVersion      = "1.2.3"
+val monixVersion        = "3.0.0-RC2"
+val nimbusVersion       = "7.2.1"
+val scalaTestVersion    = "3.0.5"
+val sttpVersion         = "1.5.17"
 
-val enumeratum: Seq[ModuleID] = Seq(
-  "com.beachape" %% "enumeratum-json4s" % "1.5.14"
-)
-
-val scalatest: Seq[ModuleID] = Seq(
-  "org.scalatest" %% "scalatest" % "3.0.5" % Test
-)
-
-val `sttp-akka`: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "core"                           % "1.5.11",
-  "com.softwaremill.sttp" %% "akka-http-backend"              % "1.5.11",
-  "com.softwaremill.sttp" %% "async-http-client-backend-cats" % "1.5.11",
-  "com.typesafe.akka"     %% "akka-stream"                    % "2.5.21",
-  "com.softwaremill.sttp" %% "json4s"                         % "1.5.11"
+// -------------------------------------- //
+//          Library Dependencies          //
+// -------------------------------------- //
+val akkaHttp: Seq[ModuleID] = Seq(
+  "com.typesafe.akka" %% "akka-stream"  % akkaStreamsVersion,
+  "com.typesafe.akka" %% "akka-http"    % akkaHttpVersion
 )
 
 val cats: Seq[ModuleID] = Seq(
-  "org.typelevel" %% "cats-core"   % "1.6.0",
-  "org.typelevel" %% "cats-effect" % "1.2.0"
+  "org.typelevel" %% "cats-core"   % catsCoreVersion,
+  "org.typelevel" %% "cats-effect" % catsEffectVersion
+)
+
+val enumeratum: Seq[ModuleID] = Seq(
+  "com.beachape" %% "enumeratum-json4s" % enumeratumVersion
+)
+
+val json4s: Seq[ModuleID] = Seq(
+  "org.json4s" %% "json4s-jackson" % json4sVersion
+)
+
+val logback: Seq[ModuleID] = Seq(
+  "ch.qos.logback" % "logback-core"    % logbackVersion,
+  "ch.qos.logback" % "logback-classic" % logbackVersion
 )
 
 val monix: Seq[ModuleID] = Seq(
-  "io.monix" %% "monix" % "3.0.0-RC2"
-)
-
-val `sttp-monix`: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "core"                            % "1.5.11",
-  "com.softwaremill.sttp" %% "async-http-client-backend-monix" % "1.5.11",
-  "com.softwaremill.sttp" %% "json4s"                          % "1.5.11"
-)
-
-val `akka-http`: Seq[ModuleID] = Seq(
-  "com.typesafe.akka" %% "akka-stream"  % "2.5.21",
-  "com.typesafe.akka" %% "akka-http"    % "10.1.8"
+  "io.monix" %% "monix" % monixVersion
 )
 
 val nimbus: Seq[ModuleID] = Seq(
-  "com.nimbusds" % "nimbus-jose-jwt" % "7.0.1"
+  "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion
 )
+val scalaTest: Seq[ModuleID] = Seq(
+  "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+)
+
+val sttpAkka: Seq[ModuleID] = Seq(
+  "com.softwaremill.sttp" %% "akka-http-backend"              % sttpVersion,
+  "com.softwaremill.sttp" %% "async-http-client-backend-cats" % sttpVersion,
+  "com.softwaremill.sttp" %% "core"                           % sttpVersion,
+  "com.softwaremill.sttp" %% "json4s"                         % sttpVersion,
+  "com.typesafe.akka"     %% "akka-stream"                    % akkaStreamsVersion
+)
+
+val sttpMonix: Seq[ModuleID] = Seq(
+  "com.softwaremill.sttp" %% "async-http-client-backend-monix" % sttpVersion,
+  "com.softwaremill.sttp" %% "core"                            % sttpVersion,
+  "com.softwaremill.sttp" %% "json4s"                          % sttpVersion
+)
+
 
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
 // --------------------------------------------- //
-lazy val `keycloak-dependencies`: Seq[ModuleID] = cats ++ json4s ++ logback ++ enumeratum
+lazy val coreDependencies: Seq[ModuleID] = cats ++ json4s ++ logback ++ enumeratum
 
 lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `keycloak-dependencies`)
+  .settings(libraryDependencies ++= coreDependencies)
   .settings(name := "keycloak4s-core", publishArtifact := true)
 
 // ---------------------------------------------- //
 // Project and configuration for keycloak4s-admin //
 // ---------------------------------------------- //
+lazy val adminDependencies: Seq[ModuleID] = sttpAkka ++ scalaTest
+
 lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `sttp-akka` ++ scalatest)
+  .settings(libraryDependencies ++= adminDependencies)
   .settings(name := "keycloak4s-admin", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
 // ---------------------------------------------------- //
 // Project and configuration for keycloak4s-admin-monix //
 // ---------------------------------------------------- //
-lazy val `keycloak-monix-dependencies`: Seq[ModuleID] = `sttp-monix` ++ monix
+lazy val monixDependencies: Seq[ModuleID] = sttpMonix ++ monix
 
 lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `keycloak-monix-dependencies`)
+  .settings(libraryDependencies ++= monixDependencies)
   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
   .dependsOn(`keycloak4s-admin`)
 
 // ------------------------------------------------------- //
 // Project and configuration for keycloak4s-auth-akka-http //
 // ------------------------------------------------------- //
-lazy val `keycloak-akka-http-dependencies`: Seq[ModuleID] = `akka-http` ++ nimbus ++ scalatest
+lazy val akkaHttpDependencies: Seq[ModuleID] = akkaHttp ++ nimbus ++ scalaTest
 
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `keycloak-akka-http-dependencies`)
+  .settings(libraryDependencies ++= akkaHttpDependencies)
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
