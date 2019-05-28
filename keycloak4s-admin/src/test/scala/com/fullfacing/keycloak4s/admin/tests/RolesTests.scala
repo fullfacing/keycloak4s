@@ -96,11 +96,11 @@ class RolesTests extends IntegrationSpec {
         g <- EitherT(groupService.fetch())
         u <- EitherT(userService.fetch())
       } yield {
-        clientUuid.set(c.head.id)
-        group1.set(g.find(_.name == group1Create.name).get.id)
-        group2.set(g.find(_.name == group2Create.name).get.id)
-        user1.set(u.find(_.username == user1Create.username).get.id)
-        user2.set(u.find(_.username == user2Create.username).get.id)
+        clientUuid.set(c.headWithAssert.id)
+        group1.set(g.find(_.name == group1Create.name).getWithAssert.id)
+        group2.set(g.find(_.name == group2Create.name).getWithAssert.id)
+        user1.set(u.find(_.username == user1Create.username).getWithAssert.id)
+        user2.set(u.find(_.username == user2Create.username).getWithAssert.id)
       }
 
     task.value.shouldReturnSuccess

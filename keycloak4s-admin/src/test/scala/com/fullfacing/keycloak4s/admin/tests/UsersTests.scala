@@ -54,7 +54,7 @@ class UsersTests extends IntegrationSpec {
   "fetchById" should "successfully retrieve an existing User with a given ID" in {
     val userToFetchOpt = storedUsers.get().headOption
     userToFetchOpt shouldNot be(None)
-    val userToFetch = userToFetchOpt.get
+    val userToFetch = userToFetchOpt.getWithAssert
 
     EitherT(userService.fetchById(userToFetch.id)).map { user =>
       user.username shouldBe userToFetch.username
@@ -70,7 +70,7 @@ class UsersTests extends IntegrationSpec {
   "update" should "successfully update an existing User with a given ID" in {
     val userToUpdateOpt = storedUsers.get().find(_.username == "test_user5")
     userToUpdateOpt shouldNot be(None)
-    val userToUpdate = userToUpdateOpt.get
+    val userToUpdate = userToUpdateOpt.getWithAssert
 
     for {
       _     <- EitherT(userService.update(userToUpdate.id, User.Update(enabled = Some(false))))
@@ -84,15 +84,15 @@ class UsersTests extends IntegrationSpec {
     val group3 = Group.Create(name = "test_group3")
 
     val users = storedUsers.get()
-    val user1 = users.find(_.username == "test_user1").get.id
-    val user2 = users.find(_.username == "test_user2").get.id
+    val user1 = users.find(_.username == "test_user1").getWithAssert.id
+    val user2 = users.find(_.username == "test_user2").getWithAssert.id
 
     (for {
       _       <- EitherT(groupService.create(group1))
       _       <- EitherT(groupService.create(group2))
       _       <- EitherT(groupService.create(group3))
       groups  <- EitherT(groupService.fetch())
-      _       <- EitherT(userService.addToGroup(user1, groups.head.id))
+      _       <- EitherT(userService.addToGroup(user1, groups.headWithAssert.id))
       _       <- EitherT(userService.addToGroup(user2, groups(1).id))
       _       <- EitherT(userService.addToGroup(user2, groups(2).id))
     } yield {
@@ -102,8 +102,8 @@ class UsersTests extends IntegrationSpec {
 
   "fetchGroups" should "successfully retrieve all Groups a User is added to" in {
     val users = storedUsers.get()
-    val user1 = users.find(_.username == "test_user1").get.id
-    val user2 = users.find(_.username == "test_user2").get.id
+    val user1 = users.find(_.username == "test_user1").getWithAssert.id
+    val user2 = users.find(_.username == "test_user2").getWithAssert.id
 
     (for {
       groups1 <- EitherT(userService.fetchGroups(user1))
@@ -116,8 +116,8 @@ class UsersTests extends IntegrationSpec {
 
   "countGroups" should "accurately return the amount of Groups a User is added to" in {
     val users = storedUsers.get()
-    val user1 = users.find(_.username == "test_user1").get.id
-    val user2 = users.find(_.username == "test_user2").get.id
+    val user1 = users.find(_.username == "test_user1").getWithAssert.id
+    val user2 = users.find(_.username == "test_user2").getWithAssert.id
 
     (for {
       groups1 <- EitherT(userService.countGroups(user1))
@@ -129,9 +129,9 @@ class UsersTests extends IntegrationSpec {
   }
 
   "removeFromGroup" should "successfully remove a Group from a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
     val groups = storedGroups.get()
-    val groupId = groups.find(_.name == "test_group1").get.id
+    val groupId = groups.find(_.name == "test_group1").getWithAssert.id
 
     def deleteGroups = groups.map { group =>
       groupService.delete(group.id)
@@ -158,7 +158,7 @@ class UsersTests extends IntegrationSpec {
       providerId  = Some("oidc")
     )
 
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     for {
       _ <- EitherT(idProvService.create(identityProvider))
@@ -167,7 +167,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchFederatedIdentities" should "successfully retrieve all federated identities linked to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     userService.fetchFederatedIdentities(user.id).map(_.map { fi =>
       fi should contain only FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))
@@ -175,7 +175,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "removeFederatedIdentityProvider" should "successfully unlink a federated identity to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     for {
       _ <- EitherT(userService.removeFederatedIdentityProvider(user.id, "oidc"))
@@ -184,7 +184,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchRoles" should "successfully retrieve all Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.fetchRoles(user.id).map(_.map { roles =>
       roles.realmMappings shouldNot be (empty)
@@ -193,7 +193,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "fetchRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.fetchRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -201,7 +201,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "addRealmRoles" should "successfully map a Realm Role to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     for {
       _   <- EitherT(realmRoleService.create(Role.Create(name = "test_role", clientRole = false, composite = false)))
@@ -211,7 +211,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "removeRealmRoles" should "successfully unmap a Realm Role from a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
     val role = Role.Mapping(name = "test_role".some, id = storedRoleId.get.some)
 
     for {
@@ -221,7 +221,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchAvailableRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     userService.fetchAvailableRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -229,7 +229,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "fetchEffectiveRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.fetchEffectiveRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -237,10 +237,10 @@ class UsersTests extends IntegrationSpec {
   }
 
   "fetchClientsRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     for {
-      id    <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head.id)
+      id    <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.headWithAssert.id)
       roles <- EitherT(userService.fetchClientRoles(id, user.id))
     } yield {
       roles shouldNot be (empty)
@@ -249,7 +249,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "addClientRoles" should "successfully map a Client Role to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     for {
       _   <- EitherT(clientRoleService.create(storedClientId.get(), Role.Create(name = "test_role", clientRole = false, composite = false)))
@@ -259,7 +259,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchAvailableClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     userService.fetchAvailableClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -267,7 +267,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "removeClientRoles" should "successfully unmap a Client Role from a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
     val role = Role.Mapping(name = "test_role".some, id = storedRoleId.get.some)
 
     for {
@@ -277,7 +277,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchEffectiveClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.fetchEffectiveClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -285,7 +285,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "fetchSessions" should "successfully retrieve all login sessions for a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.fetchSessions(user.id).map(_.map { sessions =>
       sessions shouldNot be (empty)
@@ -293,26 +293,26 @@ class UsersTests extends IntegrationSpec {
   }
 
   "fetchOfflineSessions" should "successfully retrieve all offline sessions for a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.fetchOfflineSessions(user.id, storedClientId.get()).shouldReturnSuccess
   }
 
   "removeTotp" should "successfully disable time-based one-time password for a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     userService.removeTotp(user.id).shouldReturnSuccess
   }
 
   "resetPassword" should "successfully reset the password for a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
     val cred = Credential(`type` = CredentialTypes.Password, value = "test_pass")
 
     userService.resetPassword(user.id, cred).shouldReturnSuccess
   }
 
   "disableUserCredentials" should "successfully disable the specified credential types for a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     userService.disableUserCredentials(user.id, List("password")).shouldReturnSuccess
   }
@@ -330,7 +330,7 @@ class UsersTests extends IntegrationSpec {
   }
 
   "logout" should "successfully log out a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     userService.logout(user.id).shouldReturnSuccess
   }

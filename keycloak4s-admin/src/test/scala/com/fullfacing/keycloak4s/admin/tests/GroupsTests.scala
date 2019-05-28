@@ -44,10 +44,10 @@ class GroupsTests extends IntegrationSpec {
         g <- EitherT(groupService.fetch())
         u <- EitherT(userService.fetch())
       } yield {
-        group1.set(g.find(_.name == "Demo Group 1").get.id)
-        group2.set(g.find(_.name == "Demo Group 2").get.id)
-        group3.set(g.find(_.name == "Demo Group 3").get.id)
-        subGroup1.set(g.find(_.name == "Demo Sub-Group 1").get.id)
+        group1.set(g.find(_.name == "Demo Group 1").getWithAssert.id)
+        group2.set(g.find(_.name == "Demo Group 2").getWithAssert.id)
+        group3.set(g.find(_.name == "Demo Group 3").getWithAssert.id)
+        subGroup1.set(g.find(_.name == "Demo Sub-Group 1").getWithAssert.id)
         user1.set(u.find(_.username == "Demo User 1").get.id)
       }
 
@@ -99,7 +99,7 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "fetchRoles" should "successfully retrieve all Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     groupService.fetchRoles(user.id).map(_.map { roles =>
       roles.realmMappings shouldNot be (empty)
@@ -108,7 +108,7 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "fetchRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     groupService.fetchRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -116,7 +116,7 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "addRealmRoles" should "successfully map a Realm Role to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     for {
       _   <- EitherT(realmRoleService.create(Role.Create(name = "test_role", clientRole = false, composite = false)))
@@ -126,7 +126,7 @@ class GroupsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "removeRealmRoles" should "successfully unmap a Realm Role from a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
     val role = Role(name = "test_role", id = storedRoleId.get, clientRole = false, composite = false)
 
     for {
@@ -136,7 +136,7 @@ class GroupsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchAvailableRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     groupService.fetchAvailableRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -144,7 +144,7 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "fetchEffectiveRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     groupService.fetchEffectiveRealmRoles(user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -152,10 +152,10 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "fetchClientsRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     for {
-      id    <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head.id)
+      id    <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.headWithAssert.id)
       roles <- EitherT(groupService.fetchClientRoles(id, user.id))
     } yield {
       roles shouldNot be (empty)
@@ -164,7 +164,7 @@ class GroupsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "addClientRoles" should "successfully map a Client Role to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     for {
       _   <- EitherT(clientRoleService.create(storedClientId.get(), Role.Create(name = "test_role", clientRole = false, composite = false)))
@@ -174,7 +174,7 @@ class GroupsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchAvailableClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val user = storedUsers.get().find(_.username == "test_user1").getWithAssert
 
     groupService.fetchAvailableClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -182,7 +182,7 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "removeClientRoles" should "successfully unmap a Client Role from a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
     val role = Role(name = "test_role", id = storedRoleId.get, clientRole = false, composite = false)
 
     for {
@@ -192,7 +192,7 @@ class GroupsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchEffectiveClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+    val user = storedUsers.get().find(_.username == "admin").getWithAssert
 
     groupService.fetchEffectiveClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
       roles shouldNot be (empty)
@@ -204,7 +204,7 @@ class GroupsTests extends IntegrationSpec {
       (for {
         p  <- EitherT(groupService.fetchManagementPermissions(group3.get))
         up <- EitherT(groupService.updateManagementPermissions(group3.get,
-                ManagementPermission(Some(false), p.resource, p.scopePermissions)))
+                ManagementPermission(false, p.resource, p.scopePermissions)))
       } yield {
         up.enabled should equal(false)
       }).value

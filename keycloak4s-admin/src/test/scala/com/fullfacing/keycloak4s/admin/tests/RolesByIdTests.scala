@@ -48,7 +48,7 @@ class RolesByIdTests extends IntegrationSpec {
     val task =
       for {
         c <- clientService.fetch(clientId = Some("admin-cli"))
-        _ =  c.map(ids => cId.set(ids.head.id))
+        _ =  c.map(ids => cId.set(ids.headWithAssert.id))
         _ <- realmRoleService.create(rRole1Create)
         _ <- realmRoleService.create(rRole2Create)
         _ <- clientRoleService.create(cId.get(), cRole1Create)
