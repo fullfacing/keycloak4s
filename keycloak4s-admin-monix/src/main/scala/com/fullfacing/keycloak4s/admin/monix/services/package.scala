@@ -16,9 +16,5 @@ package object services {
 
   def toCsvList(list: Option[List[String]]): Option[String] = list.map(_.mkString(","))
 
-  def consumer[A](): Consumer[Either[KeycloakError, Seq[A]], Either[KeycloakError, Seq[A]]] = {
-    Consumer.foldLeft(List.empty[A].asRight[KeycloakError]){ case (a, b) =>
-      b.flatMap(bb => a.map(_ ++ bb))
-    }
-  }
+  def consumer[A](): Consumer[A, Seq[A]] = Consumer.foldLeft(Seq.empty[A])(_ :+ _)
 }

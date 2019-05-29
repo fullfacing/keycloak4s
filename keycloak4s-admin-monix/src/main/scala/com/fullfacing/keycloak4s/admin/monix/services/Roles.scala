@@ -26,7 +26,7 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
                            limit: Int = Integer.MAX_VALUE,
                            clientId: UUID,
                            name: String,
-                           batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
+                           batchSize: Int = 100): Observable[User] = {
 
     val path = Seq(client.realm, "clients", clientId.toString, "roles", name, "users")
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
@@ -46,7 +46,7 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
                             limit: Int = Integer.MAX_VALUE,
                             clientId: UUID, name: String,
                             full: Option[Boolean],
-                            batchSize: Int = 100): Observable[Either[KeycloakError, Seq[Group]]] = {
+                            batchSize: Int = 100): Observable[Group] = {
 
     val path = Seq(client.realm, "clients", clientId.toString, "roles", name, "groups")
     client.getList[Group](path, createQuery(("full", full)), first, limit, batchSize)
@@ -63,7 +63,7 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
   def fetchRealmRoleUsersS(first: Int = 0,
                           limit: Int = Integer.MAX_VALUE,
                           name: String,
-                          batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
+                          batchSize: Int = 100): Observable[User] = {
 
     val path = Seq(client.realm, "roles", name, "users")
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
@@ -82,7 +82,7 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
                            limit: Int = Integer.MAX_VALUE,
                            name: String,
                            full: Option[Boolean],
-                           batchSize: Int = 100): Observable[Either[KeycloakError, Seq[Group]]] = {
+                           batchSize: Int = 100): Observable[Group] = {
 
     val path = Seq(client.realm, "roles", name, "groups")
     client.getList[Group](path, createQuery(("full", full)), first, limit, batchSize)

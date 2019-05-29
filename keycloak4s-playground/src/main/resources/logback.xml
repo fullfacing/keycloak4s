@@ -18,6 +18,7 @@
     </appender>
 
     <logger name="io.netty"                 level="error"/>
+    <logger name="org.asynchttpclient"      level="error"/>
     <logger name="keycloak4s.admin"         level="trace"/>
     <logger name="keycloak4s.admin.monix"   level="trace"/>
     <logger name="keycloak4s.auth"          level="trace"/>

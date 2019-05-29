@@ -2,7 +2,10 @@ package com.fullfacing.keycloak4s.core.models
 
 sealed trait KeycloakError extends Throwable
 
-final case class KeycloakThrowable(ex: Throwable) extends KeycloakError
+final case class KeycloakThrowable(ex: Throwable) extends KeycloakError {
+  override def getMessage: String = ex.getMessage
+  override def toString: String   = ex.toString
+}
 
 /**
  * An exception processed into an HTTP error response equivalent.
