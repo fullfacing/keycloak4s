@@ -14,7 +14,7 @@ object SecurityMagnet {
   implicit def authorise(resourceServer: SecurityConfig)(implicit tokenValidator: TokenValidator): SecurityMagnet = () => {
     validateToken().flatMap { p =>
       authoriseResourceServerAccess(p, resourceServer.service).flatMap { sp =>
-        authoriseRequest(resourceServer.nodes, sp)
+        authoriseRequest(resourceServer, sp)
       }
     }
   }

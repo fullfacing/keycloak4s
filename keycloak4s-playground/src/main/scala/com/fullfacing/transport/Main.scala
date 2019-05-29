@@ -23,8 +23,8 @@ object Main extends TaskApp {
      * Replace with applicable details.
      */
     val host: String        = "localhost"
-    val port: Int           = 8088
-    val targetRealm: String = "test" //Name of a Realm whose data will be accessed/manipulated.
+    val port: Int           = 8080
+    val targetRealm: String = "master" //Name of a Realm whose data will be accessed/manipulated.
     val adminRealm: String  = "master" //Name of a Realm with admin rights that can access/manipulate targetRealm.
     val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
     val adminSecret: String = "59241377-377a-4642-bae0-d19fdcc1ce5d" //Secret of adminClient.
