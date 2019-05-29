@@ -6,7 +6,9 @@ import java.util.concurrent.atomic.AtomicReference
 import cats.data.EitherT
 import com.fullfacing.keycloak4s.admin.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models.{ManagementPermission, Role}
+import org.scalatest.DoNotDiscover
 
+@DoNotDiscover
 class RolesByIdTests extends IntegrationSpec {
 
   private val rRole1Name = "realmRole1"

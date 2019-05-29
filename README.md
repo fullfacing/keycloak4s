@@ -10,7 +10,8 @@ All notable changes to this project will be documented in this file.
 - Added an integration test suite and a bootstrap for a fresh Keycloak server instance to test on.
 - Added integration tests for User, Realm, Role, Group and Client calls.
 ### Changed
-- Many minor model and function fixes and tweaks for issues exposed by the integration tests.
+- Minor model and function fixes for issues exposed by the integration tests.
+- Fixed an illegal reflection warning by changing how a throwable was being handled by the Akka directives.
 
 ## [0.12.0]
 ### Added

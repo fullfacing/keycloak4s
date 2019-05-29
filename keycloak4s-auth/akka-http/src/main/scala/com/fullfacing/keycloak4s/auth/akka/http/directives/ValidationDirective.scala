@@ -42,6 +42,6 @@ trait ValidationDirective {
   /** Handles the success/failure of the token validation. */
   private def handleValidationResponse(response: Either[KeycloakException, AuthPayload]): Directive1[AuthPayload] = response match {
     case Right(r) => provide(r.copy(resourceRoles = r.accessToken.extractResources))
-    case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`application/json`, write(t))))
+    case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, t.getMessage)))
   }
 }

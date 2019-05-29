@@ -7,11 +7,10 @@ import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationException
+import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.{logValidationEx, logValidationExStack}
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jwt.SignedJWT
@@ -20,7 +19,7 @@ import com.nimbusds.jwt.SignedJWT.parse
 class TokenValidator(host: String, port: String, realm: String) extends JwksCache(host, port, realm) {
 
   /**
-   * Checks if the token is not expired and is not being used before the nbf (if defined).
+   * Validates if a token is not expired or being used before the nbf (if defined).
    */
   private def validateTime(token: SignedJWT): Either[KeycloakException, SignedJWT] = {
     val now = Instant.now()
@@ -58,30 +57,42 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
   /**
    * Validates the token with the public key obtained from the Keycloak server.
    */
-  private def validateSignature(token: SignedJWT, publicKey: RSAKey): Either[KeycloakException, SignedJWT] = {
+  private def validateSignature(token: SignedJWT, publicKey: RSAKey): Either[KeycloakException, Unit] = {
     val verifier = new RSASSAVerifier(publicKey)
-    if (token.verify(verifier)) token.asRight else Exceptions.SIG_INVALID.asLeft
+    if (token.verify(verifier)) ().asRight else Exceptions.SIG_INVALID.asLeft
+  }
+
+  /**
+   * Compares an ID and Access token and checks if the subject and state matches.
+   */
+  private def compareTokens(access: SignedJWT, id: SignedJWT): Either[KeycloakException, Unit] = {
+    val accessJson  = access.getPayload.toJSONObject
+    val idJson      = id.getPayload.toJSONObject
+
+    val subMatches    = accessJson.getAsString("sub") == idJson.getAsString("sub")
+    val stateMatches  = accessJson.getAsString("session_state") == idJson.getAsString("session_state")
+
+    if (subMatches && stateMatches) ().asRight else Exceptions.ID_TOKEN_MISMATCH.asLeft
   }
 
   /**
    * Parses an ID token, validates its signature and checks if its states and subject is the same as the bearer token.
    */
-  private def parseAndValidateIdToken(rawIdToken: String, publicKey: RSAKey, payload: Payload)
-  : IO[Either[KeycloakException, Option[SignedJWT]]] = IO {
-    val idToken     = parse(rawIdToken)
-    val tokenJson   = payload.toJSONObject
-    val idTokenJson = idToken.getPayload.toJSONObject
-
-    val subMatches    = tokenJson.getAsString("sub") == idTokenJson.getAsString("sub")
-    val stateMatches  = tokenJson.getAsString("session_state") == idTokenJson.getAsString("session_state")
-
-    def validate() = validateSignature(idToken, publicKey) match {
-      case Left(_)  => Exceptions.SIG_INVALID_ID.asLeft
-      case Right(r) => Some(r).asRight
+  private def validateIdToken(rawIdToken: String, accessToken: SignedJWT, publicKey: RSAKey): IO[Either[KeycloakException, Option[SignedJWT]]] = {
+    EitherT(attemptParse(rawIdToken)).subflatMap { idToken =>
+      for {
+        _ <- compareTokens(accessToken, idToken)
+        _ <- validateSignature(idToken, publicKey)
+      } yield Some(idToken)
     }
+  }.value.handleError(ex => Exceptions.UNEXPECTED(ex.getMessage).asLeft)
 
-    if (subMatches && stateMatches) validate() else Exceptions.ID_TOKEN_MISMATCH.asLeft
-  }.handleError(ex => Exceptions.PARSE_FAILED_ID(ex.getMessage).asLeft)
+  /**
+   * Attempts to parse a raw bearer token.
+   */
+  private def attemptParse(rawToken: String): IO[Either[KeycloakException, SignedJWT]] = IO {
+    parse(rawToken).asRight[KeycloakException]
+  }.handleError(_ => Exceptions.PARSE_FAILED.asLeft)
 
   /**
    * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
@@ -91,23 +102,20 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
     implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
-    val token = IO {
-      validateTime(parse(rawToken))
-    }.handleError(_ => Exceptions.PARSE_FAILED.asLeft)
-
     lazy val idTokenNull = IO.pure(none[SignedJWT].asRight[KeycloakException])
 
     (for {
-      parsed  <- EitherT(token)
+      token   <- EitherT(attemptParse(rawToken))
+      _       <- EitherT.fromEither[IO](validateTime(token))
       keys    <- EitherT(checkKeySet())
-      key     <- EitherT(matchPublicKey(parsed.getHeader.getKeyID, keys))
-      _       <- EitherT.fromEither[IO](validateSignature(parsed, key))
-      id      <- EitherT(rawIdToken.fold(idTokenNull)(parseAndValidateIdToken(_, key, parsed.getPayload)))
+      key     <- EitherT(matchPublicKey(token.getHeader.getKeyID, keys))
+      _       <- EitherT.fromEither[IO](validateSignature(token, key))
+      id      <- EitherT(rawIdToken.fold(idTokenNull)(validateIdToken(_, token, key)))
     } yield {
       Logging.tokenValidated(cId)
-      AuthPayload(accessToken = parsed.getPayload, idToken = id.map(_.getPayload))
-    }).leftMap(logValidationException).value.handleError { ex =>
-      logValidationException(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
+      AuthPayload(accessToken = token.getPayload, idToken = id.map(_.getPayload))
+    }).leftMap(logValidationEx).value.handleError { ex =>
+      logValidationExStack(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
     }
   }
 }
