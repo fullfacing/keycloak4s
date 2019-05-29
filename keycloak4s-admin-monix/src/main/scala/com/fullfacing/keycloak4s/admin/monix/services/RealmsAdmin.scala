@@ -24,7 +24,7 @@ class RealmsAdmin(implicit client: KeycloakClient) extends services.RealmsAdmin[
                         operationTypes: Option[List[String]] = None,
                         resourcePath: Option[String] = None,
                         resourceTypes: Option[List[String]] = None,
-                        batchSize: Int = 100): Observable[Either[KeycloakError, Seq[AdminEvent]]] = {
+                        batchSize: Int = 100): Observable[AdminEvent] = {
 
     val query = createQuery(
       ("authClient", authClient),
@@ -51,7 +51,7 @@ class RealmsAdmin(implicit client: KeycloakClient) extends services.RealmsAdmin[
                  ipAddress: Option[String] = None,
                  `type`: Option[List[String]] = None,
                  user: Option[String] = None,
-                 batchSize: Int = 100): Observable[Either[KeycloakError, Seq[EventRepresentation]]] = {
+                 batchSize: Int = 100): Observable[EventRepresentation] = {
 
     val query = createQuery(
       ("client", clientName),

@@ -46,6 +46,7 @@ object Main extends TaskApp {
 
     implicit val client: KeycloakClient[Task, Source[ByteString, Any]] = genericClient //slot in preferred client
     implicit val clientM: KeycloakClientM = monixClient
+
     /* Example Usage: Provides access to the Users calls using the implicit client. **/
     val users = Keycloak.Users[Task, Source[ByteString, Any]]
     val usersM = KeycloakM.Users

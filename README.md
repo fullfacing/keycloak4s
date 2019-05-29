@@ -5,6 +5,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.12.0]
+### Changed
+- Functions returning Observables in the Monix module have been modified to no longer return Eithers. Instead they are processed so that the right gets extracted while the left causes an exception to be thrown.
+
+## [0.11.1]
+### Changed
+- Fixed token endpoint scheme to use the scheme defined in KeycloakConfig as opposed to being hard coded.
+
 ## [0.11.0]
 ### Added
 - Observable streaming to relevant get calls in Roles, Clients and RealmsAdmin in the monix module.
