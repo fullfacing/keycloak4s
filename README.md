@@ -5,13 +5,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.13.0]
+## [0.14.0]
 ### Added
 - Added an integration test suite and a bootstrap for a fresh Keycloak server instance to test on.
 - Added integration tests for User, Realm, Role, Group and Client calls.
 ### Changed
 - Minor model and function fixes for issues exposed by the integration tests.
 - Fixed an illegal reflection warning by changing how a throwable was being handled by the Akka directives.
+
+## [0.13.0]
+### Changed
+- Functions returning Observables in the Monix module have been modified to no longer return Eithers. Instead they are processed so that the right gets extracted while the left causes an exception to be thrown.
 
 ## [0.12.0]
 ### Added

@@ -25,7 +25,7 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
   def fetchS(first: Int = 0,
              limit: Int = Integer.MAX_VALUE,
              search: Option[String] = None,
-             batchSize: Int = 100): Observable[Either[KeycloakError, Seq[Group]]] = {
+             batchSize: Int = 100): Observable[Group] = {
 
     val query = createQuery(("search", search))
     val path  = Seq(client.realm, "groups")
@@ -33,7 +33,7 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
     client.getList[Group](path, query, first, limit, batchSize)
   }
 
-  def fetchL(first: Int = 0, limit: Int = Integer.MAX_VALUE, search: Option[String] = None): Task[Either[KeycloakError, Seq[Group]]] = {
+  def fetchL(first: Int = 0, limit: Int = Integer.MAX_VALUE, search: Option[String] = None): Task[Seq[Group]] = {
     fetchS(first, limit, search).consumeWith(consumer())
   }
 
@@ -45,13 +45,13 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
    * @param batchSize  The amount of users each call should return.
    * @return
    */
-  def fetchUsersS(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[Either[KeycloakError, Seq[User]]] = {
+  def fetchUsersS(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[User] = {
     val path  = Seq(client.realm, "groups", groupId, "members")
 
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
   }
 
-  def fetchUsersL(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Either[KeycloakError, Seq[User]]] = {
+  def fetchUsersL(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Seq[User]] = {
     fetchUsersS(groupId, first, limit).consumeWith(consumer())
   }
 }
