@@ -5,6 +5,7 @@ import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
 import com.fullfacing.keycloak4s.auth.akka.http.models.SecurityConfig
 import com.fullfacing.keycloak4s.auth.akka.http.services.Authorisation._
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
+
 trait SecurityMagnet {
   def apply(): Directive0
 }

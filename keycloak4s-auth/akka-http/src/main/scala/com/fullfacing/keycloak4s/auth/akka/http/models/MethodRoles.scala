@@ -1,8 +1,8 @@
 package com.fullfacing.keycloak4s.auth.akka.http.models
 
-import com.fullfacing.keycloak4s.core.models.enums.HttpMethod
+import com.fullfacing.keycloak4s.core.models.enums.Method
 
-class MethodRoles(val method: HttpMethod,
+class MethodRoles(val method: Method,
                   val roles: List[String]) {
 
   def evaluateUserAccess(userRoles: List[String]): Boolean = {
@@ -11,5 +11,5 @@ class MethodRoles(val method: HttpMethod,
 }
 
 object MethodRoles {
-  def apply(method: HttpMethod, roles: List[String]): MethodRoles = new MethodRoles(method, roles)
+  def apply(method: Method, roles: List[String]): MethodRoles = new MethodRoles(method, roles)
 }

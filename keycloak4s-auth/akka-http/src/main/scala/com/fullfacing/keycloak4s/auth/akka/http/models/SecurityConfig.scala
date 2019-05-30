@@ -8,13 +8,18 @@ import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, Polic
  *
  * @param service         Name of the api/microservice being secured.
  * @param enforcementMode Determines how requests with no matching policies are handled.
- * @param adminRoles      Optional roles that would automatically accept a user request, regardless of the request path.
  * @param nodes           The configured and secured resource segments on the server.
  */
 class SecurityConfig(val service: String,
                      val enforcementMode: PolicyEnforcementMode,
-                     val adminRoles: List[MethodRoles],
                      val nodes: List[ResourceNode]) {
+
+  def evaluateWildcardRole(method: AkkaHttpMethod, userRoles: List[String]): Boolean = {
+    nodes.find(_.resource == "*").exists { node =>
+      node.roles.find(_.method.value == method.value)
+        .exists(_.evaluateUserAccess(userRoles))
+    }
+  }
 
   /**
    * Checks if the user has admin access to the server, or if the enforcement mode is set to disabled,
@@ -25,10 +30,7 @@ class SecurityConfig(val service: String,
    * @param userRoles  The user's permissions
    */
   def evaluate(method: AkkaHttpMethod, userRoles: List[String]): Boolean = {
-    lazy val isAdmin = adminRoles.find(_.method.value == method.value)
-      .exists(_.evaluateUserAccess(userRoles))
-
-    enforcementMode == PolicyEnforcementModes.Disabled || isAdmin
+    enforcementMode == PolicyEnforcementModes.Disabled || evaluateWildcardRole(method, userRoles)
   }
 
   def noMatchingPolicy(): Boolean = enforcementMode match {
@@ -50,5 +52,5 @@ object SecurityConfig {
             enforcementMode: PolicyEnforcementMode,
             adminRoles: List[MethodRoles],
             nodes: List[ResourceNode]): SecurityConfig =
-    new SecurityConfig(service, enforcementMode, adminRoles, nodes)
+    new SecurityConfig(service, enforcementMode, nodes)
 }

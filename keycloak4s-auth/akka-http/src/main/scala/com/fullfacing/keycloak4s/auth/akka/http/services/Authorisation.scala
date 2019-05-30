@@ -28,7 +28,7 @@ object Authorisation {
   }
 
   @tailrec
-  def extractResourcesFromPath(path: Path, acc: List[String]): List[String] = {
+  def extractResourcesFromPath(path: Path, acc: List[String] = List.empty[String]): List[String] = {
     lazy val isResource = path.startsWithSegment && validUuid.unapplySeq(path.head.toString).isEmpty
 
     if (path.isEmpty) acc
@@ -37,27 +37,37 @@ object Authorisation {
   }
 
 
+  /**
+   * ???
+   *
+   * @param path      The path of the HTTP request.
+   * @param method    The HTTP method of the request.
+   * @param sec       The security configuration of the server.
+   * @param userRoles The permissions of the user.
+   */
   def policyConfigEvaluation(path: Path, method: AkkaHttpMethod, sec: SecurityConfig, userRoles: List[String]): Directive0 = {
-
     @tailrec
-    def loop(path: List[String], nodes: List[ResourceNode], acc: Boolean): Boolean = path match {
-      case Nil       => acc
+    def loop(path: List[String], nodes: List[ResourceNode]): Boolean = path match {
+      case Nil       => true
       case h :: t    =>
         //Find node matching path segment
         nodes.find(_.resource == h) match {
-          case None    => sec.noMatchingPolicy()
-          case Some(n) =>
-            n.evaluate(sec, method, userRoles) match {
+          case None       => sec.noMatchingPolicy()
+          case Some(node) =>
+            node.evaluate(sec, method, userRoles) match {
               case Some(res) => res
-              case None      => loop(t, n.nodes, acc)
+              case None      => loop(t, node.nodes)
             }
         }
     }
-    lazy val listPath = extractResourcesFromPath(path, List.empty[String])
 
-    val b1      = sec.evaluate(method, userRoles)
-    lazy val b2 = loop(listPath, sec.nodes, listPath.nonEmpty)
-
-    if (b1 || b2) pass else authorisationFailed()
+    lazy val listPath = extractResourcesFromPath(path)
+    if (sec.evaluate(method, userRoles)) {
+      pass
+    } else if (listPath.nonEmpty && loop(listPath, sec.nodes)) {
+      pass
+    } else {
+      authorisationFailed()
+    }
   }
 }
