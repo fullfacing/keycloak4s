@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http
+package com.fullfacing.keycloak4s.auth
 
 import java.time.Instant
 import java.util.{Date, UUID}
@@ -14,27 +14,27 @@ import net.minidev.json.JSONObject
 object TestTokenGenerator {
 
   val claimsRaw: String = """{
-                    |  "reports-api": {
-                    |    "roles": [
-                    |      "employee-reports-view",
-                    |      "employee-reports-create",
-                    |      "employee-reports-delete",
-                    |      "finance-reports-view",
-                    |      "finance-reports-create",
-                    |      "operations-reports-view"
-                    |    ]
-                    |  },
-                    |  "operations-api": {
-                    |    "roles": [
-                    |      "operations-schedules-view",
-                    |      "operations-schedules-create",
-                    |      "operations-schedules-delete",
-                    |      "operations-actions-view",
-                    |      "operations-actions-create",
-                    |      "operations-metrics-view"
-                    |    ]
-                    |  }
-                    |}""".stripMargin
+                            |  "reports-api": {
+                            |    "roles": [
+                            |      "employee-reports-view",
+                            |      "employee-reports-create",
+                            |      "employee-reports-delete",
+                            |      "finance-reports-view",
+                            |      "finance-reports-create",
+                            |      "operations-reports-view"
+                            |    ]
+                            |  },
+                            |  "operations-api": {
+                            |    "roles": [
+                            |      "operations-schedules-view",
+                            |      "operations-schedules-create",
+                            |      "operations-schedules-delete",
+                            |      "operations-actions-view",
+                            |      "operations-actions-create",
+                            |      "operations-metrics-view"
+                            |    ]
+                            |  }
+                            |}""".stripMargin
 
   val claims: JSONObject = JSONObjectUtils.parse(claimsRaw)
 
@@ -89,3 +89,4 @@ object TestTokenGenerator {
     (jwt, idToken, publicKey, jwkSet)
   }
 }
+

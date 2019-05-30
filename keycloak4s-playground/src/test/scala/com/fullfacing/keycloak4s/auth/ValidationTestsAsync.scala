@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http
+package com.fullfacing.keycloak4s.auth
 
 import java.time.Instant
 import java.util.UUID
@@ -84,3 +84,4 @@ class ValidationTestsAsync extends AsyncFlatSpec with Matchers with PrivateMetho
       .unsafeToFuture().map(x => assert(x == Left(Exceptions.ID_TOKEN_MISMATCH)))
   }
 }
+

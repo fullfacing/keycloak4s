@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http
+package com.fullfacing.keycloak4s.auth
 
 import java.time.Instant
 
@@ -73,3 +73,4 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester {
     validator invokePrivate validateSignature(token, publicKey) shouldBe Left(Exceptions.SIG_INVALID)
   }
 }
+
