@@ -27,7 +27,7 @@ object Main extends TaskApp {
     val targetRealm: String = "master" //Name of a Realm whose data will be accessed/manipulated.
     val adminRealm: String  = "master" //Name of a Realm with admin rights that can access/manipulate targetRealm.
     val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
-    val adminSecret: String = "59241377-377a-4642-bae0-d19fdcc1ce5d" //Secret of adminClient.
+    val adminSecret: String = "93e66ea6-9e1f-4079-a76b-4d5b0530a1b4" //Secret of adminClient.
 
     val authConfig  = KeycloakConfig.Auth(adminRealm, adminClient, adminSecret)
     val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)

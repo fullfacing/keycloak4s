@@ -53,22 +53,22 @@ object TransportAPI extends SecurityDirectives {
           complete(s"GET /bikes/$id")
         }
     } ~
-      put {
-        path(JavaUUID) { id =>
-          complete(s"PUT /bikes/$id")
-        }
-      } ~
-      post {
-        complete("POST /bikes")
-      } ~
-      patch {
-        path(JavaUUID) { id =>
-          complete(s"PATCH /bikes/$id")
-        }
-      } ~
-      delete {
-        complete("DELETE /bikes")
+    put {
+      path(JavaUUID) { id =>
+        complete(s"PUT /bikes/$id")
       }
+    } ~
+    post {
+      complete("POST /bikes")
+    } ~
+    patch {
+      path(JavaUUID) { id =>
+        complete(s"PATCH /bikes/$id")
+      }
+    } ~
+    delete {
+      complete("DELETE /bikes")
+    }
   }
 
   def buses: Route = pathPrefix("buses") {
@@ -76,9 +76,9 @@ object TransportAPI extends SecurityDirectives {
       pathEndOrSingleSlash {
         complete("GET /buses")
       } ~
-        path(JavaUUID) { id =>
-          complete(s"GET /buses/$id")
-        }
+      path(JavaUUID) { id =>
+        complete(s"GET /buses/$id")
+      }
     } ~
     put {
       path(JavaUUID) { id =>

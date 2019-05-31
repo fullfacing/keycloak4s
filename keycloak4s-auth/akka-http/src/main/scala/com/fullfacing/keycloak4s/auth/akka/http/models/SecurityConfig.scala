@@ -1,6 +1,5 @@
 package com.fullfacing.keycloak4s.auth.akka.http.models
 
-import akka.http.scaladsl.model.{HttpMethod => AkkaHttpMethod}
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
 
 /**
@@ -11,32 +10,11 @@ import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, Polic
  * @param nodes           The configured and secured resource segments on the server.
  */
 class SecurityConfig(val service: String,
-                     val enforcementMode: PolicyEnforcementMode,
-                     val nodes: List[ResourceNode]) {
+                     val nodes: List[ResourceNode],
+                     val enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {
 
-  def evaluateWildcardRole(method: AkkaHttpMethod, userRoles: List[String]): Boolean = {
-    nodes.find(_.resource == "*").exists { node =>
-      node.roles.find(_.method.value == method.value)
-        .exists(_.evaluateUserAccess(userRoles))
-    }
-  }
-
-  /**
-   * Checks if the user has admin access to the server, or if the enforcement mode is set to disabled,
-   * both of which would remove the need to continue evaluation at a resource level and will allow the
-   * request to proceed.
-   *
-   * @param method     HTTP method of the request.
-   * @param userRoles  The user's permissions
-   */
-  def evaluate(method: AkkaHttpMethod, userRoles: List[String]): Boolean = {
-    enforcementMode == PolicyEnforcementModes.Disabled || evaluateWildcardRole(method, userRoles)
-  }
-
-  def noMatchingPolicy(): Boolean = enforcementMode match {
-    case PolicyEnforcementModes.Enforcing  => false
-    case PolicyEnforcementModes.Permissive => true
-    case PolicyEnforcementModes.Disabled   => true
+  def policyDisabled(): Boolean = {
+    enforcementMode == PolicyEnforcementModes.Disabled
   }
 }
 
@@ -49,8 +27,7 @@ object SecurityConfig {
   }
 
   def apply(service: String,
-            enforcementMode: PolicyEnforcementMode,
-            adminRoles: List[MethodRoles],
-            nodes: List[ResourceNode]): SecurityConfig =
-    new SecurityConfig(service, enforcementMode, nodes)
+            nodes: List[ResourceNode],
+            enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing): SecurityConfig =
+    new SecurityConfig(service, nodes, enforcementMode)
 }

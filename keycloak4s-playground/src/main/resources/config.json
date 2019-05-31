@@ -1,77 +1,57 @@
 {
   "service": "api-transport",
-  "enforcementMode": "ENFORCING",
-  "adminRoles": [
-    {
-      "method": "GET",
-      "roles": [
-        "admin"
-      ]
-    },
-    {
-      "method": "PATCH",
-      "roles": [
-        "admin"
-      ]
-    },
-    {
-      "method": "PUT",
-      "roles": [
-        "admin"
-      ]
-    },
-    {
-      "method": "POST",
-      "roles": [
-        "admin"
-      ]
-    },
-    {
-      "method": "HEAD",
-      "roles": [
-        "admin"
-      ]
-    },
-    {
-      "method": "DELETE",
-      "roles": [
-        "admin"
-      ]
-    }
-  ],
   "nodes": [
     {
-      "name": "car",
+      "resource": "*",
+      "roles": [
+        {
+          "method": "*",
+          "roles": [
+            "admin"
+          ]
+        }
+      ],
+      "nodes": [],
+      "enforcementMode": "ENFORCING"
+    },
+    {
       "resource": "cars",
       "roles": [
         {
           "method": "GET",
           "roles": [
-            "cars-view", "cars-write", "cars-delete"
-          ]
-        },
-        {
-          "method": "PATCH",
-          "roles": [
-            "cars-write", "cars-delete"
-          ]
-        },
-        {
-          "method": "PUT",
-          "roles": [
-            "cars-write", "cars-delete"
-          ]
-        },
-        {
-          "method": "POST",
-          "roles": [
-            "cars-write", "cars-delete"
+            "cars-view",
+            "cars-write",
+            "cars-delete"
           ]
         },
         {
           "method": "HEAD",
           "roles": [
-            "cars-view", "cars-write", "cars-delete"
+            "cars-view",
+            "cars-write",
+            "cars-delete"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "roles": [
+            "cars-write",
+            "cars-delete"
+          ]
+        },
+        {
+          "method": "PUT",
+          "roles": [
+            "cars-write",
+            "cars-delete"
+          ]
+        },
+        {
+          "method": "POST",
+          "roles": [
+            "cars-write",
+            "cars-delete"
           ]
         },
         {
@@ -81,40 +61,47 @@
           ]
         }
       ],
-      "nodes": []
+      "nodes": [],
+      "enforcementMode": "ENFORCING"
     },
     {
-      "name": "bike",
       "resource": "bikes",
       "roles": [
         {
           "method": "GET",
           "roles": [
-            "bikes-view", "bikes-write", "bikes-delete"
+            "bikes-view",
+            "bikes-write",
+            "bikes-delete"
           ]
         },
         {
           "method": "PATCH",
           "roles": [
-            "bikes-write", "bikes-delete"
+            "bikes-write",
+            "bikes-delete"
           ]
         },
         {
           "method": "PUT",
           "roles": [
-            "bikes-write", "bikes-delete"
+            "bikes-write",
+            "bikes-delete"
           ]
         },
         {
           "method": "POST",
           "roles": [
-            "bikes-write", "bikes-delete"
+            "bikes-write",
+            "bikes-delete"
           ]
         },
         {
           "method": "HEAD",
           "roles": [
-            "bikes-view", "bikes-write", "bikes-delete"
+            "bikes-view",
+            "bikes-write",
+            "bikes-delete"
           ]
         },
         {
@@ -124,41 +111,47 @@
           ]
         }
       ],
-      "wildcardRole": "bikes-admin",
-      "nodes": []
+      "nodes": [],
+      "enforcementMode": "ENFORCING"
     },
     {
-      "name": "bus",
       "resource": "buses",
       "roles": [
         {
+          "method": "HEAD",
+          "roles": [
+            "bus-view",
+            "bus-write",
+            "bus-delete"
+          ]
+        },
+        {
           "method": "GET",
           "roles": [
-            "bus-view", "bus-write", "bus-delete"
+            "bus-view",
+            "bus-write",
+            "bus-delete"
           ]
         },
         {
           "method": "PATCH",
           "roles": [
-            "bus-write", "bus-delete"
+            "bus-write",
+            "bus-delete"
           ]
         },
         {
           "method": "PUT",
           "roles": [
-            "bus-write", "bus-delete"
+            "bus-write",
+            "bus-delete"
           ]
         },
         {
           "method": "POST",
           "roles": [
-            "bus-write", "bus-delete"
-          ]
-        },
-        {
-          "method": "HEAD",
-          "roles": [
-            "bus-view", "bus-write", "bus-delete"
+            "bus-write",
+            "bus-delete"
           ]
         },
         {
@@ -168,8 +161,9 @@
           ]
         }
       ],
-      "wildcardRole": "bus-admin",
-      "nodes": []
+      "nodes": [],
+      "enforcementMode": "ENFORCING"
     }
-  ]
+  ],
+  "enforcementMode": "ENFORCING"
 }
