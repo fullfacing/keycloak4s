@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth
+package com.fullfacing.keycloak4s.auth.tests
 
 import java.time.Instant
 import java.util.UUID

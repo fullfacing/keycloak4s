@@ -1,7 +1,5 @@
 package com.fullfacing.keycloak4s.admin.monix
 
-import cats.implicits._
-import com.fullfacing.keycloak4s.core.models.KeycloakError
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import monix.reactive.Consumer
 

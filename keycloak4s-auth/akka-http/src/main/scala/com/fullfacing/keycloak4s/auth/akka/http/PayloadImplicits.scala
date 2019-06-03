@@ -26,17 +26,16 @@ object PayloadImplicits {
     def extractFirstName: Option[String] =
       safeExtract(payload, "given_name")
 
-    def extractName: Option[String] =
-      safeExtract(payload, "name")
-
-    def extractResources: Map[String, ResourceRoles] =
-      extractAs[Map[String, ResourceRoles]]("resource_access").getOrElse(Map.empty[String, ResourceRoles])
-
     def extractSurname: Option[String] =
       safeExtract(payload, "family_name")
+
+    def extractFullName: Option[String] =
+      safeExtract(payload, "name")
 
     def extractUsername: Option[String] =
       safeExtract(payload, "preferred_username")
 
+    def extractResources: Map[String, ResourceRoles] =
+      extractAs[Map[String, ResourceRoles]]("resource_access").getOrElse(Map.empty[String, ResourceRoles])
   }
 }

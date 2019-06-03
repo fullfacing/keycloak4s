@@ -60,12 +60,12 @@ object Logging {
   }
 
   def logValidationEx(exception: KeycloakException)(implicit cId: UUID): KeycloakException = {
-    Logging.tokenValidationFailed(cId, exception.message.getOrElse("An unexpected error occurred."))
-    exception
-  }
+    if (exception.message.isDefined) {
+      Logging.tokenValidationFailed(cId, exception)
+    } else {
+      Logging.tokenValidationFailed(cId, exception.message.getOrElse("An unexpected error occurred."))
+    }
 
-  def logValidationExStack(exception: KeycloakException)(implicit cId: UUID): KeycloakException = {
-    Logging.tokenValidationFailed(cId, exception)
     exception
   }
 }

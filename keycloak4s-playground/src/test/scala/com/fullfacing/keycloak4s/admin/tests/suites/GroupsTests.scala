@@ -1,12 +1,12 @@
-package com.fullfacing.keycloak4s.admin.tests
+package com.fullfacing.keycloak4s.admin.tests.suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import cats.effect.IO
-import com.fullfacing.keycloak4s.admin.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models._
+import monix.eval.Task
 import org.scalatest.DoNotDiscover
 
 @DoNotDiscover
@@ -39,7 +39,7 @@ class GroupsTests extends IntegrationSpec {
   }
 
   "Fetch Ancillary Object's UUIDs" should "retrieve the created objects and store their IDs" in {
-    val task: EitherT[IO, KeycloakError, Unit] =
+    val task: EitherT[Task, KeycloakError, Unit] =
       for {
         g <- EitherT(groupService.fetch())
         u <- EitherT(userService.fetch())
@@ -58,7 +58,7 @@ class GroupsTests extends IntegrationSpec {
     groupService.fetch().map { response =>
       response.map(groups => storedGroups.set(groups))
       response shouldBe a [Right[_, _]]
-    }.unsafeToFuture()
+    }.runToFuture
   }
 
   "fetchByName" should "successfully return a sequence of Group model" in {
@@ -214,7 +214,7 @@ class GroupsTests extends IntegrationSpec {
   "Count a specific number of groups" should "successfully return an expected number of groups" in {
     groupService.count().map( count =>
       count shouldBe 4
-    ).unsafeToFuture()
+    ).runToFuture
   }
 
   "Delete Ancillary Objects" should "remove all the ancillary objects created for testing Groups" in {

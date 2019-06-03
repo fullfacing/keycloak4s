@@ -1,10 +1,10 @@
-package com.fullfacing.keycloak4s.admin.tests
+package com.fullfacing.keycloak4s.admin.tests.suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models.{ManagementPermission, Role}
 import org.scalatest.DoNotDiscover
 
@@ -190,8 +190,8 @@ class RolesByIdTests extends IntegrationSpec {
         r <- EitherT(rolesByIdService.authPermissionsInitialised(rRole1.get()))
         c <- EitherT(rolesByIdService.authPermissionsInitialised(cRole1.get()))
       } yield {
-        r.enabled shouldBe Some(true)
-        c.enabled shouldBe Some(true)
+        r.enabled shouldBe true
+        c.enabled shouldBe true
       }
 
     task.value.shouldReturnSuccess
@@ -205,8 +205,8 @@ class RolesByIdTests extends IntegrationSpec {
         r <- EitherT(rolesByIdService.authPermissionsInitialised(rRole1.get()))
         c <- EitherT(rolesByIdService.authPermissionsInitialised(cRole1.get()))
       } yield {
-        r.enabled shouldBe Some(false)
-        c.enabled shouldBe Some(false)
+        r.enabled shouldBe false
+        c.enabled shouldBe false
       }
 
     task.value.shouldReturnSuccess

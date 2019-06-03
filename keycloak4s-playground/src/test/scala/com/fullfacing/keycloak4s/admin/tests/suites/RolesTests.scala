@@ -1,13 +1,13 @@
-package com.fullfacing.keycloak4s.admin.tests
+package com.fullfacing.keycloak4s.admin.tests.suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import cats.effect.IO
-import com.fullfacing.keycloak4s.admin.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models.{Client, Group, KeycloakError, ManagementPermission, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+import monix.eval.Task
 import org.json4s.jackson.Serialization.writePretty
 import org.scalatest.DoNotDiscover
 
@@ -90,7 +90,7 @@ class RolesTests extends IntegrationSpec {
   }
 
   "Fetch Ancillary Object's UUIDs" should "retrieve the created objects and store their IDs" in {
-    val task: EitherT[IO, KeycloakError, Unit] =
+    val task: EitherT[Task, KeycloakError, Unit] =
       for {
         c <- EitherT(clientService.fetch(clientId = Some("RoleTestClient")))
         g <- EitherT(groupService.fetch())
@@ -285,11 +285,15 @@ class RolesTests extends IntegrationSpec {
         _ <- EitherT(userService.addRealmRoles(user2.get(), List(r1)))
         a <- EitherT(realmRoleService.fetchUsers(rRole1Name, None, None))
         b <- EitherT(realmRoleService.fetchUsers(rRole2Name, None, None))
+        c <- EitherT.right[KeycloakError](roleService.fetchRealmRoleUsersS(rRole1Name).toListL)
+        d <- EitherT.right[KeycloakError](roleService.fetchRealmRoleUsersS(rRole2Name).toListL)
         _ <- EitherT(userService.removeRealmRoles(user1.get(), List(r1, r2)))
         _ <- EitherT(userService.removeRealmRoles(user2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
+        c.sortBy(_.createdTimestamp) shouldBe a.sortBy(_.createdTimestamp)
+        d shouldBe b
       }
 
     task.value.shouldReturnSuccess
@@ -304,11 +308,15 @@ class RolesTests extends IntegrationSpec {
         _ <- EitherT(userService.addClientRoles(clientUuid.get(), user2.get(), List(r1)))
         a <- EitherT(clientRoleService.fetchUsers(clientUuid.get(), cRole1Name, None, None))
         b <- EitherT(clientRoleService.fetchUsers(clientUuid.get(), cRole2Name, None, None))
+        c <- EitherT.right[KeycloakError](roleService.fetchClientRoleUsersS(clientUuid.get(), cRole1Name).toListL)
+        d <- EitherT.right[KeycloakError](roleService.fetchClientRoleUsersS(clientUuid.get(), cRole2Name).toListL)
         _ <- EitherT(userService.removeClientRoles(clientUuid.get(), user1.get(), List(r1, r2)))
         _ <- EitherT(userService.removeClientRoles(clientUuid.get(), user2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
+        c.sortBy(_.createdTimestamp) shouldBe a.sortBy(_.createdTimestamp)
+        d shouldBe b
       }
 
     task.value.shouldReturnSuccess
@@ -323,11 +331,15 @@ class RolesTests extends IntegrationSpec {
         _ <- EitherT(groupService.addRealmRoles(group2.get(), List(r1)))
         a <- EitherT(realmRoleService.fetchGroups(rRole1Name, None, None, Some(true)))
         b <- EitherT(realmRoleService.fetchGroups(rRole2Name, None, None, Some(false)))
+        c <- EitherT.right[KeycloakError](roleService.fetchRealmRoleGroupsS(rRole1Name, Some(true)).toListL)
+        d <- EitherT.right[KeycloakError](roleService.fetchRealmRoleGroupsS(rRole2Name, Some(false)).toListL)
         _ <- EitherT(groupService.removeRealmRoles(group1.get(), List(r1, r2)))
         _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
+        c.sortBy(_.name) shouldBe a.sortBy(_.name)
+        d shouldBe b
       }
 
     task.value.shouldReturnSuccess
@@ -342,11 +354,15 @@ class RolesTests extends IntegrationSpec {
         _ <- EitherT(groupService.addClientRoles(clientUuid.get(), group2.get(), List(r1)))
         a <- EitherT(clientRoleService.fetchGroups(clientUuid.get(), cRole1Name, None, None, Some(true)))
         b <- EitherT(clientRoleService.fetchGroups(clientUuid.get(), cRole2Name, None, None, Some(false)))
+        c <- EitherT.right[KeycloakError](roleService.fetchClientRoleGroupsS(clientUuid.get(), cRole1Name, Some(true)).toListL)
+        d <- EitherT.right[KeycloakError](roleService.fetchClientRoleGroupsS(clientUuid.get(), cRole2Name, Some(false)).toListL)
         _ <- EitherT(groupService.removeClientRoles(clientUuid.get(), group1.get(), List(r1, r2)))
         _ <- EitherT(groupService.removeClientRoles(clientUuid.get(), group2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
+        c.sortBy(_.id) shouldBe a.sortBy(_.id)
+        d shouldBe b
       }
 
     task.value.shouldReturnSuccess

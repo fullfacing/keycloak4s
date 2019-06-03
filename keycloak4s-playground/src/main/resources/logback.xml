@@ -2,7 +2,7 @@
 
     <!-- Logs TRACE, DEBUG and INFO levels to System.out -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="com.fullfacing.keycloak4s.core.logging.StdOutFilter"/>
+        <filter class="com.fullfacing.transport.logging.StdOutFilter"/>
         <encoder>
             <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss,SSSXXX", UTC} - %-5level{1} - %msg%n</pattern>
         </encoder>
@@ -11,7 +11,7 @@
     <!-- Logs WARNING and ERROR levels to System.err -->
     <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
         <Target>System.err</Target>
-        <filter class="com.fullfacing.keycloak4s.core.logging.StdErrFilter"/>
+        <filter class="com.fullfacing.transport.logging.StdErrFilter"/>
         <encoder>
             <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss,SSSXXX", UTC} - %-5level{1} - %msg%n</pattern>
         </encoder>

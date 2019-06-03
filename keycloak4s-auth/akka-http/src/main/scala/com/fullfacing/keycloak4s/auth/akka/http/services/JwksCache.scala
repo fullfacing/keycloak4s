@@ -31,11 +31,13 @@ abstract class JwksCache(host: String, port: String, realm: String) {
   }
 
   /* Retrieves the JWK set asynchronously and (re)caches it. Caches the exception in case of failure. **/
-  protected def updateCache()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = cacheKeys().handleError { _ =>
-    ref.set(Exceptions.JWKS_SERVER_ERROR.asLeft[JWKSet])
+  protected def updateCache()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = cacheKeys().handleError { thr =>
+    val ex = Exceptions.JWKS_SERVER_ERROR(thr.getMessage)
 
-    logException(Exceptions.JWKS_SERVER_ERROR) {
-      Logging.jwksRequestFailed(cId, Exceptions.JWKS_SERVER_ERROR)
+    ref.set(ex.asLeft[JWKSet])
+
+    logException(ex) {
+      Logging.jwksRequestFailed(cId, ex)
     }.asLeft
   }
 

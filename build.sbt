@@ -34,9 +34,9 @@ val scalacOpts = Seq(
 )
 
 addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
-addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.2.4")
+addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.0")
 
-parallelExecution in Test := false
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 // ---------------------------------- //
 //          Library Versions          //
@@ -50,6 +50,7 @@ val json4sVersion       = "3.6.5"
 val logbackVersion      = "1.2.3"
 val monixVersion        = "3.0.0-RC2"
 val nimbusVersion       = "7.2.1"
+val scalaMeterVersion   = "0.17"
 val scalaTestVersion    = "3.0.5"
 val sttpVersion         = "1.5.17"
 
@@ -86,6 +87,11 @@ val monix: Seq[ModuleID] = Seq(
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion
 )
+
+val scalaMeter: Seq[ModuleID] = Seq(
+  "com.storm-enroute" %% "scalameter" % scalaMeterVersion
+)
+
 val scalaTest: Seq[ModuleID] = Seq(
   "org.scalatest" %% "scalatest" % scalaTestVersion % Test
 )
@@ -104,6 +110,11 @@ val sttpMonix: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp" %% "json4s"                          % sttpVersion
 )
 
+testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
+
+logBuffered := false
+
+parallelExecution in Test := false
 
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
@@ -151,7 +162,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
-lazy val playgroundDependencies: Seq[ModuleID] = scalaTest
+lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ scalaMeter
 
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(global: _*)

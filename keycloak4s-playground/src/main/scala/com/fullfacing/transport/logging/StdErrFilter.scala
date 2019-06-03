@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.core.logging
+package com.fullfacing.transport.logging
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.admin
+package com.fullfacing.keycloak4s.admin.tests
 
 import java.util.UUID
 
@@ -13,10 +13,11 @@ import org.json4s.jackson.Serialization.write
 
 object ServerInitializer {
 
-  private implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
+  /* The Serialization Object to be used by Sttp's Json4s API. **/
+  private implicit val serializer: Serialization.type = org.json4s.jackson.Serialization
 
-  /* Synchronous Sttp Backend **/
-  implicit val backend: SttpBackend[Id, Nothing] = HttpURLConnectionBackend()
+  /* Simplistic Synchronous Sttp Backend **/
+  private implicit val backend: SttpBackend[Id, Nothing] = HttpURLConnectionBackend()
 
   /* Step 1: Retrieve an access token for the admin user. **/
   private def fetchToken(): Either[String, String] = {
@@ -131,7 +132,7 @@ object ServerInitializer {
       _         <- mapAdminRole(token, srvAccId, roleId)
       secret    <- fetchClientSecret(token, clientId)
     } yield secret
-  }.fold(err => throw new Throwable(err), res => res)
+  }.fold(left => throw new Throwable(left), right => right)
 
   val clientSecret: String = initialize()
 }

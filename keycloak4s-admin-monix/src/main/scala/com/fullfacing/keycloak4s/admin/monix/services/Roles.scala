@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
-import com.fullfacing.keycloak4s.core.models.{Group, KeycloakError, User}
+import com.fullfacing.keycloak4s.core.models.{Group, User}
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -22,11 +22,11 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
    * @param batchSize  The amount of sessions each call should return.
    * @return
    */
-  def fetchClientRoleUsersS(first: Int = 0,
-                           limit: Int = Integer.MAX_VALUE,
-                           clientId: UUID,
-                           name: String,
-                           batchSize: Int = 100): Observable[User] = {
+  def fetchClientRoleUsersS(clientId: UUID,
+                            name: String,
+                            first: Int = 0,
+                            limit: Int = Integer.MAX_VALUE,
+                            batchSize: Int = 100): Observable[User] = {
 
     val path = Seq(client.realm, "clients", clientId.toString, "roles", name, "users")
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
@@ -42,11 +42,12 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
    * @param batchSize  The amount of sessions each call should return.
    * @return
    */
-  def fetchClientRoleGroupsS(first: Int = 0,
-                            limit: Int = Integer.MAX_VALUE,
-                            clientId: UUID, name: String,
-                            full: Option[Boolean],
-                            batchSize: Int = 100): Observable[Group] = {
+  def fetchClientRoleGroupsS(clientId: UUID,
+                             name: String,
+                             full: Option[Boolean] = None,
+                             first: Int = 0,
+                             limit: Int = Integer.MAX_VALUE,
+                             batchSize: Int = 100): Observable[Group] = {
 
     val path = Seq(client.realm, "clients", clientId.toString, "roles", name, "groups")
     client.getList[Group](path, createQuery(("full", full)), first, limit, batchSize)
@@ -60,10 +61,10 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
    * @param batchSize  The amount of sessions each call should return.
    * @return
    */
-  def fetchRealmRoleUsersS(first: Int = 0,
-                          limit: Int = Integer.MAX_VALUE,
-                          name: String,
-                          batchSize: Int = 100): Observable[User] = {
+  def fetchRealmRoleUsersS(name: String,
+                           first: Int = 0,
+                           limit: Int = Integer.MAX_VALUE,
+                           batchSize: Int = 100): Observable[User] = {
 
     val path = Seq(client.realm, "roles", name, "users")
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
@@ -78,11 +79,11 @@ class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observ
    * @param batchSize  The amount of sessions each call should return.
    * @return
    */
-  def fetchRealmRoleGroupsS(first: Int = 0,
-                           limit: Int = Integer.MAX_VALUE,
-                           name: String,
-                           full: Option[Boolean],
-                           batchSize: Int = 100): Observable[Group] = {
+  def fetchRealmRoleGroupsS(name: String,
+                            full: Option[Boolean] = None,
+                            first: Int = 0,
+                            limit: Int = Integer.MAX_VALUE,
+                            batchSize: Int = 100): Observable[Group] = {
 
     val path = Seq(client.realm, "roles", name, "groups")
     client.getList[Group](path, createQuery(("full", full)), first, limit, batchSize)

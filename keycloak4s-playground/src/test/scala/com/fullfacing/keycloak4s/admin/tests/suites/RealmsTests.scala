@@ -1,13 +1,13 @@
-package com.fullfacing.keycloak4s.admin.tests
+package com.fullfacing.keycloak4s.admin.tests.suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import cats.effect.IO
-import com.fullfacing.keycloak4s.admin.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.EventTypes
+import monix.eval.Task
 import org.scalatest.DoNotDiscover
 
 @DoNotDiscover
@@ -85,6 +85,12 @@ class RealmsTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
+  "fetchAdminEventsS" should "be able to stream admin events" in {
+    realmService.fetchAdminEventsS().toListL.map { events =>
+      events shouldNot be (empty)
+    }
+  }.runToFuture
+
   "deleteAdminEvents" should "delete all admin events that have been logged" in {
     for {
       _       <- EitherT(realmService.deleteAdminEvents(realm = "test_realm"))
@@ -129,7 +135,7 @@ class RealmsTests extends IntegrationSpec {
     for {
       _       <- EitherT(groupService.create(Group.Create(name = "test_group")))
       opt     <- EitherT(groupService.fetch()).map(_.find(_.name == "test_group"))
-      group   <- EitherT.fromOption[IO](opt, NO_GROUPS_FOUND)
+      group   <- EitherT.fromOption[Task](opt, NO_GROUPS_FOUND)
       _       <- EitherT(realmService.assignGroupAsDefault(group.id))
       fetched <- EitherT(realmService.fetchDefaultGroups())
     } yield {
@@ -173,11 +179,16 @@ class RealmsTests extends IntegrationSpec {
     } yield scopes.map(_.id) should contain (storedScopeId.get())
   }.value.shouldReturnSuccess
 
-  "fetchEvents" should "retrieve a non-empty list of logging events" in {
-    realmService.fetchEvents().map(_.map { events =>
-      events shouldNot be (empty)
-    })
+  /* Difficult to properly test, event logs cannot be forced through the Admin API. **/
+  "fetchEvents" should "retrieve a list of login events" in {
+    realmService.fetchEvents()
   }.shouldReturnSuccess
+
+  "fetchEventsS" should "be able to stream a list of login events" in {
+    realmService.fetchEventsS().toListL.map { events =>
+      events shouldBe a [List[_]]
+    }
+  }.runToFuture
 
   "deleteAllEvents" should "delete all logging events" in {
     for {
@@ -209,16 +220,19 @@ class RealmsTests extends IntegrationSpec {
 
   "removeUserSession" should "invalidate a specified user session" in {
     for {
-      id        <- EitherT(clientService.fetch(clientId = Some("admin-cli"))).map(_.head.id)
+      id        <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head.id)
       option    <- EitherT(clientService.fetchUserSessions(id)).map(_.headOption)
-      session   <- EitherT.fromOption[IO](option, NO_SESSIONS_FOUND)
+      session   <- EitherT.fromOption[Task](option, NO_SESSIONS_FOUND)
       _         <- EitherT(realmService.removeUserSession(session.id))
       sessions  <- EitherT(clientService.fetchUserSessions(id))
-    } yield sessions.map(_.id) shouldNot contain (session.id)
-  }.value.shouldReturnSuccess
+    } yield (sessions.map(_.id), session.id)
+  }.value.map {
+    case Left(l)          => l.getMessage shouldBe "No sessions found."
+    case Right((ids, id)) => ids shouldNot contain (id)
+  }.runToFuture
 
   "fetchUsersManagementPermissions" should "retrieve an object stating that management permissions are disabled" in {
-    realmService.fetchUsersManagementPermissions().map(_.map { permissions =>
+    realmService.fetchUsersManagementPermissions("test_realm").map(_.map { permissions =>
       permissions.enabled shouldBe false
     })
   }.shouldReturnSuccess
@@ -227,8 +241,8 @@ class RealmsTests extends IntegrationSpec {
     val update = ManagementPermission.Update(enabled = Some(true))
 
     for {
-      _           <- EitherT(realmService.updateUsersManagementPermissions(update))
-      permissions <- EitherT(realmService.fetchUsersManagementPermissions())
+      _           <- EitherT(realmService.updateUsersManagementPermissions(update, "test_realm"))
+      permissions <- EitherT(realmService.fetchUsersManagementPermissions("test_realm"))
     } yield permissions.enabled shouldBe true
   }.value.shouldReturnSuccess
 
@@ -251,7 +265,7 @@ class RealmsTests extends IntegrationSpec {
     for {
       _       <- EitherT(realmService.createInitialAccessToken(config, "test_realm"))
       tokens  <- EitherT(realmService.fetchInitialAccessTokens("test_realm"))
-      token   <- EitherT.fromOption[IO](tokens.headOption, NO_TOKENS_FOUND)
+      token   <- EitherT.fromOption[Task](tokens.headOption, NO_TOKENS_FOUND)
     } yield {
       token.count shouldBe 5
       storedTokenId.set(token.id)
