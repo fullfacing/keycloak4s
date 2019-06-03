@@ -33,6 +33,9 @@ object Logging {
   def tokenValidationFailed(cId: => UUID, ex: Throwable): Unit =
     logger.error(s"${cIdErr(cId)}Token validation failed.", ex)
 
+  def tokenValidationFailed(cId: => UUID, exMessage: String): Unit =
+    logger.error(s"${cIdErr(cId)}Token validation failed: $exMessage")
+
   def resourceAuthorizing(resource: => String, cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Checking resource $gr$resource ${cy}authorization...$rs")
 
@@ -56,7 +59,12 @@ object Logging {
     log; exception
   }
 
-  def logValidationException(exception: KeycloakException)(implicit cId: UUID): KeycloakException = {
+  def logValidationEx(exception: KeycloakException)(implicit cId: UUID): KeycloakException = {
+    Logging.tokenValidationFailed(cId, exception.message.getOrElse("An unexpected error occurred."))
+    exception
+  }
+
+  def logValidationExStack(exception: KeycloakException)(implicit cId: UUID): KeycloakException = {
     Logging.tokenValidationFailed(cId, exception)
     exception
   }

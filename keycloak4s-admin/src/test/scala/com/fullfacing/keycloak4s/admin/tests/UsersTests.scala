@@ -4,6 +4,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
+import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.IntegrationSpec
 import com.fullfacing.keycloak4s.core.models._
@@ -21,78 +22,83 @@ class UsersTests extends IntegrationSpec {
    * impersonate            - Changes permissions, causing interference with subsequent tests.
    */
 
-  val storedUsers: AtomicReference[List[User]] = new AtomicReference[List[User]]()
-  val storedGroups: AtomicReference[List[Group]] = new AtomicReference[List[Group]]()
-  val storedRoleId: AtomicReference[UUID] = new AtomicReference[UUID]()
-  val storedClientId: AtomicReference[UUID] = new AtomicReference[UUID]()
+  /* References for storing tests results to be used in subsequent tests. **/
+  val storedUsers: AtomicReference[List[User]]    = new AtomicReference[List[User]]()
+  val storedGroups: AtomicReference[List[Group]]  = new AtomicReference[List[Group]]()
+  val storedRoleId: AtomicReference[UUID]         = new AtomicReference[UUID]()
+  val storedClientId: AtomicReference[UUID]       = new AtomicReference[UUID]()
 
-  "create" should "successfully create a User" in {
-    (for {
-      _ <- EitherT(userService.create(User.Create(username = "test_user1", enabled = true)))
-      _ <- EitherT(userService.create(User.Create(username = "test_user2", enabled = true)))
-      _ <- EitherT(userService.create(User.Create(username = "test_user3", enabled = true)))
-      _ <- EitherT(userService.create(User.Create(username = "test_user4", enabled = true)))
-      _ <- EitherT(userService.create(User.Create(username = "test_user5", enabled = true)))
-    } yield ()).value.shouldReturnSuccess
-  }
+  /* Test Exceptions **/
+  val NO_USERS_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("No users found."))
+  val NO_GROUPS_FOUND: KeycloakError  = KeycloakThrowable(new Throwable("No groups found."))
+  val NO_CLIENTS_FOUND: KeycloakError = KeycloakThrowable(new Throwable("No clients found."))
 
-  "fetch" should "successfully retrieve all Users" in {
-    userService.fetch().map { response =>
-      response.map(users => storedUsers.set(users))
-    }.shouldReturnSuccess
-  }
+  "fetch" should "retrieve a list of Users with at least one User" in {
+    userService.fetch().map(_.map { response =>
+      response.map(_.username) should contain ("admin")
+    })
+  }.shouldReturnSuccess
 
   it should "also be able to retrieve a User by username" in {
-    val userToFetch = storedUsers.get().headOption
+    userService.fetch(username = Some("admin")).map(_.map { users =>
+      users.find(_.username == "admin") shouldNot be(None)
+    })
+  }.shouldReturnSuccess
 
-    EitherT(userService.fetch(username = userToFetch.map(_.username))).map { user =>
-      user.headOption shouldNot be(None)
-      user.headOption.map(_.id) shouldBe userToFetch.map(_.id)
-    }.value.shouldReturnSuccess
-  }
+  "create" should "create a User" in {
+    for {
+      _     <- EitherT(userService.create(User.Create(username = "test_user1", enabled = true)))
+      _     <- EitherT(userService.create(User.Create(username = "test_user2", enabled = true)))
+      _     <- EitherT(userService.create(User.Create(username = "test_user3", enabled = true)))
+      users <- EitherT(userService.fetch())
+    } yield {
+      users.map(_.username) should contain allOf ("test_user1", "test_user2", "test_user3")
+      storedUsers.set(users)
+    }
+  }.value.shouldReturnSuccess
 
-  "fetchById" should "successfully retrieve an existing User with a given ID" in {
-    val userToFetchOpt = storedUsers.get().headOption
-    userToFetchOpt shouldNot be(None)
-    val userToFetch = userToFetchOpt.get
+  "fetchById" should "retrieve an existing User with a specified ID" in {
+    val option = storedUsers.get().headOption
 
-    EitherT(userService.fetchById(userToFetch.id)).map { user =>
-      user.username shouldBe userToFetch.username
-    }.value.shouldReturnSuccess
-  }
+    for {
+      storedUser  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      fetchedUser <- EitherT(userService.fetchById(storedUser.id))
+    } yield fetchedUser.username shouldBe storedUser.username
+  }.value.shouldReturnSuccess
 
   "count" should "correctly return the amount of Users" in {
     userService.count().map(_.map { num =>
-      num shouldBe 6
+      num shouldBe 4
     }).shouldReturnSuccess
   }
 
-  "update" should "successfully update an existing User with a given ID" in {
-    val userToUpdateOpt = storedUsers.get().find(_.username == "test_user5")
-    userToUpdateOpt shouldNot be(None)
-    val userToUpdate = userToUpdateOpt.get
+  "update" should "update an existing User with a given ID" in {
+    val option = storedUsers.get().find(_.username == "test_user3")
 
     for {
-      _     <- EitherT(userService.update(userToUpdate.id, User.Update(enabled = Some(false))))
-      user  <- EitherT(userService.fetch(username = Some("test_user5")))
-    } yield user.headOption.map(_.id) shouldBe Some(userToUpdate.id)
+      storedUser  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _           <- EitherT(userService.update(storedUser.id, User.Update(enabled = Some(false))))
+      fetchedUser <- EitherT(userService.fetch(username = Some("test_user3")))
+    } yield fetchedUser.headOption.map(_.id) shouldBe Some(storedUser.id)
   }.value.shouldReturnSuccess
 
-  "addToGroup" should "successfully add a Group to a User" in {
+  "addToGroup" should "add a Group to a User" in {
     val group1 = Group.Create(name = "test_group1")
     val group2 = Group.Create(name = "test_group2")
     val group3 = Group.Create(name = "test_group3")
 
     val users = storedUsers.get()
-    val user1 = users.find(_.username == "test_user1").get.id
-    val user2 = users.find(_.username == "test_user2").get.id
+    val option1 = users.find(_.username == "test_user1").map(_.id)
+    val option2 = users.find(_.username == "test_user2").map(_.id)
 
     (for {
+      user1   <- EitherT.fromOption[IO](option1, NO_USERS_FOUND)
+      user2   <- EitherT.fromOption[IO](option2, NO_USERS_FOUND)
       _       <- EitherT(groupService.create(group1))
       _       <- EitherT(groupService.create(group2))
       _       <- EitherT(groupService.create(group3))
       groups  <- EitherT(groupService.fetch())
-      _       <- EitherT(userService.addToGroup(user1, groups.head.id))
+      _       <- EitherT(userService.addToGroup(user1, groups.headWithAssert.id))
       _       <- EitherT(userService.addToGroup(user2, groups(1).id))
       _       <- EitherT(userService.addToGroup(user2, groups(2).id))
     } yield {
@@ -100,12 +106,14 @@ class UsersTests extends IntegrationSpec {
     }).value.shouldReturnSuccess
   }
 
-  "fetchGroups" should "successfully retrieve all Groups a User is added to" in {
+  "fetchGroups" should "retrieve a non-empty list of Groups a User is linked to" in {
     val users = storedUsers.get()
-    val user1 = users.find(_.username == "test_user1").get.id
-    val user2 = users.find(_.username == "test_user2").get.id
+    val option1 = users.find(_.username == "test_user1").map(_.id)
+    val option2 = users.find(_.username == "test_user2").map(_.id)
 
     (for {
+      user1   <- EitherT.fromOption[IO](option1, NO_USERS_FOUND)
+      user2   <- EitherT.fromOption[IO](option2, NO_USERS_FOUND)
       groups1 <- EitherT(userService.fetchGroups(user1))
       groups2 <- EitherT(userService.fetchGroups(user2))
     } yield {
@@ -114,12 +122,14 @@ class UsersTests extends IntegrationSpec {
     }).value.shouldReturnSuccess
   }
 
-  "countGroups" should "accurately return the amount of Groups a User is added to" in {
+  "countGroups" should "correctly return the amount of Groups a User is added to" in {
     val users = storedUsers.get()
-    val user1 = users.find(_.username == "test_user1").get.id
-    val user2 = users.find(_.username == "test_user2").get.id
+    val option1 = users.find(_.username == "test_user1").map(_.id)
+    val option2 = users.find(_.username == "test_user2").map(_.id)
 
     (for {
+      user1   <- EitherT.fromOption[IO](option1, NO_USERS_FOUND)
+      user2   <- EitherT.fromOption[IO](option2, NO_USERS_FOUND)
       groups1 <- EitherT(userService.countGroups(user1))
       groups2 <- EitherT(userService.countGroups(user2))
     } yield {
@@ -128,23 +138,25 @@ class UsersTests extends IntegrationSpec {
     }).value.shouldReturnSuccess
   }
 
-  "removeFromGroup" should "successfully remove a Group from a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+  "removeFromGroup" should "remove a Group from a User" in {
+    val option1 = storedUsers.get().find(_.username == "test_user1")
     val groups = storedGroups.get()
-    val groupId = groups.find(_.name == "test_group1").get.id
+    val option2 = groups.find(_.name == "test_group1").map(_.id)
 
     def deleteGroups = groups.map { group =>
       groupService.delete(group.id)
     }.parSequence.map(_.sequence)
 
     for {
-      _   <- EitherT(userService.removeFromGroup(user.id, groupId))
-      num <- EitherT(userService.countGroups(user.id))
-      _   <- EitherT(deleteGroups)
+      user    <- EitherT.fromOption[IO](option1, NO_USERS_FOUND)
+      groupId <- EitherT.fromOption[IO](option2, NO_GROUPS_FOUND)
+      _       <- EitherT(userService.removeFromGroup(user.id, groupId))
+      num     <- EitherT(userService.countGroups(user.id))
+      _       <- EitherT(deleteGroups)
     } yield num shouldBe Count(0)
   }.value.shouldReturnSuccess
 
-  "createFederatedIdentity" should "successfully link a federated identity to a User" in {
+  "createFederatedIdentity" should "link a federated identity to a User" in {
     val config = Map(
       "authorizationUrl"  -> "http://localhost",
       "tokenUrl"          -> "http://localhost",
@@ -158,89 +170,110 @@ class UsersTests extends IntegrationSpec {
       providerId  = Some("oidc")
     )
 
-    val user = storedUsers.get().find(_.username == "test_user1").get
+    val option = storedUsers.get().find(_.username == "test_user1")
 
     for {
-      _ <- EitherT(idProvService.create(identityProvider))
-      _ <- EitherT(userService.createFederatedIdentity(user.id, "oidc", FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))))
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(idProvService.create(identityProvider))
+      _     <- EitherT(userService.createFederatedIdentity(user.id, "oidc", FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))))
     } yield ()
   }.value.shouldReturnSuccess
 
-  "fetchFederatedIdentities" should "successfully retrieve all federated identities linked to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
-
-    userService.fetchFederatedIdentities(user.id).map(_.map { fi =>
-      fi should contain only FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))
-    }).shouldReturnSuccess
-  }
-
-  "removeFederatedIdentityProvider" should "successfully unlink a federated identity to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+  "fetchFederatedIdentities" should "retrieve a non-empty list of federated identities linked to a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
 
     for {
-      _ <- EitherT(userService.removeFederatedIdentityProvider(user.id, "oidc"))
-      _ <- EitherT(idProvService.delete("oidc"))
+      user        <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      identities  <- EitherT(userService.fetchFederatedIdentities(user.id))
+    } yield {
+      val identity = FederatedIdentity(Some("oidc"), Some(user.id.toString), Some(user.username))
+      identities should contain only identity
+    }
+  }.value.shouldReturnSuccess
+
+  "removeFederatedIdentityProvider" should "unlink a federated identity from a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
+
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(userService.removeFederatedIdentityProvider(user.id, "oidc"))
+      _     <- EitherT(idProvService.delete("oidc"))
     } yield ()
   }.value.shouldReturnSuccess
 
-  "fetchRoles" should "successfully retrieve all Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchRoles" should "retrieve a non-empty list of Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
 
-    userService.fetchRoles(user.id).map(_.map { roles =>
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      roles <- EitherT(userService.fetchRoles(user.id))
+    } yield {
       roles.realmMappings shouldNot be (empty)
       roles.clientMappings.get("account") shouldNot be (None)
-    }).shouldReturnSuccess
-  }
-
-  "fetchRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
-
-    userService.fetchRealmRoles(user.id).map(_.map { roles =>
-      roles shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
-
-  "addRealmRoles" should "successfully map a Realm Role to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
-
-    for {
-      _   <- EitherT(realmRoleService.create(Role.Create(name = "test_role", clientRole = false, composite = false)))
-      id  <- EitherT(realmRoleService.fetchByName("test_role")).map(_.id)
-      _   <- EitherT(userService.addRealmRoles(user.id, List(Role.Mapping(Some(id), Some("test_role")))))
-    } yield storedRoleId.set(id)
+    }
   }.value.shouldReturnSuccess
 
-  "removeRealmRoles" should "successfully unmap a Realm Role from a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchRealmRoles" should "retrieve a non-empty list of Realm Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
+
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      roles <- EitherT(userService.fetchRealmRoles(user.id))
+    } yield roles shouldNot be (empty)
+  }.value.shouldReturnSuccess
+
+  "addRealmRoles" should "map a Realm Role to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
+
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(realmRoleService.create(Role.Create(name = "test_role", clientRole = false, composite = false)))
+      id    <- EitherT(realmRoleService.fetchByName("test_role")).map(_.id)
+      _     <- EitherT(userService.addRealmRoles(user.id, List(Role.Mapping(Some(id), Some("test_role")))))
+      roles <- EitherT(userService.fetchRealmRoles(user.id))
+    } yield {
+      roles.map(_.name) should contain ("test_role")
+      storedRoleId.set(id)
+    }
+  }.value.shouldReturnSuccess
+
+  "removeRealmRoles" should "unmap a Realm Role from a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
     val role = Role.Mapping(name = "test_role".some, id = storedRoleId.get.some)
 
     for {
-      _ <- EitherT(userService.removeRealmRoles(user.id, List(role)))
-      _ <- EitherT(realmRoleService.remove("test_role"))
-    } yield ()
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(userService.removeRealmRoles(user.id, List(role)))
+      _     <- EitherT(realmRoleService.remove("test_role"))
+      roles <- EitherT(userService.fetchRealmRoles(user.id))
+    } yield roles.map(_.name) shouldNot contain ("test_role")
   }.value.shouldReturnSuccess
 
-  "fetchAvailableRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
-
-    userService.fetchAvailableRealmRoles(user.id).map(_.map { roles =>
-      roles shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
-
-  "fetchEffectiveRealmRoles" should "successfully retrieve all Realm Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
-
-    userService.fetchEffectiveRealmRoles(user.id).map(_.map { roles =>
-      roles shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
-
-  "fetchClientsRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchAvailableRealmRoles" should "retrieve a non-empty list of Realm Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
 
     for {
-      id    <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head.id)
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      roles <- EitherT(userService.fetchAvailableRealmRoles(user.id))
+    } yield roles shouldNot be (empty)
+  }.value.shouldReturnSuccess
+
+  "fetchEffectiveRealmRoles" should "retrieve a non-empty list of Realm Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
+
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      roles <- EitherT(userService.fetchEffectiveRealmRoles(user.id))
+    } yield roles shouldNot be (empty)
+  }.value.shouldReturnSuccess
+
+  "fetchClientsRoles" should "retrieve a non-empty list of Client Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
+
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      idOpt <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.headOption.map(_.id))
+      id    <- EitherT.fromOption[IO](idOpt, NO_CLIENTS_FOUND)
       roles <- EitherT(userService.fetchClientRoles(id, user.id))
     } yield {
       roles shouldNot be (empty)
@@ -248,90 +281,113 @@ class UsersTests extends IntegrationSpec {
     }
   }.value.shouldReturnSuccess
 
-  "addClientRoles" should "successfully map a Client Role to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchAvailableClientRoles" should "retrieve a non-empty list of Client Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
 
     for {
-      _   <- EitherT(clientRoleService.create(storedClientId.get(), Role.Create(name = "test_role", clientRole = false, composite = false)))
-      id  <- EitherT(clientRoleService.fetchByName(storedClientId.get(), "test_role")).map(_.id)
-      _   <- EitherT(userService.addClientRoles(storedClientId.get(), user.id, List(Role.Mapping(Some(id), Some("test_role")))))
-    } yield storedRoleId.set(id)
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(clientRoleService.create(storedClientId.get(), Role.Create(name = "test_role", clientRole = true, composite = false)))
+      id    <- EitherT(clientRoleService.fetchByName(storedClientId.get(), "test_role")).map(_.id)
+      roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
+    } yield {
+      roles shouldNot be (empty)
+      storedRoleId.set(id)
+    }
   }.value.shouldReturnSuccess
 
-  "fetchAvailableClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+  "addClientRoles" should "map a Client Role to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
 
-    userService.fetchAvailableClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
-      roles shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(userService.addClientRoles(storedClientId.get(), user.id, List(Role.Mapping(Some(storedRoleId.get()), Some("test_role")))))
+      roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
+    } yield roles shouldBe empty
+  }.value.shouldReturnSuccess
 
-  "removeClientRoles" should "successfully unmap a Client Role from a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "removeClientRoles" should "unmap a Client Role from a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
     val role = Role.Mapping(name = "test_role".some, id = storedRoleId.get.some)
 
     for {
-      _ <- EitherT(userService.removeClientRoles(storedClientId.get(), user.id, List(role)))
-      _ <- EitherT(clientRoleService.remove(storedClientId.get(), "test_role"))
-    } yield ()
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _     <- EitherT(userService.removeClientRoles(storedClientId.get(), user.id, List(role)))
+      roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
+      _     <- EitherT(clientRoleService.remove(storedClientId.get(), "test_role"))
+    } yield roles shouldNot be (empty)
   }.value.shouldReturnSuccess
 
-  "fetchEffectiveClientRoles" should "successfully retrieve all Client Roles mapped to a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchEffectiveClientRoles" should "retrieve a non-empty list of Client Roles mapped to a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
 
-    userService.fetchEffectiveClientRoles(storedClientId.get(), user.id).map(_.map { roles =>
-      roles shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
+    for {
+      user  <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      roles <- EitherT(userService.fetchEffectiveClientRoles(storedClientId.get(), user.id))
+    } yield roles shouldNot be (empty)
+  }.value.shouldReturnSuccess
 
-  "fetchSessions" should "successfully retrieve all login sessions for a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchSessions" should "retrieve a non-empty list of login sessions for a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
 
-    userService.fetchSessions(user.id).map(_.map { sessions =>
-      sessions shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
+    for {
+      user      <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      sessions  <- EitherT(userService.fetchSessions(user.id))
+    } yield sessions shouldNot be (empty)
+  }.value.shouldReturnSuccess
 
-  "fetchOfflineSessions" should "successfully retrieve all offline sessions for a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
+  "fetchOfflineSessions" should "retrieve a non-empty list of offline sessions for a User" in {
+    val option = storedUsers.get().find(_.username == "admin")
 
-    userService.fetchOfflineSessions(user.id, storedClientId.get()).shouldReturnSuccess
-  }
+    for {
+      user      <- EitherT.fromOption[IO](option, NO_USERS_FOUND)
+      _         <- EitherT(userService.fetchOfflineSessions(user.id, storedClientId.get()))
+      sessions  <- EitherT(userService.fetchSessions(user.id))
+    } yield sessions shouldNot be (empty)
+  }.value.shouldReturnSuccess
 
-  "removeTotp" should "successfully disable time-based one-time password for a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+  "removeTotp" should "disable time-based one-time password for a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
 
-    userService.removeTotp(user.id).shouldReturnSuccess
-  }
+    EitherT.fromOption[IO](option, NO_USERS_FOUND).flatMapF { user =>
+      userService.removeTotp(user.id)
+    }
+  }.value.shouldReturnSuccess
 
-  "resetPassword" should "successfully reset the password for a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+  "resetPassword" should "reset the password for a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
     val cred = Credential(`type` = CredentialTypes.Password, value = "test_pass")
 
-    userService.resetPassword(user.id, cred).shouldReturnSuccess
-  }
+    EitherT.fromOption[IO](option, NO_USERS_FOUND).flatMapF { user =>
+      userService.resetPassword(user.id, cred)
+    }
+  }.value.shouldReturnSuccess
 
-  "disableUserCredentials" should "successfully disable the specified credential types for a User" in {
-    val user = storedUsers.get().find(_.username == "test_user1").get
+  "disableUserCredentials" should "disable the specified credential types for a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
 
-    userService.disableUserCredentials(user.id, List("password")).shouldReturnSuccess
-  }
+    EitherT.fromOption[IO](option, NO_USERS_FOUND).flatMapF { user =>
+      userService.disableUserCredentials(user.id, List("password"))
+    }
+  }.value.shouldReturnSuccess
 
-  "delete" should "successfully delete an existing User with a given ID" in {
+  "logout" should "log out a User" in {
+    val option = storedUsers.get().find(_.username == "test_user1")
+
+    EitherT.fromOption[IO](option, NO_USERS_FOUND).flatMapF { user =>
+      userService.logout(user.id)
+    }
+  }.value.shouldReturnSuccess
+
+  "delete" should "delete an existing User with a specified ID" in {
     val ids = storedUsers.get().collect { case u if u.username != "admin" => u.id }
 
     val ioResults = ids.map { id =>
       userService.delete(id)
     }.parSequence
 
-    ioResults.map { results =>
-      forAll(results)(_ shouldBe a [scala.util.Right[_, _]])
-    }.unsafeToFuture()
-  }
-
-  "logout" should "successfully log out a User" in {
-    val user = storedUsers.get().find(_.username == "admin").get
-
-    userService.logout(user.id).shouldReturnSuccess
-  }
+    for {
+      _     <- EitherT(ioResults.map(_.sequence))
+      users <- EitherT(userService.fetch())
+    } yield users.map(_.username) should contain only "admin"
+  }.value.shouldReturnSuccess
 }

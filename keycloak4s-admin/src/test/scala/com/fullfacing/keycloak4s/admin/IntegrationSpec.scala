@@ -35,7 +35,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors with I
   val realmRoleService: roleService.RealmLevel.type   = roleService.RealmLevel
   val clientRoleService: roleService.ClientLevel.type = roleService.ClientLevel
 
-  /* Implicit Helper Class **/
+  /* Implicit Helper Classes **/
   implicit class ioImpl[A, B](io: IO[Either[B, A]]) {
     def shouldReturnSuccess: Future[Assertion] = io.map { response =>
       response shouldBe a [scala.util.Right[_, _]]
@@ -44,5 +44,19 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors with I
     def shouldReturnError: Future[Assertion] = io.map { response =>
       response shouldBe a [scala.util.Left[_, _]]
     }.unsafeToFuture()
+  }
+
+  implicit class optImpl[A](opt: Option[A]) {
+    def getWithAssert: A = {
+      opt shouldBe defined
+      opt.get
+    }
+  }
+
+  implicit class seqImp[A](seq: Seq[A]) {
+    def headWithAssert: A = {
+      seq shouldNot be (empty)
+      seq.head
+    }
   }
 }

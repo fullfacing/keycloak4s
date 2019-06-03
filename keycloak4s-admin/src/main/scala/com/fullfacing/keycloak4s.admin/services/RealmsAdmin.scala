@@ -315,8 +315,8 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * Remove a specific user session.
    * Any client that has an admin url will also be told to invalidate this particular session.
    */
-  def removeUserSession(session: String, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(realm, "sessions", session)
+  def removeUserSession(session: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(realm, "sessions", session.toString)
     client.delete[Unit](path)
   }
 
@@ -383,7 +383,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param ref
    * @return
    */
-  def updateUsersManagementPermissions(ref: ManagementPermission, realm: String = client.realm): R[Either[KeycloakError, ManagementPermission]] = {
+  def updateUsersManagementPermissions(ref: ManagementPermission.Update, realm: String = client.realm): R[Either[KeycloakError, ManagementPermission]] = {
     val path = Seq(realm, "users-management-permissions")
     client.put[ManagementPermission](path, ref)
   }
@@ -413,7 +413,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   }
 
   /** Delete an initial access token. */
-  def deleteInitialAccessToken(tokenId: String, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
-    client.delete[Unit](realm :: "clients-initial-access" :: tokenId :: Nil)
+  def deleteInitialAccessToken(tokenId: UUID, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+    client.delete[Unit](realm :: "clients-initial-access" :: tokenId.toString :: Nil)
   }
 }

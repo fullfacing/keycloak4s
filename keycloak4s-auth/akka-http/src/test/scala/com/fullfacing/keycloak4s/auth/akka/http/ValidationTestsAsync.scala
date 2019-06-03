@@ -55,7 +55,7 @@ class ValidationTestsAsync extends AsyncFlatSpec with Matchers with PrivateMetho
       .toPublicJWK
 
     (validator invokePrivate parseAndValidateIdToken(idToken.serialize(), key, token.getPayload))
-      .unsafeToFuture().map(x => assert(x == Left(Exceptions.SIG_INVALID_ID)))
+      .unsafeToFuture().map(x => assert(x == Left(Exceptions.SIG_INVALID)))
   }
 
   it should "fail to validate an ID token if its subject does not match the subject of the bearer token" in {

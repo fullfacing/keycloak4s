@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 import cats.data.EitherT
 import cats.effect.IO
 import com.fullfacing.keycloak4s.admin.IntegrationSpec
-import com.fullfacing.keycloak4s.core.models.{Group, KeycloakThrowable, RealmEventsConfig, RealmRepresentation}
+import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.EventTypes
 import org.scalatest.DoNotDiscover
 
@@ -16,17 +16,26 @@ class RealmsTests extends IntegrationSpec {
   /**
    * Calls in the Realms service not covered by the below tests:
    *
-   * logoutAll                  - The call seems to be broken on Keycloak's side.
+   * logoutAll                  - Broken on the Keycloak server itself.
+   * pushRevocation             - Broken on the Keycloak server itself.
    * clientDescriptionConverter - The exact purpose or use cases for the call is unknown.
    * partialImport              - The structure/contents of the JSON file to be POSTed is not sufficiently explained.
    * testLdapConnection         - Requires setup not feasible for testing.
    * testSmtpConnection         - Requires setup not feasible for testing.
    */
 
-  val storedScopeId: AtomicReference[UUID] = new AtomicReference[UUID]()
-  val storedGroup: AtomicReference[Group] = new AtomicReference[Group]()
+  /* References for storing tests results to be used in subsequent tests. **/
+  val storedScopeId: AtomicReference[UUID]    = new AtomicReference[UUID]()
+  val storedGroup: AtomicReference[Group]     = new AtomicReference[Group]()
+  val storedTokenId: AtomicReference[UUID]    = new AtomicReference[UUID]()
+  val storedBoolean: AtomicReference[Boolean] = new AtomicReference[Boolean]()
 
-  "create" should "successfully create a new Realm" in {
+  /* Test Exceptions **/
+  val NO_GROUPS_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("No groups found."))
+  val NO_SESSIONS_FOUND: KeycloakError = KeycloakThrowable(new Throwable("No sessions found."))
+  val NO_TOKENS_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("No tokens found."))
+
+  "create" should "POST a new Realm" in {
     val realm = RealmRepresentation.Create(
       id                        = "test_realm",
       realm                     = "test_realm",
@@ -37,134 +46,224 @@ class RealmsTests extends IntegrationSpec {
       enabledEventTypes         = Some(EventTypes.values.toList)
     )
 
-    realmService.create(realm).shouldReturnSuccess
-  }
+    for {
+      _ <- EitherT(realmService.create(realm))
+      _ <- EitherT(realmService.fetch("test_realm"))
+    } yield ()
+  }.value.shouldReturnSuccess
 
   "fetch" should "retrieve the Realm as configured in KeycloakClient" in {
     realmService.fetch().map(_.map { realm =>
       realm.id shouldBe "master"
-    }).shouldReturnSuccess
-  }
+    })
+  }.shouldReturnSuccess
 
-  it should "also be able to retrieve a Realm with a specific name" in {
+  it should "also be able to retrieve a Realm with a specified name" in {
     realmService.fetch("test_realm").map(_.map { realm =>
       realm.id shouldBe "test_realm"
-    }).shouldReturnSuccess
-  }
+    })
+  }.shouldReturnSuccess
 
   "fetchAll" should "retrieve all Realms" in {
     realmService.fetchAll().map(_.map { realms =>
       realms.map(_.id) should contain only ("master", "test_realm")
-    }).shouldReturnSuccess
-  }
+    })
+  }.shouldReturnSuccess
 
   "update" should "update a Realm" in {
     val update = RealmRepresentation.Update(enabled = Some(true))
-    realmService.update(update, "test_realm").shouldReturnSuccess
-  }
 
-  "fetchAdminEvents" should "retrieve all admin events that have been logged" in {
-    realmService.fetchAdminEvents(realm = "test_realm").map(_.map { events =>
-      events shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
-
-  "deleteAdminEvents" should "delete all admin events that have been logged" in {
-    realmService.deleteAdminEvents(realm = "test_realm").shouldReturnSuccess
-  }
-
-  "fetchClientSessionStats" should "retrieve statistics of all active session for a Realm" in {
-    realmService.fetchClientSessionStats("master").map(_.map { stats =>
-      stats shouldNot be (empty)
-    }).shouldReturnSuccess
-  }
-
-  "fetchDefaultClientScopes" should "retrieve all assigned default client scopes for a Realm" in {
-    realmService.fetchDefaultClientScopes("test_realm").map(_.map { scopes =>
-      scopes shouldNot be (empty)
-      storedScopeId.set(scopes.head.id)
-    }).shouldReturnSuccess
-  }
-
-  "unassignDefaultClientScope" should "unassign a default scope to a Realm" in {
-    realmService.unassignClientScopeAsDefault(storedScopeId.get(), "test_realm").shouldReturnSuccess
-  }
-
-  "assignDefaultClientScope" should "assign a default scope to a Realm" in {
-    realmService.assignClientScopeAsDefault(storedScopeId.get(), "test_realm").shouldReturnSuccess
-  }
-
-  "assignGroupAsDefault" should "assign a specified group as default in a Realm" in {
     for {
-      _     <- EitherT(groupService.create(Group.Create(name = "test_group")))
-      opt   <- EitherT(groupService.fetch()).map(_.find(_.name == "test_group"))
-      group <- EitherT.fromOption[IO](opt, KeycloakThrowable(new Throwable("No groups found.")))
-      _     <- EitherT(realmService.assignGroupAsDefault(group.id))
-    } yield storedGroup.set(group)
+      _     <- EitherT(realmService.update(update, "test_realm"))
+      realm <- EitherT(realmService.fetch("test_realm"))
+    } yield realm.enabled shouldBe true
   }.value.shouldReturnSuccess
 
-  "fetchDefaultGroups" should "retrieve all default groups for a Realm" in {
-    val groupStub = Group(
-      id    = storedGroup.get().id,
-      name  = "test_group",
-      path  = "/test_group"
-    )
+  "fetchAdminEvents" should "retrieve a non-empty list of admin events" in {
+    realmService.fetchAdminEvents(realm = "test_realm").map(_.map { events =>
+      events shouldNot be (empty)
+    })
+  }.shouldReturnSuccess
 
+  "deleteAdminEvents" should "delete all admin events that have been logged" in {
+    for {
+      _       <- EitherT(realmService.deleteAdminEvents(realm = "test_realm"))
+      events  <- EitherT(realmService.fetchAdminEvents(realm = "test_realm"))
+    } yield events shouldBe empty
+  }.value.shouldReturnSuccess
+
+  "fetchClientSessionStats" should "retrieve a non-empty list of client session statistics" in {
+    realmService.fetchClientSessionStats("master").map(_.map { stats =>
+      stats shouldNot be (empty)
+    })
+  }.shouldReturnSuccess
+
+  "fetchDefaultClientScopes" should "retrieve a non-empty list of default client scopes" in {
+    realmService.fetchDefaultClientScopes("test_realm").map(_.map { scopes =>
+      scopes shouldNot be (empty)
+      storedScopeId.set(scopes.headWithAssert.id)
+    })
+  }.shouldReturnSuccess
+
+  "unassignDefaultClientScope" should "unassign a default scope" in {
+    for {
+      _       <- EitherT(realmService.unassignClientScopeAsDefault(storedScopeId.get(), "test_realm"))
+      scopes  <- EitherT(realmService.fetchDefaultClientScopes("test_realm"))
+    } yield scopes.map(_.id) shouldNot contain (storedScopeId.get())
+  }.value.shouldReturnSuccess
+
+  "assignDefaultClientScope" should "assign a default scope" in {
+    for {
+      _       <- EitherT(realmService.assignClientScopeAsDefault(storedScopeId.get(), "test_realm"))
+      scopes  <- EitherT(realmService.fetchDefaultClientScopes("test_realm"))
+    } yield scopes.map(_.id) should contain (storedScopeId.get())
+  }.value.shouldReturnSuccess
+
+  "fetchDefaultGroups" should "retrieve a empty list of default groups" in {
     realmService.fetchDefaultGroups().map(_.map { groups =>
-      groups should contain (groupStub)
-    }).shouldReturnSuccess
-  }
+      groups shouldBe empty
+    })
+  }.shouldReturnSuccess
+
+  "assignGroupAsDefault" should "assign a specified group as default" in {
+    for {
+      _       <- EitherT(groupService.create(Group.Create(name = "test_group")))
+      opt     <- EitherT(groupService.fetch()).map(_.find(_.name == "test_group"))
+      group   <- EitherT.fromOption[IO](opt, NO_GROUPS_FOUND)
+      _       <- EitherT(realmService.assignGroupAsDefault(group.id))
+      fetched <- EitherT(realmService.fetchDefaultGroups())
+    } yield {
+      fetched.map(_.name) should contain ("test_group")
+      storedGroup.set(group)
+    }
+  }.value.shouldReturnSuccess
 
   "fetchGroupByPath" should "retrieve a Group in a Realm by its path" in {
     realmService.fetchGroupByPath(storedGroup.get().path).map(_.map { group =>
       group.id shouldBe storedGroup.get().id
-    }).shouldReturnSuccess
-  }
+    })
+  }.shouldReturnSuccess
 
-  "unassignGroupAsDefault" should "unassign a specified group as default in a Realm" in {
+  "unassignGroupAsDefault" should "unassign a specified group as default" in {
     for {
-      _ <- EitherT(realmService.unassignGroupAsDefault(storedGroup.get().id))
-      _ <- EitherT(groupService.delete(storedGroup.get().id))
-    } yield ()
+      _       <- EitherT(realmService.unassignGroupAsDefault(storedGroup.get().id))
+      _       <- EitherT(groupService.delete(storedGroup.get().id))
+      fetched <- EitherT(realmService.fetchDefaultGroups())
+    } yield fetched.map(_.name) shouldNot contain ("test_group")
   }.value.shouldReturnSuccess
 
-  "fetchOptionalClientScopes" should "retrieve all assigned optional client scopes for a Realm" in {
+  "fetchOptionalClientScopes" should "retrieve a non-empty list of assigned optional client scopes" in {
     realmService.fetchOptionalClientScopes("test_realm").map(_.map { scopes =>
       scopes shouldNot be (empty)
-      storedScopeId.set(scopes.head.id)
-    }).shouldReturnSuccess
-  }
+      storedScopeId.set(scopes.headWithAssert.id)
+    })
+  }.shouldReturnSuccess
 
-  "unassignOptionalClientScope" should "unassign a optional scope to a Realm" in {
-    realmService.unassignClientScopeAsOptional(storedScopeId.get(), "test_realm").shouldReturnSuccess
-  }
+  "unassignOptionalClientScope" should "unassign a optional scope" in {
+    for {
+      _       <- EitherT(realmService.unassignClientScopeAsOptional(storedScopeId.get(), "test_realm"))
+      scopes  <- EitherT(realmService.fetchOptionalClientScopes("test_realm"))
+    } yield scopes.map(_.id) shouldNot contain (storedScopeId.get())
+  }.value.shouldReturnSuccess
 
-  "assignOptionalClientScope" should "assign a optional scope to a Realm" in {
-    realmService.assignClientScopeAsOptional(storedScopeId.get(), "test_realm").shouldReturnSuccess
-  }
+  "assignOptionalClientScope" should "assign a optional scope" in {
+    for {
+      _       <- EitherT(realmService.assignClientScopeAsOptional(storedScopeId.get(), "test_realm"))
+      scopes  <- EitherT(realmService.fetchOptionalClientScopes("test_realm"))
+    } yield scopes.map(_.id) should contain (storedScopeId.get())
+  }.value.shouldReturnSuccess
 
-  "fetchEvents" should "retrieve all logging events for a Realm" in {
+  "fetchEvents" should "retrieve a non-empty list of logging events" in {
     realmService.fetchEvents().map(_.map { events =>
       events shouldNot be (empty)
+    })
+  }.shouldReturnSuccess
+
+  "deleteAllEvents" should "delete all logging events" in {
+    for {
+      _       <- EitherT(realmService.deleteAllEvents())
+      events  <- EitherT(realmService.fetchEvents())
+    } yield events should be (empty)
+  }.value.shouldReturnSuccess
+
+  "fetchEventsConfig" should "retrieve the events configuration" in {
+    realmService.fetchEventsConfig().map(_.map { config =>
+      storedBoolean.set(config.eventsEnabled)
+    })
+  }.shouldReturnSuccess
+
+  "updateEventsConfig" should "update the events configuration" in {
+    val update = RealmEventsConfig.Update(eventsEnabled = Some(!storedBoolean.get()))
+
+    for {
+      _       <- EitherT(realmService.updateEventsConfig(update))
+      config  <- EitherT(realmService.fetchEventsConfig())
+    } yield config.eventsEnabled shouldNot be (storedBoolean.get())
+  }.value.shouldReturnSuccess
+
+  "partialExport" should "partially export a Realm" in {
+    realmService.partialExport().map(_.map { export =>
+      export.id shouldBe "master"
+    })
+  }.shouldReturnSuccess
+
+  "removeUserSession" should "invalidate a specified user session" in {
+    for {
+      id        <- EitherT(clientService.fetch(clientId = Some("admin-cli"))).map(_.head.id)
+      option    <- EitherT(clientService.fetchUserSessions(id)).map(_.headOption)
+      session   <- EitherT.fromOption[IO](option, NO_SESSIONS_FOUND)
+      _         <- EitherT(realmService.removeUserSession(session.id))
+      sessions  <- EitherT(clientService.fetchUserSessions(id))
+    } yield sessions.map(_.id) shouldNot contain (session.id)
+  }.value.shouldReturnSuccess
+
+  "fetchUsersManagementPermissions" should "retrieve an object stating that management permissions are disabled" in {
+    realmService.fetchUsersManagementPermissions().map(_.map { permissions =>
+      permissions.enabled shouldBe false
+    })
+  }.shouldReturnSuccess
+
+  "updateUsersManagementPermissions" should "update the user management permissions" in {
+    val update = ManagementPermission.Update(enabled = Some(true))
+
+    for {
+      _           <- EitherT(realmService.updateUsersManagementPermissions(update))
+      permissions <- EitherT(realmService.fetchUsersManagementPermissions())
+    } yield permissions.enabled shouldBe true
+  }.value.shouldReturnSuccess
+
+  "fetchClientRegistrationPolicyProviders" should "retrieve a non-empty list of client registration polices" in {
+    realmService.fetchClientRegistrationPolicyProviders().map(_.map { policies =>
+      policies shouldNot be (empty)
     }).shouldReturnSuccess
   }
 
-  "deleteAllEvents" should "delete all logging events for a Realm" in {
-    realmService.deleteAllEvents().shouldReturnSuccess
-  }
+  "fetchInitialAccessTokens" should "retrieve an empty list of initial access tokens" in {
+    realmService.fetchInitialAccessTokens("test_realm").map(_.map { tokens =>
+      tokens should be (empty)
+    })
+  }.shouldReturnSuccess
 
-  "fetchEventsConfig" should "retrieve the events configuration for a Realm" in {
-    realmService.fetchEventsConfig().shouldReturnSuccess
-  }
+  "createInitialAccessToken" should "create an initial access token" in {
+    val config = ClientInitialAccessCreate(count = Some(5), expiration = Some(86400))
+    realmService.createInitialAccessToken(config, "test_realm").shouldReturnSuccess
 
-  "updateEventsConfig" should "update the events configuration for a Realm" in {
-    val update = RealmEventsConfig.Update(
-      adminEventsEnabled  = Some(true),
-      eventsEnabled       = Some(true)
-    )
+    for {
+      _       <- EitherT(realmService.createInitialAccessToken(config, "test_realm"))
+      tokens  <- EitherT(realmService.fetchInitialAccessTokens("test_realm"))
+      token   <- EitherT.fromOption[IO](tokens.headOption, NO_TOKENS_FOUND)
+    } yield {
+      token.count shouldBe 5
+      storedTokenId.set(token.id)
+    }
+  }.value.shouldReturnSuccess
 
-    realmService.updateEventsConfig(update).shouldReturnSuccess
-  }
+  "deleteInitialAccessTokens" should "delete a specified initial access token" in {
+    for {
+      _       <- EitherT(realmService.deleteInitialAccessToken(storedTokenId.get(), "test_realm"))
+      tokens  <- EitherT(realmService.fetchInitialAccessTokens("test_realm"))
+    } yield tokens.map(_.id) shouldNot contain (storedTokenId.get())
+  }.value.shouldReturnSuccess
 
   "clearKeysCache" should "clear a Realm's keys cache" in {
     realmService.clearKeysCache("test_realm").shouldReturnSuccess
@@ -176,10 +275,6 @@ class RealmsTests extends IntegrationSpec {
 
   "clearRealmCache" should "clear a Realm's realm cache" in {
     realmService.clearRealmCache("test_realm").shouldReturnSuccess
-  }
-
-  "logoutAll" should "clear all login sessions for a Realm" in {
-    realmService.logoutAll("test_realm").shouldReturnSuccess
   }
 
   "delete" should "delete a Realm with a specified name" in {
