@@ -213,9 +213,9 @@ class ClientsTests extends IntegrationSpec {
       (for {
         cp  <- EitherT(clientService.fetchClientAuthorisationPermissions(client3.get))
         ucp <- EitherT(clientService.updateClientAuthorisationPermissions(client3.get,
-          ManagementPermission(Some(false), cp.resource, cp.scopePermissions)))
+          ManagementPermission(enabled = false, cp.resource, cp.scopePermissions)))
       } yield {
-        ucp.enabled should equal(Some(false))
+        ucp.enabled should equal(false)
       }).value
     task.shouldReturnSuccess
   }

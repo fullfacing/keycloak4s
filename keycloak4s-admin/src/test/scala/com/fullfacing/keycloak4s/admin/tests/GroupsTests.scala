@@ -178,9 +178,9 @@ class GroupsTests extends IntegrationSpec {
       (for {
         p  <- EitherT(groupService.fetchManagementPermissions(group3.get))
         up <- EitherT(groupService.updateManagementPermissions(group3.get,
-                ManagementPermission(Some(false), p.resource, p.scopePermissions)))
+                ManagementPermission(enabled = false, p.resource, p.scopePermissions)))
       } yield {
-        up.enabled should equal(Some(false))
+        up.enabled should equal(false)
       }).value
       task.shouldReturnSuccess
   }
