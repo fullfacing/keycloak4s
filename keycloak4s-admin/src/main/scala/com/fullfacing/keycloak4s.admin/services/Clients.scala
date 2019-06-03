@@ -159,7 +159,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id        ID of client (not client-id).
    * @return
    */
-  def getKeyInfo(attribute: String, id: UUID): R[Either[KeycloakError, Certificate]] = {
+  def fetchKeyInfo(attribute: String, id: UUID): R[Either[KeycloakError, Certificate]] = {
     val path: Path = Seq(client.realm, "clients", id, "certificates", attribute)
     client.get[Certificate](path)
   }
@@ -172,7 +172,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param config    Keystore configuration.
    * @return
    */
-  def getKeystoreFile(attribute: String, id: UUID, config: KeyStoreConfig): R[Either[KeycloakError, File]] = {
+  def fetchKeystoreFile(attribute: String, id: UUID, config: KeyStoreConfig): R[Either[KeycloakError, File]] = {
     val path: Path = Seq(client.realm, "clients", id, "certificates", attribute, "download")
     client.post[File](path, config)
   }
@@ -271,13 +271,13 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.put[Unit](path)
   }
 
-  def removeDefaultClientScope(clientId: UUID, clientScopeId: UUID): R[Either[KeycloakError, Unit]] = {
+  def deleteDefaultClientScope(clientId: UUID, clientScopeId: UUID): R[Either[KeycloakError, Unit]] = {
     val path: Path = Seq(client.realm, "clients", clientId, "default-client-scopes", clientScopeId)
     client.delete[Unit](path)
   }
 
   /**  Get optional client scopes. Only name and ids are returned. */
-  def getOptionalClientScopes(clientId: UUID): R[Either[KeycloakError, List[ClientScope]]] = {
+  def fetchOptionalClientScopes(clientId: UUID): R[Either[KeycloakError, List[ClientScope]]] = {
     val path: Path = Seq(client.realm, "clients", clientId, "optional-client-scopes")
     client.get[List[ClientScope]](path)
   }
@@ -337,8 +337,8 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id ID of client (not client-id).
    * @return
    */
-  def unregisterClusterNode(id: UUID): R[Either[KeycloakError, Unit]] = {
-    val path: Path = Seq(client.realm, "clients", id, "nodes")
+  def unregisterClusterNode(id: UUID, node: String): R[Either[KeycloakError, Unit]] = {
+    val path: Path = Seq(client.realm, "clients", id, "nodes", node)
     client.delete[Unit](path)
   }
 
@@ -389,7 +389,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   }
 
   /** Return list of all protocol mappers, which will be used when generating tokens issued for particular client. */
-  def getProtocolMappers(id: UUID, scope: Option[String] = None): R[Either[KeycloakError, Seq[ClientScopeEvaluateResourceProtocolMapperEvaluation]]] = {
+  def fetchProtocolMappers(id: UUID, scope: Option[String] = None): R[Either[KeycloakError, Seq[ClientScopeEvaluateResourceProtocolMapperEvaluation]]] = {
     val query = createQuery(("scope", scope))
 
     val path: Path = Seq(client.realm, "clients", id, "evaluate-scopes", "protocol-mappers")
@@ -405,7 +405,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param scope
    * @return
    */
-  def getEffectiveScopeMapping(id: UUID, roleContainerId: String, scope: Option[String]): R[Either[KeycloakError, Seq[Role]]] = {
+  def fetchEffectiveScopeMapping(id: UUID, roleContainerId: String, scope: Option[String]): R[Either[KeycloakError, Seq[Role]]] = {
     val query = createQuery(("scope", scope))
 
     val path: Path = Seq(client.realm, "clients", id, "evaluate-scopes", "scope-mappings", roleContainerId, "granted")
@@ -420,7 +420,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param scope
    * @return
    */
-  def getNonScopeRoles(id: UUID, roleContainerId: String, scope: Option[String]): R[Either[KeycloakError, Seq[Role]]] = {
+  def fetchNonScopeRoles(id: UUID, roleContainerId: String, scope: Option[String]): R[Either[KeycloakError, Seq[Role]]] = {
     val query = createQuery(("scope", scope))
 
     val path: Path = Seq(client.realm, "clients", id, "evaluate-scopes", "scope-mappings", roleContainerId, "not-granted")
