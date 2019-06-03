@@ -10,16 +10,22 @@ trait Node {
   /** Looks for a wildcard role configured for this node */
   def evaluateWildcardRole(method: HttpMethod, userRoles: List[String]): Boolean = {
     nodes.find(_.resource == "*").exists { node =>
-      node.roles.find(_.method.value == method.value)
-        .exists(_.evaluateUserAccess(userRoles))
+      val hasWildcardRole    = node.evaluateWildcardMethodsRole(userRoles)
+
+      lazy val hasMethodRole = node.roles.find(_.method.value == method.value) match {
+        case None    => noMatchingPolicy()
+        case Some(r) => r.evaluateUserAccess(userRoles)
+      }
+
+      hasWildcardRole || hasMethodRole
     }
   }
 
   /** Determines what to do when there is no matching policy for the request */
   def noMatchingPolicy(): Boolean = enforcementMode match {
-    case PolicyEnforcementModes.Enforcing => false
+    case PolicyEnforcementModes.Enforcing  => false
     case PolicyEnforcementModes.Permissive => true
-    case PolicyEnforcementModes.Disabled => true
+    case PolicyEnforcementModes.Disabled   => true
   }
 
   /**

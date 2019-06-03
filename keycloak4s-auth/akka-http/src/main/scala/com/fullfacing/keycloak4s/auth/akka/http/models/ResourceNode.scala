@@ -24,13 +24,11 @@ case class ResourceNode(resource: String,
   }
 
   /**
-   * Checks if user has access to this resource.
-   * A none is returned when there is no final authorisation result at this stage i.e. authorisation of this
-   * resource was successful and evaluation can continue down the request path.
+   * Checks if user has access to this resource using the HTTP method.
    *
    * @param method    The HTTP method of the request.
    * @param userRoles The permissions of the user.
-   * @return          Final result (Some(result)) or signal to continue evaluation down the request path (None).
+   * @return          The final result or a signal to continue evaluation.
    */
   def evaluate(method: HttpMethod, userRoles: List[String]): Evaluation[ResourceNode] = {
     if (evaluateWildcardMethodsRole(userRoles)) {
