@@ -19,11 +19,12 @@ object SecurityMagnet {
       if (securityConfig.policyDisabled()) {
         pass
       } else {
-      authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
-        extractUnmatchedPath.flatMap { path =>
-          extractMethod.flatMap { method =>
-            val isAuthorised = authoriseRequest(path, method, securityConfig, userRoles)
-            if (isAuthorised) pass else authorisationFailed()
+        authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
+          extractUnmatchedPath.flatMap { path =>
+            extractMethod.flatMap { method =>
+              val isAuthorised = authoriseRequest(path, method, securityConfig, userRoles)
+              if (isAuthorised) pass else authorisationFailed()
+            }
           }
         }
       }
