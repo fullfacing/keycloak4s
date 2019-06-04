@@ -55,7 +55,7 @@ object Main extends TaskApp {
     /* Example Usage: Returns and prints all Users for the given Realm. **/
     users.fetch().foreachL {
       case Left(l)  => println(l)
-      case Right(r) => ()//println(writePretty(r))
+      case Right(r) => println(writePretty(r.map(_.username)))
     }.map(_ => ExitCode.Success)
   }.onErrorHandle { ex => ex.printStackTrace(); ExitCode.Error }
 }

@@ -12,4 +12,10 @@ object Config {
     b.mkString.stripMargin
   }
   val apiSecurityConfig: SecurityConfig = SecurityConfig(config)
+
+  val clientsApiConfig: SecurityConfig = {
+    val a = getClass.getResource("/clients_config.json")
+    val b = Source.fromFile(a.getPath)
+    SecurityConfig(b.mkString.stripMargin)
+  }
 }
