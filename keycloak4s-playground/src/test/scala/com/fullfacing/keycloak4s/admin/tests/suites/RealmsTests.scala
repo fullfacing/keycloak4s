@@ -81,7 +81,7 @@ class RealmsTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "fetchAdminEventsS" should "be able to stream admin events" in {
-    realmService.fetchAdminEventsS().toListL.map { events =>
+    realmService.fetchAdminEventsS(realm = "test_realm").toListL.map { events =>
       events shouldNot be (empty)
     }
   }.runToFuture
