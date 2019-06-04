@@ -1,17 +1,15 @@
 package com.fullfacing.keycloak4s.auth.akka.http.services
 
-import java.time.Instant
-import java.util.UUID
+import java.util.{Date, UUID}
 
 import cats.data.EitherT
 import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationException
+import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationEx
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSAVerifier
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jwt.SignedJWT
@@ -20,94 +18,87 @@ import com.nimbusds.jwt.SignedJWT.parse
 class TokenValidator(host: String, port: String, realm: String) extends JwksCache(host, port, realm) {
 
   /**
-   * Checks if the token is not expired and is not being used before the nbf (if defined).
+   * Validates the expiration and not-before dates of an access token (and optionally an ID token).
    */
-  private def validateTime(token: SignedJWT): Either[KeycloakException, SignedJWT] = {
-    val now = Instant.now()
-    val nbf = Option(token.getJWTClaimsSet.getNotBeforeTime).map(_.toInstant)
-    val exp = token.getJWTClaimsSet.getExpirationTime.toInstant
+  private def validateTimes(aToken: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
+    val now = new Date()
 
-    val nbfCond = nbf.fold(true)(n => n == Instant.EPOCH || now.isAfter(n))
-    val expCond = now.isBefore(exp)
+    def evaluate(token: SignedJWT): Either[KeycloakException, Unit] = {
+      val claims = token.getJWTClaimsSet
+      val nbf = Option(claims.getNotBeforeTime)
+      val exp = claims.getExpirationTime
 
-    if (nbfCond && expCond) token.asRight
-    else if (!nbfCond) Exceptions.NOT_YET_VALID.asLeft
-    else Exceptions.EXPIRED.asLeft
+      val expCond = now.compareTo(exp) < 0
+      val nbfCond = nbf.fold(true)(n => n == new Date(0) || now.compareTo(n) > 0)
+
+      if (nbfCond && expCond) ().asRight
+      else if (!nbfCond) Exceptions.NOT_YET_VALID.asLeft
+      else Exceptions.EXPIRED.asLeft
+    }
+
+    evaluate(aToken)
+      .flatMap(_ => idToken.fold(().asRight[KeycloakException])(evaluate))
   }
 
   /**
    * Checks the key set cache for valid keys, re-caches once (and only once) if invalid.
    */
   private def checkKeySet()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = retrieveCachedValue().flatMap {
-    case r @ Right(_) => IO(r)
-    case Left(_)      => updateCache().map(_.left.map(_ => Exceptions.JWKS_SERVER_ERROR))
+    case r @ Right(_) => IO.pure(r)
+    case Left(_)      => updateCache()
   }
 
   /**
-   * Attempts to obtain the public key matching the key ID in the token header.
+   * Creates an RSASSA verifier with a public RSA key matching the access token's key ID header.
    * Re-caches the key set once (and only once) if the key was not found.
    */
-  private def matchPublicKey(keyId: String, keys: JWKSet, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, RSAKey]] = {
-    Option(keys.getKeyByKeyId(keyId)) match {
-      case None if !reattempted => updateCache().flatMap(_ => matchPublicKey(keyId, keys, reattempted = true))
+  private def createRsaVerifier(keyId: String, keySet: JWKSet, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, RSASSAVerifier]] = {
+    Option(keySet.getKeyByKeyId(keyId)) match {
+      case None if !reattempted => updateCache().flatMap(_ => createRsaVerifier(keyId, keySet, reattempted = true))
       case None                 => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)
-      case Some(k: RSAKey)      => IO(k.asRight)
+      case Some(k: RSAKey)      => IO.pure(new RSASSAVerifier(k).asRight)
     }
   }.handleError(ex => Exceptions.UNEXPECTED(ex.getMessage).asLeft)
 
   /**
-   * Validates the token with the public key obtained from the Keycloak server.
+   * Validates the signature of an access token (and optionally an ID token) using a RSASSA verifier
+   * created with a public RSA key received from the Keycloak server.
    */
-  private def validateSignature(token: SignedJWT, publicKey: RSAKey): Either[KeycloakException, SignedJWT] = {
-    val verifier = new RSASSAVerifier(publicKey)
-    if (token.verify(verifier)) token.asRight else Exceptions.SIG_INVALID.asLeft
+  private def validateSignatures(verifier: RSASSAVerifier, token: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
+    (token, idToken) match {
+      case (a, Some(i)) =>
+        if (a.verify(verifier) && i.verify(verifier)) ().asRight else Exceptions.SIG_INVALID.asLeft
+      case (a, None) =>
+        if (a.verify(verifier)) ().asRight else Exceptions.SIG_INVALID.asLeft
+    }
   }
 
   /**
-   * Parses an ID token, validates its signature and checks if its states and subject is the same as the bearer token.
+   * Attempts to parse a raw access token (and optionally a raw ID token).
    */
-  private def parseAndValidateIdToken(rawIdToken: String, publicKey: RSAKey, payload: Payload)
-  : IO[Either[KeycloakException, Option[SignedJWT]]] = IO {
-    val idToken     = parse(rawIdToken)
-    val tokenJson   = payload.toJSONObject
-    val idTokenJson = idToken.getPayload.toJSONObject
+  private def parseTokens(rawAccessToken: String, rawIdToken: Option[String]): IO[Either[KeycloakException, (SignedJWT, Option[SignedJWT])]] = IO {
+    val accessToken = parse(rawAccessToken)
+    val idToken     = rawIdToken.map(parse)
+    (accessToken, idToken).asRight[KeycloakException]
+  }.handleError(_ => Exceptions.PARSE_FAILED.asLeft)
 
-    val subMatches    = tokenJson.getAsString("sub") == idTokenJson.getAsString("sub")
-    val stateMatches  = tokenJson.getAsString("session_state") == idTokenJson.getAsString("session_state")
 
-    def validate() = validateSignature(idToken, publicKey) match {
-      case Left(_)  => Exceptions.SIG_INVALID_ID.asLeft
-      case Right(r) => Some(r).asRight
-    }
-
-    if (subMatches && stateMatches) validate() else Exceptions.ID_TOKEN_MISMATCH.asLeft
-  }.handleError(ex => Exceptions.PARSE_FAILED_ID(ex.getMessage).asLeft)
-
-  /**
-   * Parses a bearer token, validate the token's expiration, nbf and signature, and returns the token payload.
-   * Additionally parses, validates and returns an optional ID token.
-   */
   def validate(rawToken: String, rawIdToken: Option[String] = None): IO[Either[KeycloakException, AuthPayload]] = {
     implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
-    val token = IO {
-      validateTime(parse(rawToken))
-    }.handleError(_ => Exceptions.PARSE_FAILED.asLeft)
-
-    lazy val idTokenNull = IO.pure(none[SignedJWT].asRight[KeycloakException])
-
     (for {
-      parsed  <- EitherT(token)
-      keys    <- EitherT(checkKeySet())
-      key     <- EitherT(matchPublicKey(parsed.getHeader.getKeyID, keys))
-      _       <- EitherT.fromEither[IO](validateSignature(parsed, key))
-      id      <- EitherT(rawIdToken.fold(idTokenNull)(parseAndValidateIdToken(_, key, parsed.getPayload)))
+      tokens            <- EitherT(parseTokens(rawToken, rawIdToken))
+      (aToken, iToken)  = tokens
+      _                 <- EitherT.fromEither[IO](validateTimes(aToken, iToken))
+      keySet            <- EitherT(checkKeySet())
+      verifier          <- EitherT(createRsaVerifier(aToken.getHeader.getKeyID, keySet))
+      _                 <- EitherT.fromEither[IO](validateSignatures(verifier, aToken, iToken))
     } yield {
       Logging.tokenValidated(cId)
-      AuthPayload(accessToken = parsed.getPayload, idToken = id.map(_.getPayload))
-    }).leftMap(logValidationException).value.handleError { ex =>
-      logValidationException(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
+      AuthPayload(accessToken = aToken.getPayload, idToken = iToken.map(_.getPayload))
+    }).leftMap(logValidationEx).value.handleError { ex =>
+      logValidationEx(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
     }
   }
 }

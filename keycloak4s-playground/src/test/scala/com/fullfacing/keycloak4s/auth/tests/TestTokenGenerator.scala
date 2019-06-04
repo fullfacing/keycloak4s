@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http
+package com.fullfacing.keycloak4s.auth.tests
 
 import java.time.Instant
 import java.util.{Date, UUID}
@@ -9,34 +9,8 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jose.util.JSONObjectUtils
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
-import net.minidev.json.JSONObject
 
 object TestTokenGenerator {
-
-  val claimsRaw: String = """{
-                    |  "reports-api": {
-                    |    "roles": [
-                    |      "employee-reports-view",
-                    |      "employee-reports-create",
-                    |      "employee-reports-delete",
-                    |      "finance-reports-view",
-                    |      "finance-reports-create",
-                    |      "operations-reports-view"
-                    |    ]
-                    |  },
-                    |  "operations-api": {
-                    |    "roles": [
-                    |      "operations-schedules-view",
-                    |      "operations-schedules-create",
-                    |      "operations-schedules-delete",
-                    |      "operations-actions-view",
-                    |      "operations-actions-create",
-                    |      "operations-metrics-view"
-                    |    ]
-                    |  }
-                    |}""".stripMargin
-
-  val claims: JSONObject = JSONObjectUtils.parse(claimsRaw)
 
   def generateData(withExp: Instant, withNbf: Option[Instant] = None): (SignedJWT, SignedJWT, RSAKey, JWKSet) = {
 
@@ -46,7 +20,6 @@ object TestTokenGenerator {
       .jwtID(UUID.randomUUID().toString)
       .issueTime(Date.from(withExp))
       .subject("test_subject")
-      .claim("resource-access", claims)
       .claim("session_state", "test_state")
 
     val idClaimsSetBuilder = new JWTClaimsSet.Builder()

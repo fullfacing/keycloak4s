@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
-import com.fullfacing.keycloak4s.core.models.{Group, KeycloakError, User}
+import com.fullfacing.keycloak4s.core.models.{Group, User}
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -72,9 +72,9 @@ class Users(implicit client: KeycloakClient) extends services.Users[Task, Observ
    * @param batchSize  The amount of groups each call should return.
    * @return
    */
-  def fetchGroupsS(first: Int = 0,
+  def fetchGroupsS(userId: UUID,
+                   first: Int = 0,
                    limit: Int = Integer.MAX_VALUE,
-                   userId: UUID,
                    search: Option[String] = None,
                    batchSize: Int = 100): Observable[Group] = {
 
@@ -82,8 +82,8 @@ class Users(implicit client: KeycloakClient) extends services.Users[Task, Observ
     client.getList[Group](path, createQuery(("search", search)), first, limit, batchSize)
   }
 
-  def fetchGroupsL(first: Int = 0, limit: Int = Integer.MAX_VALUE, userId: UUID, search: Option[String] = None): Task[Seq[Group]] = {
-    fetchGroupsS(first, limit, userId, search)
+  def fetchGroupsL(userId: UUID, first: Int = 0, limit: Int = Integer.MAX_VALUE, search: Option[String] = None): Task[Seq[Group]] = {
+    fetchGroupsS(userId, first, limit, search)
       .consumeWith(consumer())
   }
 }

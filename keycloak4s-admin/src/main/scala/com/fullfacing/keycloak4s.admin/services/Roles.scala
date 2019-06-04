@@ -91,7 +91,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       client.get[ManagementPermission](path)
     }
 
-    def initialiseAuthPermissions(clientId: UUID, name: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+    def initialiseAuthPermissions(clientId: UUID, name: String, ref: ManagementPermission.Enable): R[Either[KeycloakError, ManagementPermission]] = {
       val path: Path = Seq(client.realm, clients_path, clientId, roles_path, name, "management", "permissions")
       client.put[ManagementPermission](path, ref)
     }
@@ -174,7 +174,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       client.get[ManagementPermission](path)
     }
 
-    def initialiseAuthPermissions(name: String, ref: ManagementPermission): R[Either[KeycloakError, ManagementPermission]] = {
+    def initialiseAuthPermissions(name: String, ref: ManagementPermission.Enable): R[Either[KeycloakError, ManagementPermission]] = {
       val path: Path = Seq(client.realm, roles_path, name, "management", "permissions")
       client.put[ManagementPermission](path, ref)
     }
