@@ -16,6 +16,9 @@ object SecurityMagnet {
 
   implicit def authorise(securityConfig: SecurityConfig)(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
     validateToken().flatMap { p =>
+      if (securityConfig.policyDisabled()) {
+        pass
+      } else {
       authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
         extractUnmatchedPath.flatMap { path =>
           extractMethod.flatMap { method =>
