@@ -49,9 +49,9 @@ object TransportAPI extends SecurityDirectives {
       pathEndOrSingleSlash {
         complete("GET /bikes")
       } ~
-        path(JavaUUID) { id =>
-          complete(s"GET /bikes/$id")
-        }
+      path(JavaUUID) { id =>
+        complete(s"GET /bikes/$id")
+      }
     } ~
     put {
       path(JavaUUID) { id =>

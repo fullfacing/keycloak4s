@@ -1,7 +1,8 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
 import akka.http.scaladsl.server.Directive0
-import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath}
+import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass}
+import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
 import com.fullfacing.keycloak4s.auth.akka.http.models.SecurityConfig
 import com.fullfacing.keycloak4s.auth.akka.http.services.Authorisation._
@@ -18,7 +19,8 @@ object SecurityMagnet {
       authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
         extractUnmatchedPath.flatMap { path =>
           extractMethod.flatMap { method =>
-            authoriseRequest(path, method, securityConfig, userRoles)
+            val isAuthorised = authoriseRequest(path, method, securityConfig, userRoles)
+            if (isAuthorised) pass else authorisationFailed()
           }
         }
       }

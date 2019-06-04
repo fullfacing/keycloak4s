@@ -2,9 +2,9 @@ package com.fullfacing.keycloak4s.auth.akka.http.services
 
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{HttpMethod => AkkaHttpMethod}
+import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive0, Directive1}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives._
+import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.checkPermissions
 import com.fullfacing.keycloak4s.auth.akka.http.models._
 
 import scala.annotation.tailrec
@@ -36,7 +36,7 @@ object Authorisation {
    * @param sec       The security configuration of the server.
    * @param userRoles The permissions of the user.
    */
-  def authoriseRequest(path: Path, method: AkkaHttpMethod, sec: SecurityConfig, userRoles: List[String]): Directive0 = {
+  def authoriseRequest(path: Path, method: AkkaHttpMethod, sec: SecurityConfig, userRoles: List[String]): Boolean = {
     @tailrec
     def loop(path: List[String], node: Node): Boolean = path match {
       case Nil    => true
@@ -48,10 +48,6 @@ object Authorisation {
     }
 
     lazy val listPath = extractResourcesFromPath(path)
-    if (sec.policyDisabled() || (listPath.nonEmpty && loop(listPath, sec))) {
-      pass
-    } else {
-      authorisationFailed()
-    }
+    sec.policyDisabled() || (listPath.nonEmpty && loop(listPath, sec))
   }
 }
