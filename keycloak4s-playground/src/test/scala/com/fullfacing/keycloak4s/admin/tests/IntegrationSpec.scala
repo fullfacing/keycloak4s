@@ -14,7 +14,7 @@ import scala.concurrent.Future
 class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
 
   /* Keycloak Server Configuration **/
-  val authConfig      = KeycloakConfig.Auth("master", "admin-cli", ServerInitializer.clientSecret)
+  val authConfig      = KeycloakConfig.Auth("master", "admin-cli", "187ab7d6-9ac2-4406-9fbc-074ebc5e11db")//ServerInitializer.clientSecret)
   val keycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
@@ -40,19 +40,5 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
     def shouldReturnSuccess: Future[Assertion] = task.map { response =>
       response shouldBe a [scala.util.Right[_, _]]
     }.runToFuture
-  }
-
-  implicit class optImpl[A](opt: Option[A]) {
-    def getWithAssert: A = {
-      opt shouldBe defined
-      opt.get
-    }
-  }
-
-  implicit class seqImp[A](seq: Seq[A]) {
-    def headWithAssert: A = {
-      seq shouldNot be (empty)
-      seq.head
-    }
   }
 }
