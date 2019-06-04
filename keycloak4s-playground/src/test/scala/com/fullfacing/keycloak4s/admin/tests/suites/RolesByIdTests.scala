@@ -4,13 +4,15 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models.{ManagementPermission, Role}
+import monix.eval.Task
 import org.scalatest.DoNotDiscover
 
 @DoNotDiscover
 class RolesByIdTests extends IntegrationSpec {
 
+  /* Testing functions and data. **/
   private val rRole1Name = "realmRole1"
   val rRole1Create: Role.Create = Role.Create(
     clientRole = false,
@@ -39,6 +41,7 @@ class RolesByIdTests extends IntegrationSpec {
     name       = cRole2Name
   )
 
+  /* References for storing tests results to be used in subsequent tests. **/
   private val cId    = new AtomicReference[UUID]()
   private val rRole1 = new AtomicReference[UUID]()
   private val rRole2 = new AtomicReference[UUID]()
@@ -49,15 +52,16 @@ class RolesByIdTests extends IntegrationSpec {
   "Test setup" should "create the roles necessary to perform these tests" in {
     val task =
       for {
-        c <- clientService.fetch(clientId = Some("admin-cli"))
-        _ =  c.map(ids => cId.set(ids.headWithAssert.id))
-        _ <- realmRoleService.create(rRole1Create)
-        _ <- realmRoleService.create(rRole2Create)
-        _ <- clientRoleService.create(cId.get(), cRole1Create)
-        r <- clientRoleService.create(cId.get(), cRole2Create)
-      } yield r
+        c   <- EitherT(clientService.fetch(clientId = Some("admin-cli")))
+        c1  <- EitherT.fromOption[Task](c.headOption, Errors.NO_CLIENTS_FOUND)
+        _   =  cId.set(c1.id)
+        _   <- EitherT(realmRoleService.create(rRole1Create))
+        _   <- EitherT(realmRoleService.create(rRole2Create))
+        _   <- EitherT(clientRoleService.create(cId.get(), cRole1Create))
+        _   <- EitherT(clientRoleService.create(cId.get(), cRole2Create))
+      } yield ()
 
-    task.shouldReturnSuccess
+    task.value.shouldReturnSuccess
   }
 
   it should "fetch the created roles and store their IDs" in {

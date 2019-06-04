@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
 import monix.eval.Task
@@ -31,11 +31,6 @@ class UsersTests extends IntegrationSpec {
   val storedTestUser1: AtomicReference[User]      = new AtomicReference[User]()
   val storedTestUser2: AtomicReference[User]      = new AtomicReference[User]()
   val storedTestUser3: AtomicReference[User]      = new AtomicReference[User]()
-
-  /* Test Exceptions **/
-  val NO_USERS_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("No users found."))
-  val NO_GROUPS_FOUND: KeycloakError  = KeycloakThrowable(new Throwable("No groups found."))
-  val NO_CLIENTS_FOUND: KeycloakError = KeycloakThrowable(new Throwable("No clients found."))
 
   "fetch" should "retrieve a list of Users with at least one User" in {
     userService.fetch().map(_.map { response =>
@@ -77,7 +72,7 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().headOption
 
     for {
-      storedUser  <- EitherT.fromOption[Task](option, NO_USERS_FOUND)
+      storedUser  <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
       fetchedUser <- EitherT(userService.fetchById(storedUser.id))
     } yield fetchedUser.username shouldBe storedUser.username
   }.value.shouldReturnSuccess
@@ -92,7 +87,7 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().find(_.username == "test_user3")
 
     for {
-      storedUser  <- EitherT.fromOption[Task](option, NO_USERS_FOUND)
+      storedUser  <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
       _           <- EitherT(userService.update(storedUser.id, User.Update(enabled = Some(false))))
       fetchedUser <- EitherT(userService.fetch(username = Some("test_user3")))
     } yield {
@@ -111,15 +106,18 @@ class UsersTests extends IntegrationSpec {
     val option2 = users.find(_.username == "test_user2")
 
     (for {
-      user1   <- EitherT.fromOption[Task](option1, NO_USERS_FOUND)
-      user2   <- EitherT.fromOption[Task](option2, NO_USERS_FOUND)
+      user1   <- EitherT.fromOption[Task](option1, Errors.NO_USERS_FOUND)
+      user2   <- EitherT.fromOption[Task](option2, Errors.NO_USERS_FOUND)
       _       <- EitherT(groupService.create(group1))
       _       <- EitherT(groupService.create(group2))
       _       <- EitherT(groupService.create(group3))
       groups  <- EitherT(groupService.fetch())
-      _       <- EitherT(userService.addToGroup(user1.id, groups.headWithAssert.id))
-      _       <- EitherT(userService.addToGroup(user2.id, groups(1).id))
-      _       <- EitherT(userService.addToGroup(user2.id, groups(2).id))
+      group1  <- EitherT.fromOption[Task](groups.headOption, Errors.NO_GROUPS_FOUND)
+      group2  <- EitherT.fromOption[Task](groups.toList.get(1), Errors.GROUP_NOT_FOUND)
+      group3  <- EitherT.fromOption[Task](groups.toList.get(2), Errors.GROUP_NOT_FOUND)
+      _       <- EitherT(userService.addToGroup(user1.id, group1.id))
+      _       <- EitherT(userService.addToGroup(user2.id, group2.id))
+      _       <- EitherT(userService.addToGroup(user2.id, group3.id))
     } yield {
       storedTestUser1.set(user1)
       storedTestUser2.set(user2)
@@ -189,7 +187,7 @@ class UsersTests extends IntegrationSpec {
     }.parSequence.map(_.sequence)
 
     for {
-      groupId <- EitherT.fromOption[Task](option, NO_GROUPS_FOUND)
+      groupId <- EitherT.fromOption[Task](option, Errors.NO_GROUPS_FOUND)
       _       <- EitherT(userService.removeFromGroup(user.id, groupId))
       num     <- EitherT(userService.countGroups(user.id))
       _       <- EitherT(deleteGroups)
@@ -240,7 +238,7 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().find(_.username == "admin")
 
     for {
-      user  <- EitherT.fromOption[Task](option, NO_USERS_FOUND)
+      user  <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
       roles <- EitherT(userService.fetchRoles(user.id))
     } yield {
       storedAdminUser.set(user)
@@ -303,7 +301,7 @@ class UsersTests extends IntegrationSpec {
 
     for {
       idOpt <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.headOption.map(_.id))
-      id    <- EitherT.fromOption[Task](idOpt, NO_CLIENTS_FOUND)
+      id    <- EitherT.fromOption[Task](idOpt, Errors.NO_CLIENTS_FOUND)
       roles <- EitherT(userService.fetchClientRoles(id, user.id))
     } yield {
       roles shouldNot be (empty)

@@ -4,7 +4,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.EventTypes
 import monix.eval.Task
@@ -29,11 +29,6 @@ class RealmsTests extends IntegrationSpec {
   val storedGroup: AtomicReference[Group]     = new AtomicReference[Group]()
   val storedTokenId: AtomicReference[UUID]    = new AtomicReference[UUID]()
   val storedBoolean: AtomicReference[Boolean] = new AtomicReference[Boolean]()
-
-  /* Test Exceptions **/
-  val NO_GROUPS_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("No groups found."))
-  val NO_SESSIONS_FOUND: KeycloakError = KeycloakThrowable(new Throwable("No sessions found."))
-  val NO_TOKENS_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("No tokens found."))
 
   "create" should "POST a new Realm" in {
     val realm = RealmRepresentation.Create(
@@ -105,11 +100,14 @@ class RealmsTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "fetchDefaultClientScopes" should "retrieve a non-empty list of default client scopes" in {
-    realmService.fetchDefaultClientScopes("test_realm").map(_.map { scopes =>
+    for {
+      scopes  <- EitherT(realmService.fetchDefaultClientScopes("test_realm"))
+      scope   <- EitherT.fromOption[Task](scopes.headOption, Errors.SCOPE_NOT_FOUND)
+    } yield {
       scopes shouldNot be (empty)
-      storedScopeId.set(scopes.headWithAssert.id)
-    })
-  }.shouldReturnSuccess
+      storedScopeId.set(scope.id)
+    }
+  }.value.shouldReturnSuccess
 
   "unassignDefaultClientScope" should "unassign a default scope" in {
     for {
@@ -135,7 +133,7 @@ class RealmsTests extends IntegrationSpec {
     for {
       _       <- EitherT(groupService.create(Group.Create(name = "test_group")))
       opt     <- EitherT(groupService.fetch()).map(_.find(_.name == "test_group"))
-      group   <- EitherT.fromOption[Task](opt, NO_GROUPS_FOUND)
+      group   <- EitherT.fromOption[Task](opt, Errors.NO_GROUPS_FOUND)
       _       <- EitherT(realmService.assignGroupAsDefault(group.id))
       fetched <- EitherT(realmService.fetchDefaultGroups())
     } yield {
@@ -159,11 +157,14 @@ class RealmsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchOptionalClientScopes" should "retrieve a non-empty list of assigned optional client scopes" in {
-    realmService.fetchOptionalClientScopes("test_realm").map(_.map { scopes =>
+    for {
+      scopes  <- EitherT(realmService.fetchOptionalClientScopes("test_realm"))
+      scope   <- EitherT.fromOption[Task](scopes.headOption, Errors.SCOPE_NOT_FOUND)
+    } yield {
       scopes shouldNot be (empty)
-      storedScopeId.set(scopes.headWithAssert.id)
-    })
-  }.shouldReturnSuccess
+      storedScopeId.set(scope.id)
+    }
+  }.value.shouldReturnSuccess
 
   "unassignOptionalClientScope" should "unassign a optional scope" in {
     for {
@@ -222,12 +223,12 @@ class RealmsTests extends IntegrationSpec {
     for {
       id        <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head.id)
       option    <- EitherT(clientService.fetchUserSessions(id)).map(_.headOption)
-      session   <- EitherT.fromOption[Task](option, NO_SESSIONS_FOUND)
+      session   <- EitherT.fromOption[Task](option, Errors.NO_SESSIONS_FOUND)
       _         <- EitherT(realmService.removeUserSession(session.id))
       sessions  <- EitherT(clientService.fetchUserSessions(id))
     } yield (sessions.map(_.id), session.id)
   }.value.map {
-    case Left(l)          => l.getMessage shouldBe "No sessions found."
+    case Left(l)          => l.getMessage.toLowerCase shouldBe "no sessions found."
     case Right((ids, id)) => ids shouldNot contain (id)
   }.runToFuture
 
@@ -265,7 +266,7 @@ class RealmsTests extends IntegrationSpec {
     for {
       _       <- EitherT(realmService.createInitialAccessToken(config, "test_realm"))
       tokens  <- EitherT(realmService.fetchInitialAccessTokens("test_realm"))
-      token   <- EitherT.fromOption[Task](tokens.headOption, NO_TOKENS_FOUND)
+      token   <- EitherT.fromOption[Task](tokens.headOption, Errors.NO_TOKENS_FOUND)
     } yield {
       token.count shouldBe 5
       storedTokenId.set(token.id)

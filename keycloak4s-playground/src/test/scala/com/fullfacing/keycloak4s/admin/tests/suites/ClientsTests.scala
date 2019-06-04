@@ -26,17 +26,17 @@ class ClientsTests extends IntegrationSpec {
     *
     */
 
-  val storedClients: AtomicReference[Seq[Client]] = new AtomicReference[Seq[Client]]()
-  val storedUsers: AtomicReference[Seq[User]] = new AtomicReference[Seq[User]]()
+  /* References for storing tests results to be used in subsequent tests. **/
+  val storedClients: AtomicReference[Seq[Client]]           = new AtomicReference[Seq[Client]]()
+  val storedUsers: AtomicReference[Seq[User]]               = new AtomicReference[Seq[User]]()
   val storedClientScopes: AtomicReference[Seq[ClientScope]] = new AtomicReference[Seq[ClientScope]]()
-
-  private val client1: AtomicReference[UUID] = new AtomicReference[UUID]()
-  private val client2: AtomicReference[UUID] = new AtomicReference[UUID]()
-  private val client3: AtomicReference[UUID] = new AtomicReference[UUID]()
-  private val client4: AtomicReference[UUID] = new AtomicReference[UUID]()
-  private val user1: AtomicReference[UUID] = new AtomicReference[UUID]()
-  private val clientScope1: AtomicReference[UUID] = new AtomicReference[UUID]()
-  private val clientScope2: AtomicReference[UUID] = new AtomicReference[UUID]()
+  val client1: AtomicReference[UUID]                        = new AtomicReference[UUID]()
+  val client2: AtomicReference[UUID]                        = new AtomicReference[UUID]()
+  val client3: AtomicReference[UUID]                        = new AtomicReference[UUID]()
+  val client4: AtomicReference[UUID]                        = new AtomicReference[UUID]()
+  val user1: AtomicReference[UUID]                          = new AtomicReference[UUID]()
+  val clientScope1: AtomicReference[UUID]                   = new AtomicReference[UUID]()
+  val clientScope2: AtomicReference[UUID]                   = new AtomicReference[UUID]()
 
   "Create Ancillary Objects" should "create all objects needed to test all the clients service calls" in {
     val task =

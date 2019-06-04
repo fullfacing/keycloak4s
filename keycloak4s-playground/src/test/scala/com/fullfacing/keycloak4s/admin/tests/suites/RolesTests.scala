@@ -4,7 +4,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.tests.IntegrationSpec
+import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models.{Client, Group, KeycloakError, ManagementPermission, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.eval.Task
@@ -14,7 +14,7 @@ import org.scalatest.DoNotDiscover
 @DoNotDiscover
 class RolesTests extends IntegrationSpec {
 
-  //Test Data////////////////////////////////////////////////////////////////////
+  /* Testing functions and data. **/
   private def mapToRole(id: UUID, role: Role.Create): Role =
     Role(
       id         = id,
@@ -62,9 +62,8 @@ class RolesTests extends IntegrationSpec {
 
   private val user1Create = User.Create("user1", enabled = true)
   private val user2Create = User.Create("user2", enabled = true)
-  ///////////////////////////////////////////////////////////////////////////////
 
-  //IDs of objects created in tests//////////////////////////////////////////////
+  /* References for storing tests results to be used in subsequent tests. **/
   private val rRole1     = new AtomicReference[UUID]()
   private val rRole2     = new AtomicReference[UUID]()
   private val cRole1     = new AtomicReference[UUID]()
@@ -74,7 +73,6 @@ class RolesTests extends IntegrationSpec {
   private val user2      = new AtomicReference[UUID]()
   private val group1     = new AtomicReference[UUID]()
   private val group2     = new AtomicReference[UUID]()
-  ///////////////////////////////////////////////////////////////////////////////
 
   "Create Ancillary Objects" should "create all objects needed to test all the roles service calls" in {
     val task =
@@ -95,12 +93,17 @@ class RolesTests extends IntegrationSpec {
         c <- EitherT(clientService.fetch(clientId = Some("RoleTestClient")))
         g <- EitherT(groupService.fetch())
         u <- EitherT(userService.fetch())
+        c1  <- EitherT.fromOption[Task](c.headOption, Errors.CLIENT_NOT_FOUND)
+        g1  <- EitherT.fromOption[Task](g.find(_.name == group1Create.name), Errors.GROUP_NOT_FOUND)
+        g2  <- EitherT.fromOption[Task](g.find(_.name == group2Create.name), Errors.GROUP_NOT_FOUND)
+        u1  <- EitherT.fromOption[Task](u.find(_.username == user1Create.username), Errors.USER_NOT_FOUND)
+        u2  <- EitherT.fromOption[Task](u.find(_.username == user2Create.username), Errors.USER_NOT_FOUND)
       } yield {
-        clientUuid.set(c.headWithAssert.id)
-        group1.set(g.find(_.name == group1Create.name).getWithAssert.id)
-        group2.set(g.find(_.name == group2Create.name).getWithAssert.id)
-        user1.set(u.find(_.username == user1Create.username).getWithAssert.id)
-        user2.set(u.find(_.username == user2Create.username).getWithAssert.id)
+        clientUuid.set(c1.id)
+        group1.set(g1.id)
+        group2.set(g2.id)
+        user1.set(u1.id)
+        user2.set(u2.id)
       }
 
     task.value.shouldReturnSuccess
