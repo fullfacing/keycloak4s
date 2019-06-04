@@ -41,4 +41,18 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
       response shouldBe a [scala.util.Right[_, _]]
     }.runToFuture
   }
+
+  implicit class optImpl[A](opt: Option[A]) {
+    def getWithAssert: A = {
+      opt shouldBe defined
+      opt.get
+    }
+  }
+
+  implicit class seqImp[A](seq: Seq[A]) {
+    def headWithAssert: A = {
+      seq shouldNot be (empty)
+      seq.head
+    }
+  }
 }

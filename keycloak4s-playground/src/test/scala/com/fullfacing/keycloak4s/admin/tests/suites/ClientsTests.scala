@@ -23,7 +23,6 @@ class ClientsTests extends IntegrationSpec {
     * fetchKeyStoreFile                  - Requires data not feasible for testing.
     * generateNewCertificate             - Requires data not feasible for testing.
     * generateAndDownloadNewCertificate  - Requires data not feasible for testing.
-    *
     */
 
   /* References for storing tests results to be used in subsequent tests. **/
@@ -92,14 +91,13 @@ class ClientsTests extends IntegrationSpec {
         uc <- EitherT(clientService.fetchById(client1.get))
       } yield uc.clientId should equal ("Client 5")).value
     task.shouldReturnSuccess
-
   }
 
   "getClientInstallationProvider" should "return the client installation file" in {
     clientService.getClientInstallationProvider(client1.get).shouldReturnSuccess
   }
 
-  "updateClientForServiceAccount" should "update client to enable service accounts." in {
+  "updateClientForServiceAccount" should "update client to enable service accounts" in {
     clientService.update(
       client1.get,
       Client.Update(client1.get, "Client 1", publicClient = Some(false), serviceAccountsEnabled = Some(true))
@@ -107,7 +105,9 @@ class ClientsTests extends IntegrationSpec {
   }
 
   "fetchServiceAccountUser" should "return a client service account user" in {
-    clientService.fetchServiceAccountUser(client1.get).shouldReturnSuccess
+    clientService.fetchServiceAccountUser(client1.get).map(_.map { account =>
+      account.username should equal ("service-account-client 1")
+    }).shouldReturnSuccess
   }
 
   "fetchUserSessionCount & fetchOfflineSessionCount" should
@@ -167,35 +167,56 @@ class ClientsTests extends IntegrationSpec {
   }
 
   "fetch client scope by id" should "retrieve a specific client scope" in {
-    clientService.fetchClientScopeById(clientScope1.get).shouldReturnSuccess
+    clientService.fetchClientScopeById(clientScope1.get).map(_.map { scope =>
+      scope.name should be ("ClientScope_1")
+    }).shouldReturnSuccess
   }
 
   "update client scope" should "return the updated client scope" in {
-    clientService.updateClientScope(clientScope1.get, ClientScope.Update("ClientScope 3".some)).shouldReturnSuccess
-  }
-
-  "fetchDefaultClientScopes" should "return the default client scopes" in {
-    clientService.fetchDefaultClientScopes(client3.get).shouldReturnSuccess
+    val task =
+      (for {
+        _     <- EitherT(clientService.updateClientScope(clientScope1.get, ClientScope.Update("ClientScope 3".some)))
+        scope <- EitherT(clientService.fetchClientScopeById(clientScope1.get))
+      } yield {
+        scope.name should be ("ClientScope_3")
+      }).value
+    task.shouldReturnSuccess
   }
 
   "updateDefaultClientScopes" should "return the updated default client scopes" in {
     clientService.updateDefaultClientScope(client3.get, clientScope1.get).shouldReturnSuccess
   }
 
+  "fetchDefaultClientScopes" should "return the default client scopes" in {
+    EitherT(clientService.fetchDefaultClientScopes(client3.get))
+      .map(_.find(_.name == "ClientScope_3")).value.shouldReturnSuccess
+  }
+
   "deleteDefaultClientScope" should "delete a default client scope" in {
     clientService.deleteDefaultClientScope(client3.get, clientScope1.get).shouldReturnSuccess
   }
 
-  "fetchOptionalClientScopes" should "return the optional client scopes" in {
-    clientService.fetchOptionalClientScopes(client3.get).shouldReturnSuccess
+  "fetchDefaultScopesAfterDelete" should "return the default client scopes to check if they were deleted" in {
+    EitherT(clientService.fetchDefaultClientScopes(client3.get))
+      .map(_.find(_.name == "ClientScope_3") should be (empty)).value.shouldReturnSuccess
   }
 
   "updateOptionalClientScopes" should "return the updated optional client scopes" in {
     clientService.updateOptionalClientScope(client3.get, clientScope2.get).shouldReturnSuccess
   }
 
+  "fetchOptionalClientScopes" should "return the optional client scopes" in {
+    EitherT(clientService.fetchOptionalClientScopes(client3.get))
+      .map(_.find(_.name == "ClientScope_2")).value.shouldReturnSuccess
+  }
+
   "deleteOptionalClientScope" should "delete a optional client scope" in {
     clientService.deleteOptionalClientScope(client3.get, clientScope2.get).shouldReturnSuccess
+  }
+
+  "fetchOptionalScopesAfterDelete" should "return the optional client scopes to check if they were deleted" in {
+    EitherT(clientService.fetchOptionalClientScopes(client3.get))
+    .map(_.find(_.name == "ClientScope_2") should be (empty)).value.shouldReturnSuccess
   }
 
   "deleteClientScope" should "delete all client scopes" in {
@@ -205,6 +226,13 @@ class ClientsTests extends IntegrationSpec {
         cs <- EitherT(clientService.deleteClientScope(clientScope2.get))
       }yield cs ).value
     task.shouldReturnSuccess
+  }
+
+  "fetchClientScopeAfterDelete" should
+    "successfully retrieve all client scopes to check if ll of them were deleted" in {
+    clientService.fetchClientScopes().map(_.map { response =>
+      response shouldNot contain only ("ClientScope_1", "ClientScope_2")
+    }).shouldReturnSuccess
   }
 
   "ManagementPermissions" should "fetch and update requests for ManagementPermission model" in {
