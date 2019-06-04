@@ -43,12 +43,12 @@ trait Node {
    * @param userRoles The user's permissions
    */
   def evaluateSecurityPolicy(resource: String, method: HttpMethod, userRoles: List[String]): Evaluation[ResourceNode] = {
-    if (policyDisabled() || evaluateWildcardRole(method, userRoles)) {
+    if (evaluateWildcardRole(method, userRoles)) {
       Result(true)
     } else {
       nodes.find(_.resource == resource) match {
         case None       => Result(noMatchingPolicy())
-        case Some(node) => node.evaluate(method, userRoles)
+        case Some(node) => if (node.policyDisabled()) Result(true) else node.evaluate(method, userRoles)
       }
     }
   }
