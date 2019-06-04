@@ -48,6 +48,6 @@ object Authorisation {
     }
 
     lazy val listPath = extractResourcesFromPath(path)
-    sec.policyDisabled() || (listPath.nonEmpty && loop(listPath, sec))
+    listPath.nonEmpty && loop(listPath, sec)
   }
 }

@@ -11,12 +11,7 @@ import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, Polic
  */
 class SecurityConfig(val service: String,
                      val nodes: List[ResourceNode],
-                     val enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {
-
-  def policyDisabled(): Boolean = {
-    enforcementMode == PolicyEnforcementModes.Disabled
-  }
-}
+                     val enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node
 
 object SecurityConfig {
 

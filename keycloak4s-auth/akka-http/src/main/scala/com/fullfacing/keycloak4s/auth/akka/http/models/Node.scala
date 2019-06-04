@@ -28,6 +28,10 @@ trait Node {
     case PolicyEnforcementModes.Disabled   => true
   }
 
+  def policyDisabled(): Boolean = {
+    enforcementMode == PolicyEnforcementModes.Disabled
+  }
+
   /**
    * Determines user's access to the given resource.
    * A check is done to see if there is an admin role configured for this resource, and immediately accepts the request
@@ -39,7 +43,7 @@ trait Node {
    * @param userRoles The user's permissions
    */
   def evaluateSecurityPolicy(resource: String, method: HttpMethod, userRoles: List[String]): Evaluation[ResourceNode] = {
-    if (evaluateWildcardRole(method, userRoles)) {
+    if (policyDisabled() || evaluateWildcardRole(method, userRoles)) {
       Result(true)
     } else {
       nodes.find(_.resource == resource) match {
