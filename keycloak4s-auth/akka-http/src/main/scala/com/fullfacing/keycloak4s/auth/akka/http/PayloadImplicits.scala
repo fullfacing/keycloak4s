@@ -34,7 +34,7 @@ object PayloadImplicits {
     def extractAsListOf[A : Manifest](key: String)(implicit formats: Formats = default): List[A] =
       safeExtract(payload, key).map(read[List[A]](_)(formats, manifest)).getOrElse(List.empty[A])
 
-    /* User Info Extractors **/
+    /* User Info Extractors. **/
 
     def extractEmail: Option[String] =
       safeExtract(payload, "email")
@@ -54,7 +54,7 @@ object PayloadImplicits {
     def extractFullName: Option[String] =
       safeExtract(payload, "name")
 
-    /* Access Control Extractors **/
+    /* Access Control Extractors. **/
 
     def extractResourceAccess: Map[String, ResourceRoles] =
       extractAs[Map[String, ResourceRoles]]("resource_access").getOrElse(Map.empty[String, ResourceRoles])
