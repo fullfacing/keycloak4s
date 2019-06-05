@@ -1,8 +1,10 @@
 package com.fullfacing.keycloak4s.core.models
 
-final case class ClientInitialAccess(count: Option[Int],
-                                     expiration: Option[Int],
-                                     id: Option[String],
-                                     remainingCount: Option[Int],
-                                     timestamp: Option[Int],
+import java.util.UUID
+
+final case class ClientInitialAccess(count: Int,
+                                     expiration: Int,
+                                     id: UUID,
+                                     remainingCount: Int,
+                                     timestamp: Long,
                                      token: Option[String])

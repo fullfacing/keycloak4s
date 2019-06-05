@@ -27,7 +27,7 @@ object Main extends TaskApp {
     val targetRealm: String = "master" //Name of a Realm whose data will be accessed/manipulated.
     val adminRealm: String  = "master" //Name of a Realm with admin rights that can access/manipulate targetRealm.
     val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
-    val adminSecret: String = "93e66ea6-9e1f-4079-a76b-4d5b0530a1b4" //Secret of adminClient.
+    val adminSecret: String = "???" //Secret of adminClient.
 
     val authConfig  = KeycloakConfig.Auth(adminRealm, adminClient, adminSecret)
     val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)
@@ -46,6 +46,7 @@ object Main extends TaskApp {
 
     implicit val client: KeycloakClient[Task, Source[ByteString, Any]] = genericClient //slot in preferred client
     implicit val clientM: KeycloakClientM = monixClient
+
     /* Example Usage: Provides access to the Users calls using the implicit client. **/
     val users = Keycloak.Users[Task, Source[ByteString, Any]]
     val usersM = KeycloakM.Users

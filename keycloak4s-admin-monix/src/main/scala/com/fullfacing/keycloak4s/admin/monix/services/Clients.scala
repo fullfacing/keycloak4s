@@ -3,10 +3,9 @@ package com.fullfacing.keycloak4s.admin.monix.services
 import java.nio.ByteBuffer
 import java.util.UUID
 
-import com.fullfacing.keycloak4s.core.models.UserSession
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.UserSession
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -26,7 +25,7 @@ class Clients(implicit client: KeycloakClient) extends services.Clients[Task, Ob
   def fetchOfflineSessionsS(first: Int = 0,
                             limit: Int = Integer.MAX_VALUE,
                             id: UUID,
-                            batchSize: Int = 100): Observable[Either[KeycloakError, Seq[UserSession]]] = {
+                            batchSize: Int = 100): Observable[UserSession] = {
 
     val path = Seq(client.realm, "clients", id.toString, "offline-sessions")
     client.getList[UserSession](path, offset = first, limit = limit, batch = batchSize)
@@ -44,7 +43,7 @@ class Clients(implicit client: KeycloakClient) extends services.Clients[Task, Ob
   def fetchUserSessionsS(first: Int = 0,
                          limit: Int = Integer.MAX_VALUE,
                          id: UUID,
-                         batchSize: Int = 100): Observable[Either[KeycloakError, Seq[UserSession]]] = {
+                         batchSize: Int = 100): Observable[UserSession] = {
 
     val path = Seq(client.realm, "clients", id.toString, "user-sessions")
     client.getList[UserSession](path, offset = first, limit = limit, batch = batchSize)

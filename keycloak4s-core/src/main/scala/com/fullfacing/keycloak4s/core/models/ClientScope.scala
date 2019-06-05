@@ -8,7 +8,7 @@ final case class ClientScope(id: UUID,
                              name: String,
                              attributes: Map[String, String] = Map.empty[String, String],
                              description: Option[String],
-                             protocol: Protocol,
+                             protocol: Option[Protocol],
                              protocolMappers: List[ProtocolMapper])
 
 object ClientScope {

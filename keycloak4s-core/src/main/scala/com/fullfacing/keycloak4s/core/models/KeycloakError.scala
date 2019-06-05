@@ -1,8 +1,11 @@
 package com.fullfacing.keycloak4s.core.models
 
-sealed trait KeycloakError extends Throwable
+trait KeycloakError extends Throwable
 
-final case class KeycloakThrowable(ex: Throwable) extends KeycloakError
+final case class KeycloakThrowable(ex: Throwable) extends KeycloakError {
+  override def getMessage: String = ex.getMessage
+  override def toString: String   = ex.toString
+}
 
 /**
  * An exception processed into an HTTP error response equivalent.
@@ -37,14 +40,14 @@ final case class KeycloakSttpException(code: Int,
                                        requestInfo: RequestInfo) extends KeycloakError {
 
   val errMessage: String = {
-    val requestBody = requestInfo.body.fold("")(b => s"\n|Request Body: ${b.toString}")
+    val requestBody = requestInfo.body.fold("")(b => s"\n|Request Body:      ${b.toString}")
 
     s"""STTP CLIENT ERROR: $code $statusText
-       |Headers: ${headers.toMap}
-       |Body: $body
-       |Request Endpoint: ${requestInfo.protocol} ${requestInfo.path}$requestBody""".stripMargin
+       |Headers:           ${headers.toMap}
+       |Body:              $body
+       |Request Endpoint:  ${requestInfo.protocol} ${requestInfo.path}$requestBody""".stripMargin
   }
 
-  override def getMessage: String = errMessage
+  override def getMessage: String = s"\n$errMessage"
   override def toString: String   = errMessage
 }

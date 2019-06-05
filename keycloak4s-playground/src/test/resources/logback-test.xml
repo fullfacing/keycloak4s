@@ -1,0 +1,28 @@
+<configuration scan="true">
+
+    <!-- Logs TRACE, DEBUG and INFO levels to System.out -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="com.fullfacing.transport.logging.StdOutFilter"/>
+        <encoder>
+            <pattern>%-5level{1} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logs WARNING and ERROR levels to System.err -->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.err</Target>
+        <filter class="com.fullfacing.transport.logging.StdErrFilter"/>
+        <encoder>
+            <pattern>%-5level{1} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="keycloak4s.admin" level="trace"/>
+    <logger name="keycloak4s.auth"  level="trace"/>
+
+    <root level="error">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </root>
+
+</configuration>

@@ -29,7 +29,7 @@ final case class Client(id: UUID,
                         notBefore: Option[Int],
                         optionalClientScopes: List[String],
                         origin: Option[String],
-                        protocol: Protocol,
+                        protocol: Option[Protocol],
                         protocolMappers: List[ProtocolMapper],
                         publicClient: Boolean,
                         redirectUris: List[String],
@@ -78,7 +78,8 @@ object Client {
                           surrogateAuthRequired: Option[Boolean] = None,
                           webOrigins: List[String] = List.empty[String])
 
-  final case class Update(clientId: String,
+  final case class Update(id: UUID,
+                          clientId: String,
                           access: Option[ClientAccess] = None,
                           adminUrl: Option[String] = None,
                           attributes: Option[Map[String, String]] = None,

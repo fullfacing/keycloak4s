@@ -1,7 +1,5 @@
 package com.fullfacing.keycloak4s.admin.monix
 
-import cats.implicits._
-import com.fullfacing.keycloak4s.core.models.KeycloakError
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import monix.reactive.Consumer
 
@@ -16,9 +14,5 @@ package object services {
 
   def toCsvList(list: Option[List[String]]): Option[String] = list.map(_.mkString(","))
 
-  def consumer[A](): Consumer[Either[KeycloakError, Seq[A]], Either[KeycloakError, Seq[A]]] = {
-    Consumer.foldLeft(List.empty[A].asRight[KeycloakError]){ case (a, b) =>
-      b.flatMap(bb => a.map(_ ++ bb))
-    }
-  }
+  def consumer[A](): Consumer[A, Seq[A]] = Consumer.foldLeft(Seq.empty[A])(_ :+ _)
 }
