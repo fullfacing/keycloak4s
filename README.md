@@ -7,6 +7,11 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.15.0]
+### Added
+- Added a json security security structure that is used to configure security for a server.
+- Added a security directive that handles auth at the top level of the directive structure, using the above json config.
+
 ## [0.14.0]
 ### Added
 - Added an integration test suite and a bootstrap for a fresh Keycloak server instance to test on.

@@ -1,12 +1,15 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives
 
-import akka.http.scaladsl.model.{HttpMethod, HttpMethods}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.util.Tuple._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.magnets.{AuthoriseResourceMagnet, PathPrefixWithAuthMagnet, PathWithAuthMagnet, WithAuthMagnet}
 import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, ResourceRoles}
+import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats._
+import org.json4s.jackson.Serialization.write
 
 trait AuthorisationDirectives {
 
@@ -76,7 +79,10 @@ object AuthorisationDirectives {
   def checkPermissions[A](resource: String, permissions: AuthPayload, success: ResourceRoles => Directive[A]): Directive[A] = {
     permissions.resourceRoles.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
       case Some((_, v)) => success(v)
-      case None         => reject(AuthorizationFailedRejection)
+      case None         => authorisationFailed()
     }
   }
+
+  def authorisationFailed(): StandardRoute =
+    complete(HttpResponse(UNAUTHORIZED.code, entity = HttpEntity(ContentTypes.`application/json`, write(UNAUTHORIZED))))
 }

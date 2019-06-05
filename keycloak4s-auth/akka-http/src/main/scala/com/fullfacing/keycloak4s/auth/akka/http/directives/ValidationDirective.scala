@@ -7,8 +7,6 @@ import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import org.json4s.jackson.Serialization.write
 
 import scala.util.{Failure, Success}
 

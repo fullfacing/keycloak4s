@@ -1,11 +1,9 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
-import java.util.UUID
-
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.provide
 import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.checkPermissions
-import com.fullfacing.keycloak4s.auth.akka.http.directives.ValidationDirective
+import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
 import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, ResourceRoles}
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 
@@ -13,7 +11,7 @@ trait ValidateRequestMagnet {
   def apply(): Directive1[AuthPayload]
 }
 
-object ValidateRequestMagnet extends ValidationDirective {
+object ValidateRequestMagnet {
 
   implicit def validateRequest(resourceServer: String)(implicit tokenValidator: TokenValidator): ValidateRequestMagnet = () => {
     validateToken().flatMap { p =>
@@ -29,7 +27,7 @@ object ValidateRequestMagnet extends ValidationDirective {
    * @param resourceServer  Name of the resource-server.
    * @return                Permissions specific to given resource server.
    */
-  private def authoriseResourceServerAccess(permissions: AuthPayload, resourceServer: String): Directive1[AuthPayload] = {
+  def authoriseResourceServerAccess(permissions: AuthPayload, resourceServer: String): Directive1[AuthPayload] = {
     val f = { r: ResourceRoles =>
       val rr = r.roles.map(_.split("-")).groupBy(_.headOption).collect { case (Some(k), v) =>
         k -> ResourceRoles(v.flatMap(_.lastOption))
