@@ -10,17 +10,20 @@ import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationEx
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
+import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.crypto.RSASSAVerifier
-import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
-import com.nimbusds.jwt.SignedJWT
+import com.nimbusds.jose.jwk.{JWK, JWKSet, RSAKey}
+import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 import com.nimbusds.jwt.SignedJWT.parse
 
 class TokenValidator(host: String, port: String, realm: String) extends JwksCache(host, port, realm) {
 
+  def validateExp(claims: JWTClaimsSet)
+
   /**
    * Validates the expiration and not-before dates of an access token (and optionally an ID token).
    */
-  private def validateTimes(aToken: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
+  def validateClaims(aToken: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
     val now = new Date()
 
     def evaluate(token: SignedJWT): Either[KeycloakException, Unit] = {
@@ -43,7 +46,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
   /**
    * Checks the key set cache for valid keys, re-caches once (and only once) if invalid.
    */
-  private def checkKeySet()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = retrieveCachedValue().flatMap {
+  def checkKeySet()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = retrieveCachedValue().flatMap {
     case r @ Right(_) => IO.pure(r)
     case Left(_)      => updateCache()
   }
@@ -52,7 +55,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
    * Creates an RSASSA verifier with a public RSA key matching the access token's key ID header.
    * Re-caches the key set once (and only once) if the key was not found.
    */
-  private def createRsaVerifier(keyId: String, keySet: JWKSet, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, RSASSAVerifier]] = {
+  def createRsaVerifier(keyId: String, keySet: JWKSet, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, RSASSAVerifier]] = {
     Option(keySet.getKeyByKeyId(keyId)) match {
       case None if !reattempted => updateCache().flatMap(_ => createRsaVerifier(keyId, keySet, reattempted = true))
       case None                 => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)
@@ -64,7 +67,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
    * Validates the signature of an access token (and optionally an ID token) using a RSASSA verifier
    * created with a public RSA key received from the Keycloak server.
    */
-  private def validateSignatures(verifier: RSASSAVerifier, token: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
+  def validateSignatures(verifier: RSASSAVerifier, token: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
     (token, idToken) match {
       case (a, Some(i)) =>
         if (a.verify(verifier) && i.verify(verifier)) ().asRight else Exceptions.SIG_INVALID.asLeft
@@ -76,7 +79,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
   /**
    * Attempts to parse a raw access token (and optionally a raw ID token).
    */
-  private def parseTokens(rawAccessToken: String, rawIdToken: Option[String]): IO[Either[KeycloakException, (SignedJWT, Option[SignedJWT])]] = IO {
+  def parseTokens(rawAccessToken: String, rawIdToken: Option[String]): IO[Either[KeycloakException, (SignedJWT, Option[SignedJWT])]] = IO {
     val accessToken = parse(rawAccessToken)
     val idToken     = rawIdToken.map(parse)
     (accessToken, idToken).asRight[KeycloakException]
@@ -90,7 +93,7 @@ class TokenValidator(host: String, port: String, realm: String) extends JwksCach
     (for {
       tokens            <- EitherT(parseTokens(rawToken, rawIdToken))
       (aToken, iToken)  = tokens
-      _                 <- EitherT.fromEither[IO](validateTimes(aToken, iToken))
+      _                 <- EitherT.fromEither[IO](validateClaims(aToken, iToken))
       keySet            <- EitherT(checkKeySet())
       verifier          <- EitherT(createRsaVerifier(aToken.getHeader.getKeyID, keySet))
       _                 <- EitherT.fromEither[IO](validateSignatures(verifier, aToken, iToken))

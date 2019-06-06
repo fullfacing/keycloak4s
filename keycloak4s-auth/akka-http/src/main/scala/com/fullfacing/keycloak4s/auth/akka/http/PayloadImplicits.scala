@@ -10,6 +10,7 @@ import org.json4s.jackson.Serialization.read
 
 /**
  * Provides helper functions to safely extract values from any Payload object.
+ * Note: Any json4s parsing is *not* executed safely and will throw an exception in case of failure.
  */
 object PayloadImplicits {
 
