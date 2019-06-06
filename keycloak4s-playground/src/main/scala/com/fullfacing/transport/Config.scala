@@ -45,7 +45,7 @@ object Config {
 
     val top = PathConfiguration(
       service = "api-client",
-      paths = List(client, admin, cAccounts)
+      paths = List(admin, client, cAccounts)
     )
     println(write(top))
     top
