@@ -8,7 +8,7 @@ import com.fullfacing.transport.Config._
 
 object ClientsApi extends SecurityDirectives {
 
-  val api: Route = secure(clientsApiConfig) {
+  val api: Route = secure(pathClientsConfig) {
     ClientsRoutes.api ~
       AccountRoutes.api ~
       SiteRoutes.api

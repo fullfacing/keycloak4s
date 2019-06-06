@@ -11,7 +11,7 @@ import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMo
  * @param nodes         The next configured path segments.
  */
 case class ResourceNode(resource: String,
-                        roles: List[MethodRoles],
+                        roles: List[NodeMethodRoles],
                         nodes: List[ResourceNode] = List.empty[ResourceNode],
                         enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {
 

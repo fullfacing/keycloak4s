@@ -9,20 +9,20 @@ import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, Polic
  * @param enforcementMode Determines how requests with no matching policies are handled.
  * @param nodes           The configured and secured resource segments on the server.
  */
-class SecurityConfig(val service: String,
-                     val nodes: List[ResourceNode],
-                     val enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node
+class NodeConfiguration(val service: String,
+                        val nodes: List[ResourceNode],
+                        val enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node
 
-object SecurityConfig {
+object NodeConfiguration {
 
-  def apply(config: String): SecurityConfig = {
+  def apply(config: String): NodeConfiguration = {
     import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
     import org.json4s.jackson.Serialization.read
-    read[SecurityConfig](config)
+    read[NodeConfiguration](config)
   }
 
   def apply(service: String,
             nodes: List[ResourceNode],
-            enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing): SecurityConfig =
-    new SecurityConfig(service, nodes, enforcementMode)
+            enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing): NodeConfiguration =
+    new NodeConfiguration(service, nodes, enforcementMode)
 }
