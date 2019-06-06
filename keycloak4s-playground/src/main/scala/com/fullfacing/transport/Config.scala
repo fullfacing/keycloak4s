@@ -21,8 +21,8 @@ object Config {
   }
 
   val pathClientsConfig: PathConfiguration = {
-    val client = PathRoles(
-      path = List("clients"),
+    val client = PathRoles.Create(
+      path = "clients",
       roles = List(
         PathMethodRoles(Methods.Get, List(List("client-view", "client-write", "client-delete"))),
         PathMethodRoles(Methods.Post, List(List("client-write", "client-delete"))),
@@ -31,13 +31,13 @@ object Config {
       )
     )
 
-    val admin = PathRoles(
-      path = List("*"),
+    val admin = PathRoles.Create(
+      path = "*",
       roles = List(PathMethodRoles(Methods.All, List(List("admin"))))
     )
 
-    val cAccounts = PathRoles(
-      path = List("clients", "accounts"),
+    val cAccounts = PathRoles.Create(
+      path = "clients/accounts",
       roles = List(PathMethodRoles(Methods.Get, List(List("client-view", "client-write", "client-delete"), List("account-view", "account-write", "account-delete"))))
     )
     import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default

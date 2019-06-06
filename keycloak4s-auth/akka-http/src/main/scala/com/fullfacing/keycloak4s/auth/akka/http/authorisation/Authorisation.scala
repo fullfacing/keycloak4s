@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 
-trait SecurityConfiguration[A] {
+trait Authorisation[A] {
 
   /**
    * Compares the request path to the server's security policy to determine which permissions are required

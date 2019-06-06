@@ -7,7 +7,7 @@ import com.fullfacing.keycloak4s.core.models.enums.Methods
 
 import scala.annotation.tailrec
 
-object PathAuthorisation extends SecurityConfiguration[PathConfiguration] {
+object PathAuthorisation extends Authorisation[PathConfiguration] {
 
   /**
    * Runs through the request path and collects all rules that apply to the request.

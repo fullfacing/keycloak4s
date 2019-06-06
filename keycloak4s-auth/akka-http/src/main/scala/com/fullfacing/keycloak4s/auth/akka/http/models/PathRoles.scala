@@ -7,14 +7,11 @@ object PathRoles {
   case class Create(path: String,
                     roles: List[PathMethodRoles])
 
-  def apply(path: String,
-            roles: List[PathMethodRoles]): PathRoles = new PathRoles(path.split("/").toList, roles)
+  def apply(pathRoles: Create): PathRoles = new PathRoles(pathRoles.path.split("/").toList, pathRoles.roles)
 
   def apply(config: String): PathRoles = {
     import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
     import org.json4s.jackson.Serialization.read
-
-    val pathRole = read[Create](config)
-    apply(pathRole.path, pathRole.roles)
+    apply(read[Create](config))
   }
 }

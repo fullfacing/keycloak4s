@@ -2,9 +2,9 @@ package com.fullfacing.keycloak4s.auth.akka.http.models
 
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
 
-case class PathConfiguration(service: String,
-                             enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
-                             paths: List[PathRoles]) {
+class PathConfiguration(val service: String,
+                        val enforcementMode: PolicyEnforcementMode,
+                        val paths: List[PathRoles]) {
 
   /** Determines what to do when there is no matching policy for the request */
   def noMatchingPolicy(): Boolean = enforcementMode match {
@@ -16,4 +16,11 @@ case class PathConfiguration(service: String,
   def policyDisabled(): Boolean = {
     enforcementMode == PolicyEnforcementModes.Disabled
   }
+}
+
+object PathConfiguration {
+  def apply(service: String,
+            enforcementModes: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
+            paths: List[PathRoles.Create]): PathConfiguration =
+    new PathConfiguration(service, enforcementModes, paths.map(PathRoles(_)))
 }
