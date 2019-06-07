@@ -8,6 +8,7 @@ object EnumSerializers {
     Json4s.serializer(Categories),
     Json4s.serializer(DecisionStrategies),
     Json4s.serializer(EventTypes),
+    Json4s.serializer(Methods),
     Json4s.serializer(LogicTypes),
     Json4s.serializer(PolicyEnforcementModes),
     Json4s.serializer(PolicyTypes),
