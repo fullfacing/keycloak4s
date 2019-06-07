@@ -1,10 +1,10 @@
-package com.fullfacing.keycloak4s.admin.tests.suites
+package suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
+import utils.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models.{Client, Group, KeycloakError, ManagementPermission, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.eval.Task
