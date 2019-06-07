@@ -9,9 +9,7 @@ import scala.annotation.tailrec
 
 object PathAuthorisation extends Authorisation[PathConfiguration] {
 
-  /**
-   * Runs through the request path and collects all rules that apply to the request.
-   */
+  /** Runs through the request path and collects all rules that apply to the request. */
   @tailrec
   private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRoles], d: Int = 0, acc: List[PathRoles] = List.empty): List[PathRoles] = reqPath match {
     case Nil    => acc ++ cfgPaths.filter(_.path.drop(d).isEmpty)
