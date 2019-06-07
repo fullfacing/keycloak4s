@@ -16,6 +16,7 @@ object EnumSerializers {
     Json4s.serializer(InstallationProviders),
     Json4s.serializer(Protocols),
     Json4s.serializer(RequiredActions),
+    Json4s.serializer(TokenTypes),
     Json4s.serializer(TriggerSyncActions)
   )
 }

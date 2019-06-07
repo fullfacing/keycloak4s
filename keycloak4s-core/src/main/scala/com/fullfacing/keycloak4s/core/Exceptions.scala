@@ -1,5 +1,6 @@
 package com.fullfacing.keycloak4s.core
 
+import cats.data.NonEmptyList
 import cats.implicits._
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 
@@ -9,10 +10,21 @@ object Exceptions {
   val PUBLIC_KEY_NOT_FOUND  = KeycloakException(401, "Unauthorized", "The public key in the bearer token does not match the server keys.".some)
   val NOT_YET_VALID         = KeycloakException(401, "Unauthorized", "The bearer token is not yet valid.".some)
   val EXPIRED               = KeycloakException(401, "Unauthorized", "The bearer token has expired.".some)
+  val IAT_MISSING           = KeycloakException(401, "Unauthorized", "The bearer token lacks an 'issued at' time.".some)
+  val IAT_INCORRECT         = KeycloakException(401, "Unauthorized", "The 'issued at' time of the bearer token cannot be in the future.".some)
+  val ISS_MISSING           = KeycloakException(401, "Unauthorized", "The bearer token lacks an 'issuer' web address.".some)
+  val ISS_INCORRECT         = KeycloakException(401, "Unauthorized", "The 'issuer' does not match the web address as specified in the Keycloak configuration.".some)
   val SIG_INVALID           = KeycloakException(401, "Unauthorized", "Bearer and/or ID token signature verification failed.".some)
   val AUTH_MISSING          = KeycloakException(403, "Forbidden", "Authorization details not included in bearer token.".some)
   val UNAUTHORIZED          = KeycloakException(403, "Forbidden", "Authorization denied.".some)
 
   def JWKS_SERVER_ERROR(details: String)  = KeycloakException(500, "Internal Server Error", "Public keys could not be retrieved.".some, details.some)
   def UNEXPECTED(details: String)         = KeycloakException(500, "Internal Server Error", "An unexpected error has occurred.".some, details.some)
+
+  def buildClaimsException(exceptions: NonEmptyList[KeycloakException]): KeycloakException = {
+    val exceptionMessages = exceptions.toList.flatMap(_.message)
+    val message = s"Claims set could not be validated due to:\n - ${exceptionMessages.mkString("\n - ")}"
+
+    KeycloakException(401, "Unauthorized", message.some)
+  }
 }

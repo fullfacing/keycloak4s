@@ -4,61 +4,68 @@ import java.time.Instant
 import java.util.{Date, UUID}
 
 import com.nimbusds.jose._
-import com.nimbusds.jose.crypto.RSASSASigner
+import com.nimbusds.jose.crypto.{RSASSASigner, RSASSAVerifier}
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jose.util.JSONObjectUtils
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
+import net.minidev.json.JSONObject
+
+case class TestTokenData(jwt: SignedJWT,
+                         idToken: SignedJWT,
+                         publicKey: RSAKey,
+                         jwkSet: JWKSet)
 
 object TestTokenGenerator {
 
-  def generateData(withExp: Instant, withNbf: Option[Instant] = None): (SignedJWT, SignedJWT, RSAKey, JWKSet) = {
+  val rsaJwk: RSAKey = new RSAKeyGenerator(2048)
+    .keyID("12345")
+    .generate()
+
+  val publicKey: RSAKey = rsaJwk.toPublicJWK
+
+  val obj: JSONObject = JSONObjectUtils.parse(s"""{"keys": [${publicKey.toJSONObject}]}""")
+
+  val jwkSet: JWKSet = JWKSet.parse(obj)
+
+  val signer: JWSSigner = new RSASSASigner(rsaJwk)
+
+  val header: JWSHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
+    .keyID(rsaJwk.getKeyID)
+    .build()
+
+  val verifierMap1: Map[String, RSASSAVerifier] = Map("12345" -> new RSASSAVerifier(TestTokenGenerator.publicKey))
+
+  val verifierMap2: Map[String, RSASSAVerifier] = Map("67890" -> new RSASSAVerifier(TestTokenGenerator.publicKey))
+
+  def generate(withExp: Instant,
+               withIat: Option[Instant] = None,
+               withNbf: Option[Instant] = None,
+               withIss: Option[String] = None,
+               signerOverride: Option[JWSSigner] = None): SignedJWT = {
 
     val claimsSetBuilder = new JWTClaimsSet.Builder()
       .expirationTime(Date.from(withExp))
-      .issuer("http://localhost:8080/unit/test")
       .jwtID(UUID.randomUUID().toString)
-      .issueTime(Date.from(withExp))
-      .subject("test_subject")
-      .claim("session_state", "test_state")
 
-    val idClaimsSetBuilder = new JWTClaimsSet.Builder()
-      .expirationTime(Date.from(withExp))
-      .issuer("http://localhost:8080/unit/test")
-      .jwtID(UUID.randomUUID().toString)
-      .issueTime(Date.from(withExp))
-      .subject("test_subject")
-      .claim("session_state", "test_state")
-
-    val claimsSet = withNbf.fold(claimsSetBuilder.build()) { nbf =>
-      claimsSetBuilder.notBeforeTime(Date.from(nbf)).build()
+    val addNbf: JWTClaimsSet.Builder => JWTClaimsSet.Builder = builder => withNbf.fold(builder) { nbf =>
+      builder.notBeforeTime(Date.from(nbf))
     }
 
-    val idClaimsSet = withNbf.fold(idClaimsSetBuilder.build()) { nbf =>
-      idClaimsSetBuilder.notBeforeTime(Date.from(nbf)).build()
+    val addIat: JWTClaimsSet.Builder => JWTClaimsSet.Builder = builder => withIat.fold(builder) { iat =>
+      builder.issueTime(Date.from(iat))
     }
 
-    val rsaJwk = new RSAKeyGenerator(2048)
-      .keyID("12345")
-      .generate()
+    val addIss: JWTClaimsSet.Builder => JWTClaimsSet.Builder = builder => withIss.fold(builder) { iss =>
+      builder.issuer(iss)
+    }
 
-    val publicKey = rsaJwk.toPublicJWK
-
-    val obj = JSONObjectUtils.parse(s"""{"keys": [${publicKey.toJSONObject}]}""")
-    val jwkSet = JWKSet.parse(obj)
-
-    val signer: JWSSigner = new RSASSASigner(rsaJwk)
-
-    val header: JWSHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
-      .keyID(rsaJwk.getKeyID)
-      .build()
+    val claimsSet = addNbf.andThen(addIat).andThen(addIss)(claimsSetBuilder).build()
 
     val jwt: SignedJWT = new SignedJWT(header, claimsSet)
-    val idToken: SignedJWT = new SignedJWT(header, idClaimsSet)
 
-    jwt.sign(signer)
-    idToken.sign(signer)
+    signerOverride.fold(jwt.sign(signer))(jwt.sign)
 
-    (jwt, idToken, publicKey, jwkSet)
+    jwt
   }
 }

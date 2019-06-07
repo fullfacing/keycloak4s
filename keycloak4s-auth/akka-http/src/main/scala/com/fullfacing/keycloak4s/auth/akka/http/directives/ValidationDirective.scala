@@ -31,7 +31,9 @@ trait ValidationDirective {
 
   /** Runs the validation function. */
   private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[AuthPayload] = {
-    onComplete(validator.validate(token, idToken).unsafeToFuture()).flatMap {
+    val task = idToken.fold(validator.validate(token))(validator.validateParallel(token, _))
+
+    onComplete(task.unsafeToFuture()).flatMap {
       case Success(r) => handleValidationResponse(r)
       case Failure(_) => complete(HttpResponse(StatusCodes.InternalServerError, entity = "An unexpected error occurred"))
     }

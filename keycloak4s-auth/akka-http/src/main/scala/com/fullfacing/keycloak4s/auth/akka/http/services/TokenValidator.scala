@@ -3,109 +3,131 @@ package com.fullfacing.keycloak4s.auth.akka.http.services
 import java.util.{Date, UUID}
 
 import cats.data.EitherT
-import cats.effect.IO
+import cats.effect.{ContextShift, IO}
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationEx
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.core.Exceptions
+import com.fullfacing.keycloak4s.core.Exceptions.buildClaimsException
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.jose.crypto.RSASSAVerifier
-import com.nimbusds.jose.jwk.{JWK, JWKSet, RSAKey}
-import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
+import com.fullfacing.keycloak4s.core.models.enums.{TokenType, TokenTypes}
+import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.SignedJWT.parse
 
-class TokenValidator(host: String, port: String, realm: String) extends JwksCache(host, port, realm) {
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.global
 
-  def validateExp(claims: JWTClaimsSet)
+class TokenValidator(scheme: String, host: String, port: Int, realm: String)(implicit ec: ExecutionContext = global)
+  extends VerifierCache(scheme, host, port, realm)
+    with ClaimValidators {
 
   /**
-   * Validates the expiration and not-before dates of an access token (and optionally an ID token).
+   * Validates the claims set of a token, specifically the exp, nbf, iat and iss fields.
+   * Does not short-circuit, all errors are captured and ultimately converted into one exception.
    */
-  def validateClaims(aToken: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
-    val now = new Date()
+  private def validateClaims(token: SignedJWT, now: Date): Either[KeycloakException, Unit] = {
+    val claims  = token.getJWTClaimsSet
+    val uri     = s"$scheme://$host:$port/auth/realms/$realm"
 
-    def evaluate(token: SignedJWT): Either[KeycloakException, Unit] = {
-      val claims = token.getJWTClaimsSet
-      val nbf = Option(claims.getNotBeforeTime)
-      val exp = claims.getExpirationTime
+    val validationResults = List(
+      validateExp(claims, now),
+      validateNbf(claims, now),
+      validateIat(claims, now),
+      validateIss(claims, uri)
+    )
 
-      val expCond = now.compareTo(exp) < 0
-      val nbfCond = nbf.fold(true)(n => n == new Date(0) || now.compareTo(n) > 0)
-
-      if (nbfCond && expCond) ().asRight
-      else if (!nbfCond) Exceptions.NOT_YET_VALID.asLeft
-      else Exceptions.EXPIRED.asLeft
-    }
-
-    evaluate(aToken)
-      .flatMap(_ => idToken.fold(().asRight[KeycloakException])(evaluate))
+    validationResults
+      .combineAll
+      .toEither
+      .leftMap(buildClaimsException)
   }
 
   /**
-   * Checks the key set cache for valid keys, re-caches once (and only once) if invalid.
+   * Retrieves the RSA verifiers from the cache, re-caches once in case of failure.
    */
-  def checkKeySet()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = retrieveCachedValue().flatMap {
+  private def fetchVerifier()(implicit cId: UUID): IO[Either[KeycloakException, VerifierMap]] = retrieveCachedValue().flatMap {
     case r @ Right(_) => IO.pure(r)
     case Left(_)      => updateCache()
   }
 
   /**
-   * Creates an RSASSA verifier with a public RSA key matching the access token's key ID header.
-   * Re-caches the key set once (and only once) if the key was not found.
+   * Retrieves the RSA verifiers from the cache, finds a valid verifier for the token based on its keyId header,
+   * and verifies the signature with it. Reattempts once in case of failure.
    */
-  def createRsaVerifier(keyId: String, keySet: JWKSet, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, RSASSAVerifier]] = {
-    Option(keySet.getKeyByKeyId(keyId)) match {
-      case None if !reattempted => updateCache().flatMap(_ => createRsaVerifier(keyId, keySet, reattempted = true))
-      case None                 => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)
-      case Some(k: RSAKey)      => IO.pure(new RSASSAVerifier(k).asRight)
+  private def validateSignature(token: SignedJWT, verifierMap: VerifierMap, reattempted: Boolean = false)(implicit cId: UUID): IO[Either[KeycloakException, Unit]] = {
+
+    /* Refreshes the cache and recursively re-attempts validateSignature. **/
+    def reattemptValidation() = updateCache().flatMap { _ =>
+      validateSignature(token, verifierMap, reattempted = true)
+    }
+
+    verifierMap.get(token.getHeader.getKeyID) match {
+      case None if !reattempted       => reattemptValidation()
+      case None                       => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)
+      case Some(v) if token.verify(v) => IO.pure(().asRight)
+      case Some(_)                    => IO.pure(Exceptions.SIG_INVALID.asLeft)
     }
   }.handleError(ex => Exceptions.UNEXPECTED(ex.getMessage).asLeft)
 
   /**
-   * Validates the signature of an access token (and optionally an ID token) using a RSASSA verifier
-   * created with a public RSA key received from the Keycloak server.
+   * Attempts to parse a token.
    */
-  def validateSignatures(verifier: RSASSAVerifier, token: SignedJWT, idToken: Option[SignedJWT]): Either[KeycloakException, Unit] = {
-    (token, idToken) match {
-      case (a, Some(i)) =>
-        if (a.verify(verifier) && i.verify(verifier)) ().asRight else Exceptions.SIG_INVALID.asLeft
-      case (a, None) =>
-        if (a.verify(verifier)) ().asRight else Exceptions.SIG_INVALID.asLeft
-    }
+  private def parseToken(rawToken: String): IO[Either[KeycloakException, SignedJWT]] = IO {
+    parse(rawToken).asRight[KeycloakException]
+  }.handleError(_ => Exceptions.PARSE_FAILED.asLeft)
+
+  /**
+   * Parses a token and passes it through all validators.
+   */
+  private def executeValidators(rawToken: String, now: Date, tokenType: TokenType)(implicit cId: UUID): IO[Either[KeycloakException, SignedJWT]] = {
+    val transformer = for {
+      token     <- EitherT(parseToken(rawToken))
+      _         <- EitherT.fromEither[IO](validateClaims(token, now))
+      keySet    <- EitherT(fetchVerifier())
+      _         <- EitherT(validateSignature(token, keySet))
+    } yield token
+
+    transformer
+      .leftMap(logValidationEx(_, tokenType))
+      .value
+      .handleError(ex => logValidationEx(Exceptions.UNEXPECTED(ex.getMessage), tokenType).asLeft)
   }
 
   /**
-   * Attempts to parse a raw access token (and optionally a raw ID token).
+   * Parses and validates an access token.
    */
-  def parseTokens(rawAccessToken: String, rawIdToken: Option[String]): IO[Either[KeycloakException, (SignedJWT, Option[SignedJWT])]] = IO {
-    val accessToken = parse(rawAccessToken)
-    val idToken     = rawIdToken.map(parse)
-    (accessToken, idToken).asRight[KeycloakException]
-  }.handleError(_ => Exceptions.PARSE_FAILED.asLeft)
-
-
-  def validate(rawToken: String, rawIdToken: Option[String] = None): IO[Either[KeycloakException, AuthPayload]] = {
+  def validate(rawToken: String): IO[Either[KeycloakException, AuthPayload]] = {
     implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
-    (for {
-      tokens            <- EitherT(parseTokens(rawToken, rawIdToken))
-      (aToken, iToken)  = tokens
-      _                 <- EitherT.fromEither[IO](validateClaims(aToken, iToken))
-      keySet            <- EitherT(checkKeySet())
-      verifier          <- EitherT(createRsaVerifier(aToken.getHeader.getKeyID, keySet))
-      _                 <- EitherT.fromEither[IO](validateSignatures(verifier, aToken, iToken))
-    } yield {
-      Logging.tokenValidated(cId)
-      AuthPayload(accessToken = aToken.getPayload, idToken = iToken.map(_.getPayload))
-    }).leftMap(logValidationEx).value.handleError { ex =>
-      logValidationEx(Exceptions.UNEXPECTED(ex.getMessage)).asLeft
+    executeValidators(rawToken, new Date(), TokenTypes.Access)
+      .map(_.map { token =>
+        Logging.tokenValidated(cId)
+        AuthPayload(token.getPayload)
+      })
+  }
+
+  /**
+   * Parses and validates an access and ID token in parallel.
+   */
+  def validateParallel(rawAccessToken: String, rawIdToken: String): IO[Either[KeycloakException, AuthPayload]] = {
+    implicit val cId: UUID = UUID.randomUUID()
+    implicit val context: ContextShift[IO] = IO.contextShift(ec)
+    Logging.tokenValidating(cId)
+
+    val now = new Date()
+    val io1 = executeValidators(rawAccessToken, now, TokenTypes.Access)
+    val io2 = executeValidators(rawIdToken, now, TokenTypes.Id)
+
+    (io1, io2).parMapN {
+      case (Left(err), _)           => err.asLeft
+      case (_, Left(err))           => err.asLeft
+      case (Right(a), Right(i))     => Logging.tokenValidated(cId); AuthPayload(a.getPayload, i.getPayload.some).asRight
     }
   }
 }
 
 object TokenValidator {
-  def apply(host: String, port: String, realm: String) = new TokenValidator(host, port, realm)
+  def apply(scheme: String, host: String, port: Int, realm: String) = new TokenValidator(scheme, host, port, realm)
 }

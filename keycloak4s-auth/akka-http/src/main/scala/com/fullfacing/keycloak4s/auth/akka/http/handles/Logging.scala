@@ -5,6 +5,7 @@ import java.util.UUID
 import com.fullfacing.keycloak4s.core.logging.Logging._
 import com.fullfacing.keycloak4s.core.logging._
 import com.fullfacing.keycloak4s.core.models.KeycloakException
+import com.fullfacing.keycloak4s.core.models.enums.TokenType
 import org.slf4j.{Logger, LoggerFactory}
 
 object Logging {
@@ -28,13 +29,13 @@ object Logging {
     logger.logTrace(s"${cIdLog(cId)}Validating bearer token...$rs")
 
   def tokenValidated(cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Bearer token successfully validated.$rs")
+    logger.logTrace(s"${cIdLog(cId)}Bearer token(s) successfully validated.$rs")
 
-  def tokenValidationFailed(cId: => UUID, ex: Throwable): Unit =
-    logger.error(s"${cIdErr(cId)}Token validation failed.", ex)
+  def tokenValidationFailed(cId: => UUID, ex: Throwable, tokenType: TokenType): Unit =
+    logger.error(s"${cIdErr(cId)}${tokenType.value} validation failed.", ex)
 
-  def tokenValidationFailed(cId: => UUID, exMessage: String): Unit =
-    logger.error(s"${cIdErr(cId)}Token validation failed: $exMessage")
+  def tokenValidationFailed(cId: => UUID, exMessage: String, tokenType: TokenType): Unit =
+    logger.error(s"${cIdErr(cId)}${tokenType.value} validation failed - $exMessage")
 
   def resourceAuthorizing(resource: => String, cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Checking resource $gr$resource ${cy}authorization...$rs")
@@ -59,11 +60,11 @@ object Logging {
     log; exception
   }
 
-  def logValidationEx(exception: KeycloakException)(implicit cId: UUID): KeycloakException = {
-    if (exception.message.isDefined) {
-      Logging.tokenValidationFailed(cId, exception)
+  def logValidationEx(exception: KeycloakException, tokenType: TokenType)(implicit cId: UUID): KeycloakException = {
+    if (exception.details.isDefined) {
+      Logging.tokenValidationFailed(cId, exception, tokenType)
     } else {
-      Logging.tokenValidationFailed(cId, exception.message.getOrElse("An unexpected error occurred."))
+      Logging.tokenValidationFailed(cId, exception.message.getOrElse("An unexpected error occurred."), tokenType)
     }
 
     exception

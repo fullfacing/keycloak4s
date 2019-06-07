@@ -1,7 +1,5 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
-import java.util.UUID
-
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.provide
 import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.checkPermissions
