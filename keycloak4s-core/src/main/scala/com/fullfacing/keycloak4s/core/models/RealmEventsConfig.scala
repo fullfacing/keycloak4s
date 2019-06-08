@@ -10,10 +10,10 @@ final case class RealmEventsConfig(adminEventsDetailsEnabled: Boolean,
                                    eventsListeners: List[String])
 
 object RealmEventsConfig {
-  final case class Update(adminEventsDetailsEnabled: Option[Boolean],
-                          adminEventsEnabled: Option[Boolean],
-                          enabledEventTypes: List[EventType] = List.empty[EventType],
-                          eventsEnabled: Option[Boolean],
-                          eventsExpiration: Option[Long],
-                          eventsListeners: List[String] = List.empty[String])
+  final case class Update(adminEventsDetailsEnabled: Option[Boolean] = None,
+                          adminEventsEnabled: Option[Boolean] = None,
+                          enabledEventTypes: Option[List[EventType]] = None,
+                          eventsEnabled: Option[Boolean] = None,
+                          eventsExpiration: Option[Long] = None,
+                          eventsListeners: Option[List[String]] = None)
 }

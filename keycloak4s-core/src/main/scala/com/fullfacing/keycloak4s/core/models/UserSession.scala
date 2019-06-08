@@ -1,9 +1,11 @@
 package com.fullfacing.keycloak4s.core.models
 
+import java.util.UUID
+
 final case class UserSession(clients: Option[Map[String, String]],
-                             id: Option[String],
-                             ipAddress: Option[String],
-                             lastAccess: Option[String],
-                             start: Option[String],
-                             userId: Option[String],
-                             username: Option[String])
+                             id: UUID,
+                             ipAddress: String,
+                             lastAccess: String,
+                             start: String,
+                             userId: String,
+                             username: String)

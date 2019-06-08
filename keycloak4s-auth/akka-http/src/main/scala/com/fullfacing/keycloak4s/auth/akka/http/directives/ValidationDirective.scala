@@ -3,14 +3,12 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
-import com.fullfacing.keycloak4s.auth.akka.http.models.{Permissions, ResourceRoles, ValidationResult}
+import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
-import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import org.json4s.jackson.JsonMethods.parse
-import org.json4s.jackson.Serialization.write
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 trait ValidationDirective {
 
@@ -22,7 +20,7 @@ trait ValidationDirective {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken(implicit tv: TokenValidator): Directive1[Permissions] = {
+  def validateToken()(implicit tv: TokenValidator): Directive1[AuthPayload] = {
     optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
         case Some(token)  => callValidation(token.token(), idToken)
@@ -32,7 +30,7 @@ trait ValidationDirective {
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[Permissions] = {
+  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[AuthPayload] = {
     onComplete(validator.validate(token, idToken).unsafeToFuture()).flatMap {
       case Success(r) => handleValidationResponse(r)
       case Failure(_) => complete(HttpResponse(StatusCodes.InternalServerError, entity = "An unexpected error occurred"))
@@ -40,19 +38,8 @@ trait ValidationDirective {
   }
 
   /** Handles the success/failure of the token validation. */
-  private def handleValidationResponse(response: Either[KeycloakException, ValidationResult]): Directive1[Permissions] = response match {
-    case Right(r) => provide(getUserPermissions(r))
-    case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`application/json`, write(t))))
-  }
-
-  /** Gets the resource_access field from the token and parses it into the Permissions object */
-  private def getUserPermissions(result: ValidationResult): Permissions = {
-    val json = parse(result.tokenPayload.toString)
-
-    val access: Map[String, ResourceRoles] = Try {
-      (json \\ "resource_access").extract[Map[String, ResourceRoles]]
-    }.getOrElse(Map.empty)
-
-    Permissions(access, result.idToken)
+  private def handleValidationResponse(response: Either[KeycloakException, AuthPayload]): Directive1[AuthPayload] = response match {
+    case Right(r) => provide(r.copy(resourceRoles = r.accessToken.extractResources))
+    case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, t.getMessage)))
   }
 }

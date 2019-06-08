@@ -1,8 +1,11 @@
 package com.fullfacing.keycloak4s.core.models
 
-sealed trait KeycloakError extends Throwable
+trait KeycloakError extends Throwable
 
-final case class KeycloakThrowable(ex: Throwable) extends KeycloakError
+final case class KeycloakThrowable(ex: Throwable) extends KeycloakError {
+  override def getMessage: String = ex.getMessage
+  override def toString: String   = ex.toString
+}
 
 /**
  * An exception processed into an HTTP error response equivalent.
@@ -13,9 +16,13 @@ final case class KeycloakThrowable(ex: Throwable) extends KeycloakError
  */
 final case class KeycloakException(code: Int,
                                    status: String,
-                                   message: Option[String]) extends KeycloakError {
+                                   message: Option[String],
+                                   details: Option[String] = None) extends KeycloakError {
 
-  override def toString = s"$code $status${message.fold("")("- " + _)}"
+  val errMessage = s"$code $status${message.fold("")(" - " + _)}${details.fold("")(": " + _)}"
+
+  override def getMessage: String = errMessage
+  override def toString: String   = errMessage
 }
 
 /**
@@ -23,7 +30,6 @@ final case class KeycloakException(code: Int,
  *
  * @param code        The status code returned.
  * @param body        The body of the response.
- * @param status      The status text returned.
  * @param headers     The headers of the response.
  * @param requestInfo Contains information of a HTTP request.
  */
@@ -33,12 +39,15 @@ final case class KeycloakSttpException(code: Int,
                                        headers: Seq[(String, String)],
                                        requestInfo: RequestInfo) extends KeycloakError {
 
-  override def toString: String = {
-    val requestBody = requestInfo.body.fold("")(b => s"\n|Request Body: ${b.toString}")
+  val errMessage: String = {
+    val requestBody = requestInfo.body.fold("")(b => s"\n|Request Body:      ${b.toString}")
 
     s"""STTP CLIENT ERROR: $code $statusText
-       |Headers: ${headers.toMap}
-       |Body: $body
-       |Request Endpoint: ${requestInfo.protocol} ${requestInfo.path}$requestBody""".stripMargin
+       |Headers:           ${headers.toMap}
+       |Body:              $body
+       |Request Endpoint:  ${requestInfo.protocol} ${requestInfo.path}$requestBody""".stripMargin
   }
+
+  override def getMessage: String = s"\n$errMessage"
+  override def toString: String   = errMessage
 }

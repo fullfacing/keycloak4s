@@ -1,19 +1,10 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import com.fullfacing.keycloak4s.core.models.KeysMetadata
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import java.nio.ByteBuffer
+
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.services
 import monix.eval.Task
+import monix.reactive.Observable
 
-import scala.collection.immutable.Seq
-
-class Keys(implicit client: KeycloakClient) {
-
-  /**
-   *
-   */
-  def getRealmKeys(): Task[Either[KeycloakError, KeysMetadata]] = {
-    val path = Seq(client.realm, "keys")
-    client.get[KeysMetadata](path)
-  }
-}
+class Keys(implicit client: KeycloakClient) extends services.Keys[Task, Observable[ByteBuffer]]

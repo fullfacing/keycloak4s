@@ -15,7 +15,7 @@ import org.json4s.jackson.Serialization.read
 
 import scala.collection.immutable.Seq
 import scala.reflect._
-import scala.reflect.runtime.universe.{TypeTag, typeTag}
+import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.util.control.NonFatal
 
 class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S]) extends TokenManager[F, S](config) {
@@ -42,7 +42,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
     val response = request.mapResponse { raw =>
       Logging.requestSuccessful(raw, cId)
-      read[A](if (tag == typeTag[Unit]) "null" else raw)
+      read[A](if (tag.tpe =:= typeOf[Unit]) "null" else raw)
     }
 
     withAuth(response)

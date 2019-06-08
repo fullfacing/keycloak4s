@@ -20,12 +20,11 @@ object Role {
                           description: Option[String] = None,
                           name: String)
 
+  /** Testing revealed name must be included in the update body */
   final case class Update(attributes: Option[Map[String, Seq[String]]] = None,
-                          clientRole: Option[Boolean] = None,
-                          composite: Option[Boolean] = None,
-                          composites: Option[RoleComposites] = None,
                           containerId: Option[String] = None,
-                          description: Option[String] = None)
+                          description: Option[String] = None,
+                          name: String)
 
   final case class Mapping(id: Option[UUID] = None,
                            name: Option[String] = None)
