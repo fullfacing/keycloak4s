@@ -2,6 +2,42 @@ package com.fullfacing.keycloak4s.auth.akka.http.models
 
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
 
+/**
+ * Security configuration for a top level authorisation directive.
+ *
+ * Example usages:
+ * {
+ *  "path": "*",
+ *  "roles": [
+ *    {
+ *      "method": "*",
+ *      "roles": [["admin"]]
+ *    }
+ *  ]
+ * }
+ *
+ * {
+ *  "path": "v1/resource1/resource2",
+ *  "roles": [
+ *   {
+ *      "method": "*",
+ *      "roles": [["admin"]]
+ *    },
+ *    {
+ *      "method": "GET",
+ *      "roles": [["resource1-read", "resource1-write"], ["resource2-read", "resource2-write"]]
+ *    },
+ *    {
+ *      "method": "POST",
+ *      "roles": [["resource1-write"], ["resource2-write"]]
+ *    }
+ *  ]
+ * }
+ *
+ * @param service         Name of the server being secured.
+ * @param enforcementMode Determines how requests with no matching sec policy are handled.
+ * @param paths           The configured policies.
+ */
 class PathConfiguration(val service: String,
                         val enforcementMode: PolicyEnforcementMode,
                         val paths: List[PathRoles]) {

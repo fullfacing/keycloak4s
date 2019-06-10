@@ -4,7 +4,7 @@ import com.fullfacing.keycloak4s.core.models.enums.Method
 
 /**
  * Object containing roles required for access to the parent class' resource using the specified method.
- * A user will need at least one role from each inner list to be granted access.
+ * A user will need at least one role from each inner list of configured roles to be granted access.
  * E.g
  * roles = [ ["resource1-read", "resource1-write"], ["resource2-read", "resource2-write"] ]
  * would translate to (("resource1-read" || "resource1-write") && ("resource2-read", "resource2-write"))

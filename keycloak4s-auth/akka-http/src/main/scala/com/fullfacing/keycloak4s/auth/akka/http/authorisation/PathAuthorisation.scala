@@ -7,7 +7,7 @@ import com.fullfacing.keycloak4s.core.models.enums.Methods
 
 import scala.annotation.tailrec
 
-object PathAuthorisation extends Authorisation[PathConfiguration] {
+object PathAuthorisation {
 
   /** Runs through the request path and collects all rules that apply to the request. */
   @tailrec
@@ -24,6 +24,15 @@ object PathAuthorisation extends Authorisation[PathConfiguration] {
   }
 
 
+  /**
+   * Compares the request path to the server's security policy to determine which permissions are required
+   * by the user and accepts or denies the request accordingly.
+   *
+   * @param path      The path of the HTTP request.
+   * @param method    The HTTP method of the request.
+   * @param config    The security configuration of the server.
+   * @param userRoles The permissions of the user.
+   */
   def authoriseRequest(path: Path, method: HttpMethod, config: PathConfiguration, userRoles: List[String]): Boolean = {
     val matchedPaths = findMatchingPaths(Utilities.extractResourcesFromPath(path), config.paths)
 

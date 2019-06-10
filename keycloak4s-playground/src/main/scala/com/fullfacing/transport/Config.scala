@@ -40,14 +40,10 @@ object Config {
       path = "clients/accounts",
       roles = List(PathMethodRoles(Methods.Get, List(List("client-view", "client-write", "client-delete"), List("account-view", "account-write", "account-delete"))))
     )
-    import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-    import org.json4s.jackson.Serialization.write
 
-    val top = PathConfiguration(
+    PathConfiguration(
       service = "api-client",
       paths = List(admin, client, cAccounts)
     )
-    println(write(top))
-    top
   }
 }

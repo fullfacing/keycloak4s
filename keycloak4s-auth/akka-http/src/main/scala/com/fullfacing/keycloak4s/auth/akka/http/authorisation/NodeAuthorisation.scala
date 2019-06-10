@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.auth.akka.http.models._
 
 import scala.annotation.tailrec
 
-object NodeAuthorisation extends Authorisation[NodeConfiguration] {
+object NodeAuthorisation {
 
   /**
    * Compares the request path to the server's security policy to determine which permissions are required
