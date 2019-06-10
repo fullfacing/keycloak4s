@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.admin.tests
+package utils
 
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services._

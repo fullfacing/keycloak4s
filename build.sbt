@@ -167,7 +167,7 @@ lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ scalaMeter
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(global: _*)
   .settings(libraryDependencies ++= playgroundDependencies)
-  .settings(name := "keycloak4s-playground", publishArtifact := false)
+  .settings(name := "keycloak4s-playground", publishArtifact := true)
   .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
 
 // ---------------------------------------------- //
@@ -180,5 +180,6 @@ lazy val root = (project in file("."))
     `keycloak4s-core`,
     `keycloak4s-admin`,
     `keycloak4s-monix`,
-    `keycloak4s-akka-http`
+    `keycloak4s-akka-http`,
+    `keycloak4s-playground`
   )
