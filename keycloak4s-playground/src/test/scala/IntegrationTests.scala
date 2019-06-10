@@ -7,5 +7,6 @@ class IntegrationTests extends Sequential(
   new RealmsTests,
   new RolesTests,
   new RolesByIdTests,
+  new ScopeMappingsTests,
   new UsersTests
 )
