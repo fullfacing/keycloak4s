@@ -11,5 +11,6 @@ object Errors {
   val NO_SESSIONS_FOUND: KeycloakError  = KeycloakThrowable(new Throwable("No Sessions found."))
   val NO_TOKENS_FOUND: KeycloakError    = KeycloakThrowable(new Throwable("No Tokens found."))
   val NO_USERS_FOUND: KeycloakError     = KeycloakThrowable(new Throwable("No Users found."))
+  val ROLE_NOT_FOUND: KeycloakError     = KeycloakThrowable(new Throwable("Role not found."))
   val USER_NOT_FOUND: KeycloakError     = KeycloakThrowable(new Throwable("User not found."))
 }

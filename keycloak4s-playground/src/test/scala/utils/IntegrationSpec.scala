@@ -29,6 +29,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   val realmService: RealmsAdmin         = Keycloak.RealmsAdmin
   val rolesByIdService: RolesById       = Keycloak.RolesById
   val roleService: Roles                = Keycloak.Roles
+  val scopeMapService: ScopeMappings    = Keycloak.ScopeMappings
   val userService: Users                = Keycloak.Users
 
   /* Sub-Services **/

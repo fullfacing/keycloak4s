@@ -7,5 +7,6 @@ class SequentialExecutor extends Sequential(
   new RealmsTests,
   new RolesTests,
   new RolesByIdTests,
+  new ScopeMappingsTests,
   new UsersTests
 )
