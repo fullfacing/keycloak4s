@@ -7,6 +7,14 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.16.0]
+## Added
+- TokenValidator now has a validateParallel function that parses and validates an access and ID token asynchronously.
+- Leeway for the exp, iat and nbf fields can now be specified in the TokenValidator constructor.
+### Changed
+- TokenValidator's validate function now only accepts one token.
+- TokenValidator's constructor now requires the URI scheme to be specified. 
+
 ## [0.15.0]
 ### Added
 - Added a json security security structure that is used to configure security for a server.
