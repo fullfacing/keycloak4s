@@ -1,8 +1,8 @@
-package com.fullfacing.keycloak4s.admin.tests
+package utils
 
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, KeycloakThrowable}
 
-private[tests] object Errors {
+object Errors {
   val CLIENT_NOT_FOUND: KeycloakError   = KeycloakThrowable(new Throwable("Client not found."))
   val SCOPE_NOT_FOUND: KeycloakError    = KeycloakThrowable(new Throwable("Client-Scope not found."))
   val GROUP_NOT_FOUND: KeycloakError    = KeycloakThrowable(new Throwable("Group not found."))

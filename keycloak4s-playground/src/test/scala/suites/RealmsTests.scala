@@ -1,14 +1,14 @@
-package com.fullfacing.keycloak4s.admin.tests.suites
+package suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.EventTypes
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
+import utils.{Errors, IntegrationSpec}
 
 @DoNotDiscover
 class RealmsTests extends IntegrationSpec {
