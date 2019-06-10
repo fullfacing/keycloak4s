@@ -180,5 +180,6 @@ lazy val root = (project in file("."))
     `keycloak4s-core`,
     `keycloak4s-admin`,
     `keycloak4s-monix`,
-    `keycloak4s-akka-http`
+    `keycloak4s-akka-http`,
+    `keycloak4s-playground`
   )

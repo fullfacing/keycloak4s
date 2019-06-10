@@ -1,11 +1,11 @@
-package com.fullfacing.keycloak4s.admin.tests.suites
+package suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.tests.{Errors, IntegrationSpec}
+import utils.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
 import monix.eval.Task

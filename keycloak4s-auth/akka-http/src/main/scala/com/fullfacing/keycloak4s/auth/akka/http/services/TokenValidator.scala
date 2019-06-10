@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.services
 
-import java.util.{Date, UUID}
+import java.time.Instant
+import java.util.UUID
 
 import cats.data.EitherT
 import cats.effect.{ContextShift, IO}
@@ -18,7 +19,20 @@ import com.nimbusds.jwt.SignedJWT.parse
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.global
 
-class TokenValidator(scheme: String, host: String, port: Int, realm: String)(implicit ec: ExecutionContext = global)
+/**
+ * A bearer token validator capable of parsing and validating either one token or two in parallel.
+ * Includes functionality to retrieve the JWKS from the Keycloak server, with caching to avoid unnecessary server calls.
+ * Requires URI details of the Keycloak server for both the JWKS retrieval and for ISS checking.
+ *
+ * @param scheme  The scheme of the Keycloak server's URI.
+ * @param host    The host of the Keycloak server's URI.
+ * @param port    The port of the Keycloak server's URI.
+ * @param realm   The Keycloak Realm the token has access to.
+ * @param leeway  Amount of seconds the expiration, not-before and issues-at times are allowed to vary, sometimes required
+ *                if significant network lag is expected. Use with caution.
+ * @param ec      The execution context to be used for parallel token validation. Defaults to the global context.
+ */
+class TokenValidator(scheme: String, host: String, port: Int, realm: String, leeway: Long = 0l)(implicit ec: ExecutionContext = global)
   extends VerifierCache(scheme, host, port, realm)
     with ClaimValidators {
 
@@ -26,14 +40,14 @@ class TokenValidator(scheme: String, host: String, port: Int, realm: String)(imp
    * Validates the claims set of a token, specifically the exp, nbf, iat and iss fields.
    * Does not short-circuit, all errors are captured and ultimately converted into one exception.
    */
-  private def validateClaims(token: SignedJWT, now: Date): Either[KeycloakException, Unit] = {
+  private def validateClaims(token: SignedJWT, now: Instant): Either[KeycloakException, Unit] = {
     val claims  = token.getJWTClaimsSet
     val uri     = s"$scheme://$host:$port/auth/realms/$realm"
 
     val validationResults = List(
-      validateExp(claims, now),
-      validateNbf(claims, now),
-      validateIat(claims, now),
+      validateExp(claims, now, leeway),
+      validateNbf(claims, now, leeway),
+      validateIat(claims, now, leeway),
       validateIss(claims, uri)
     )
 
@@ -80,7 +94,7 @@ class TokenValidator(scheme: String, host: String, port: Int, realm: String)(imp
   /**
    * Parses a token and passes it through all validators.
    */
-  private def executeValidators(rawToken: String, now: Date, tokenType: TokenType)(implicit cId: UUID): IO[Either[KeycloakException, SignedJWT]] = {
+  private def executeValidators(rawToken: String, now: Instant, tokenType: TokenType)(implicit cId: UUID): IO[Either[KeycloakException, SignedJWT]] = {
     val transformer = for {
       token     <- EitherT(parseToken(rawToken))
       _         <- EitherT.fromEither[IO](validateClaims(token, now))
@@ -101,7 +115,7 @@ class TokenValidator(scheme: String, host: String, port: Int, realm: String)(imp
     implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
-    executeValidators(rawToken, new Date(), TokenTypes.Access)
+    executeValidators(rawToken, Instant.now(), TokenTypes.Access)
       .map(_.map { token =>
         Logging.tokenValidated(cId)
         AuthPayload(token.getPayload)
@@ -116,7 +130,7 @@ class TokenValidator(scheme: String, host: String, port: Int, realm: String)(imp
     implicit val context: ContextShift[IO] = IO.contextShift(ec)
     Logging.tokenValidating(cId)
 
-    val now = new Date()
+    val now = Instant.now()
     val io1 = executeValidators(rawAccessToken, now, TokenTypes.Access)
     val io2 = executeValidators(rawIdToken, now, TokenTypes.Id)
 

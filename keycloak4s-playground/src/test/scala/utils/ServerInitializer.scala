@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.admin.tests
+package utils
 
 import java.util.UUID
 
