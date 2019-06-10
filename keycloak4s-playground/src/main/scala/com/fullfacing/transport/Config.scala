@@ -1,7 +1,6 @@
 package com.fullfacing.transport
 
-import com.fullfacing.keycloak4s.auth.akka.http.models.{NodeConfiguration, PathConfiguration, PathMethodRoles, PathRoles}
-import com.fullfacing.keycloak4s.core.models.enums.Methods
+import com.fullfacing.keycloak4s.auth.akka.http.models.{NodeConfiguration, PathConfiguration}
 
 import scala.io.Source
 
@@ -15,35 +14,14 @@ object Config {
   val apiSecurityConfig: NodeConfiguration = NodeConfiguration(config)
 
   val clientsApiConfig: NodeConfiguration = {
-    val a = getClass.getResource("/clients_config.json")
+    val a = getClass.getResource("/clients_configA.json")
     val b = Source.fromFile(a.getPath)
     NodeConfiguration(b.mkString.stripMargin)
   }
 
   val pathClientsConfig: PathConfiguration = {
-    val client = PathRoles.Create(
-      path = "clients",
-      roles = List(
-        PathMethodRoles(Methods.Get, List(List("client-view", "client-write", "client-delete"))),
-        PathMethodRoles(Methods.Post, List(List("client-write", "client-delete"))),
-        PathMethodRoles(Methods.Patch, List(List("client-write", "client-delete"))),
-        PathMethodRoles(Methods.Delete, List(List("client-delete"))),
-      )
-    )
-
-    val admin = PathRoles.Create(
-      path = "*",
-      roles = List(PathMethodRoles(Methods.All, List(List("admin"))))
-    )
-
-    val cAccounts = PathRoles.Create(
-      path = "clients/accounts",
-      roles = List(PathMethodRoles(Methods.Get, List(List("client-view", "client-write", "client-delete"), List("account-view", "account-write", "account-delete"))))
-    )
-
-    PathConfiguration(
-      service = "api-client",
-      paths = List(admin, client, cAccounts)
-    )
+    val a = getClass.getResource("/clients_configB.json")
+    val b = Source.fromFile(a.getPath)
+    PathConfiguration(b.mkString.stripMargin)
   }
 }

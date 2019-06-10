@@ -13,7 +13,6 @@ object PathRoles {
 
   /**
    * Alternative constructor that reads the path as a string, and converts it to the needed format.
-   *
    * {
    *    path = "segment1/segment2/segment3",
    *    roles = [...]

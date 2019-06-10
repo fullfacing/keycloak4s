@@ -14,13 +14,13 @@ object PathAuthorisation {
   private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRoles], d: Int = 0, acc: List[PathRoles] = List.empty): List[PathRoles] = reqPath match {
     case Nil    => acc ++ cfgPaths.filter(_.path.drop(d).isEmpty)
     case h :: t =>
-      val wildcard = cfgPaths.find(_.path.drop(d).headOption.contains("*")).toList
+      val wildcard = acc ++ cfgPaths.find(_.path.drop(d).headOption.contains("*")).toList
 
       val matched  = cfgPaths.filter { cfgPath =>
         cfgPath.path.drop(d).headOption.contains(h)
       }
 
-      if (matched.nonEmpty) findMatchingPaths(t, matched, d + 1, acc ++ wildcard) else acc ++ wildcard
+      if (matched.nonEmpty) findMatchingPaths(t, matched, d + 1, wildcard) else wildcard
   }
 
 

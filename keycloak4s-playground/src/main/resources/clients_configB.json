@@ -1,0 +1,80 @@
+{
+  "service": "api-client",
+  "enforcementMode": "ENFORCING",
+  "paths": [
+    {
+      "path": "*",
+      "roles": [
+        {
+          "method": "*",
+          "roles": [
+            [
+              "admin"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "clients",
+      "roles": [
+        {
+          "method": "GET",
+          "roles": [
+            [
+              "client-view",
+              "client-write",
+              "client-delete"
+            ]
+          ]
+        },
+        {
+          "method": "POST",
+          "roles": [
+            [
+              "client-write",
+              "client-delete"
+            ]
+          ]
+        },
+        {
+          "method": "PATCH",
+          "roles": [
+            [
+              "client-write",
+              "client-delete"
+            ]
+          ]
+        },
+        {
+          "method": "DELETE",
+          "roles": [
+            [
+              "client-delete"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "clients/accounts",
+      "roles": [
+        {
+          "method": "GET",
+          "roles": [
+            [
+              "client-view",
+              "client-write",
+              "client-delete"
+            ],
+            [
+              "account-view",
+              "account-write",
+              "account-delete"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

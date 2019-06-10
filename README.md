@@ -7,10 +7,6 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.16.0]
-### Added
-- Created a simplified policy configuration structure that uses simple a path instead of a path broken into a tree structure.
-
 ## [0.15.0]
 ### Added
 - Added a json security security structure that is used to configure security for a server.
