@@ -7,6 +7,12 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.16.0]
+### Added
+- Added a new policy config structure that uses full paths to define rules instead of rules of nodes for each segment of the request path.
+### Removed
+- Removed the initial authorisation directives in favour of the policy configuration based authorisation.
+
 ## [0.15.0]
 ### Added
 - Added a json security security structure that is used to configure security for a server.
