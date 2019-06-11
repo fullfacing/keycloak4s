@@ -3,6 +3,7 @@ import org.scalatest.Sequential
 
 class SequentialExecutor extends Sequential(
   new ClientsTests,
+  new ComponentsTests,
   new GroupsTests,
   new RealmsTests,
   new RolesTests,
