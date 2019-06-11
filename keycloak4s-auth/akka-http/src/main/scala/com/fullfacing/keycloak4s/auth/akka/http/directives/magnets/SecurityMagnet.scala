@@ -2,7 +2,6 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
 import akka.http.scaladsl.server.Directive0
 import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
 import com.fullfacing.keycloak4s.auth.akka.http.models.{NodeConfiguration, PathConfiguration}
 import com.fullfacing.keycloak4s.auth.akka.http.authorisation.PathAuthorisation

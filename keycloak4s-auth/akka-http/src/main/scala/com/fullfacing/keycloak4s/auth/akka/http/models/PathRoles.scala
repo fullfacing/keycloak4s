@@ -8,8 +8,14 @@ case class PathRoles(path: List[String],
                      roles: List[PathMethodRoles])
 
 object PathRoles {
+  import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+  import org.json4s.jackson.Serialization.read
+
   case class Create(path: String,
                     roles: List[PathMethodRoles])
+
+
+  def apply(pathRoles: Create): PathRoles = new PathRoles(pathRoles.path.split("/").toList, pathRoles.roles)
 
   /**
    * Alternative constructor that reads the path as a string, and converts it to the needed format.
@@ -18,11 +24,7 @@ object PathRoles {
    *    roles = [...]
    * }
    */
-  def apply(pathRoles: Create): PathRoles = new PathRoles(pathRoles.path.split("/").toList, pathRoles.roles)
-
   def apply(config: String): PathRoles = {
-    import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-    import org.json4s.jackson.Serialization.read
     apply(read[Create](config))
   }
 }

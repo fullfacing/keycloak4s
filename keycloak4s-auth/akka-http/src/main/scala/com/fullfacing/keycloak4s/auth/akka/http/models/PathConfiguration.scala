@@ -55,6 +55,8 @@ class PathConfiguration(val service: String,
 }
 
 object PathConfiguration {
+  import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+  import org.json4s.jackson.Serialization.read
 
   case class Create(service: String,
                     enforcementMode: PolicyEnforcementMode,
@@ -64,8 +66,6 @@ object PathConfiguration {
     new PathConfiguration(config.service, config.enforcementMode, config.paths.map(PathRoles(_)))
 
   def apply(config: String): PathConfiguration = {
-    import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-    import org.json4s.jackson.Serialization.read
     apply(read[Create](config))
   }
 }
