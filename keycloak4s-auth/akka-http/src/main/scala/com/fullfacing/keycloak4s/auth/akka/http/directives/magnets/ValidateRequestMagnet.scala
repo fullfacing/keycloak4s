@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.provide
 import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives.checkPermissions
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
-import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, ResourceRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 
 trait ValidateRequestMagnet {
@@ -28,9 +28,9 @@ object ValidateRequestMagnet {
    * @return                Permissions specific to given resource server.
    */
   def authoriseResourceServerAccess(permissions: AuthPayload, resourceServer: String): Directive1[AuthPayload] = {
-    val f = { r: ResourceRoles =>
+    val f = { r: AuthRoles =>
       val rr = r.roles.map(_.split("-")).groupBy(_.headOption).collect { case (Some(k), v) =>
-        k -> ResourceRoles(v.flatMap(_.lastOption))
+        k -> AuthRoles(v.flatMap(_.lastOption))
       }
       permissions.copy(resourceRoles = rr)
     }

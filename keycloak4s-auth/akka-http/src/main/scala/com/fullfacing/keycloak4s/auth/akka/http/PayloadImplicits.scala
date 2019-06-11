@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.auth.akka.http
 
-import com.fullfacing.keycloak4s.auth.akka.http.models.ResourceRoles
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthRoles
 import com.nimbusds.jose.Payload
 
 import scala.util.Try
@@ -35,7 +35,7 @@ object PayloadImplicits {
     def extractUsername: Option[String] =
       safeExtract(payload, "preferred_username")
 
-    def extractResources: Map[String, ResourceRoles] =
-      extractAs[Map[String, ResourceRoles]]("resource_access").getOrElse(Map.empty[String, ResourceRoles])
+    def extractResources: Map[String, AuthRoles] =
+      extractAs[Map[String, AuthRoles]]("resource_access").getOrElse(Map.empty[String, AuthRoles])
   }
 }

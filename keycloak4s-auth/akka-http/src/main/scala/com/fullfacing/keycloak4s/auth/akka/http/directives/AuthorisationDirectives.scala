@@ -5,8 +5,9 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.util.Tuple._
+import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.magnets.{AuthoriseResourceMagnet, PathPrefixWithAuthMagnet, PathWithAuthMagnet, WithAuthMagnet}
-import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, ResourceRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats._
 import org.json4s.jackson.Serialization.write
@@ -17,12 +18,12 @@ trait AuthorisationDirectives {
    * HTTP methods with checks to ensure the user has the permission to perform the attempted
    * operation on the already authorised resource
    */
-  def getA(p: ResourceRoles): Directive0    = get.tflatMap(_ => authoriseMethod(p))
-  def putA(p: ResourceRoles): Directive0    = put.tflatMap(_ => authoriseMethod(p))
-  def headA(p: ResourceRoles): Directive0   = head.tflatMap(_ => authoriseMethod(p))
-  def postA(p: ResourceRoles): Directive0   = post.tflatMap(_ => authoriseMethod(p))
-  def patchA(p: ResourceRoles): Directive0  = patch.tflatMap(_ => authoriseMethod(p))
-  def deleteA(p: ResourceRoles): Directive0 = delete.tflatMap(_ => authoriseMethod(p))
+  def getA(p: AuthRoles): Directive0    = get.tflatMap(_ => authoriseMethod(p))
+  def putA(p: AuthRoles): Directive0    = put.tflatMap(_ => authoriseMethod(p))
+  def headA(p: AuthRoles): Directive0   = head.tflatMap(_ => authoriseMethod(p))
+  def postA(p: AuthRoles): Directive0   = post.tflatMap(_ => authoriseMethod(p))
+  def patchA(p: AuthRoles): Directive0  = patch.tflatMap(_ => authoriseMethod(p))
+  def deleteA(p: AuthRoles): Directive0 = delete.tflatMap(_ => authoriseMethod(p))
 
   /** Authorises both the resource and operation */
   def withAuth(magnet: WithAuthMagnet): magnet.Result = magnet()
@@ -35,7 +36,7 @@ trait AuthorisationDirectives {
   def authoriseResource(magnet: AuthoriseResourceMagnet): magnet.Result = magnet()
 
   /** Authorises the operation based on the HTTP method and the authorised roles the user has on the resource */
-  def authoriseMethod(resource: ResourceRoles): Directive0 = {
+  def authoriseMethod(resource: AuthRoles): Directive0 = {
     extractMethod.flatMap { method =>
       authorize {
         resource.roles.intersect(AuthorisationDirectives.scopeMap(method)).nonEmpty
@@ -76,8 +77,8 @@ object AuthorisationDirectives {
    * @param success      A directive to create if the user has access to the resource.
    * @return             The resulting directive from the auth result and the function provided.
    */
-  def checkPermissions[A](resource: String, permissions: AuthPayload, success: ResourceRoles => Directive[A]): Directive[A] = {
-    permissions.resourceRoles.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
+  def checkPermissions[A](resource: String, permissions: AuthPayload, success: AuthRoles => Directive[A]): Directive[A] = {
+    permissions.accessToken.extractResources.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
       case Some((_, v)) => success(v)
       case None         => authorisationFailed()
     }
