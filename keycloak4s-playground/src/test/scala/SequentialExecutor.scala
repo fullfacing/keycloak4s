@@ -5,6 +5,7 @@ class SequentialExecutor extends Sequential(
   new ClientsTests,
   new ComponentsTests,
   new GroupsTests,
+  new ProtocolMapperTests,
   new RealmsTests,
   new RolesTests,
   new RolesByIdTests,

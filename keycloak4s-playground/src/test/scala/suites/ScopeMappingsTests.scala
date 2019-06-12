@@ -239,7 +239,7 @@ class ScopeMappingsTests extends IntegrationSpec {
         _ <- EitherT(realmRoleService.remove(rRole2Name))
         _ <- EitherT(clientRoleService.remove(clientUuid.get(), cRole1Name))
         _ <- EitherT(clientRoleService.remove(clientUuid.get(), cRole2Name))
-        r <- EitherT(clientService.remove(clientUuid.get()))
+        r <- EitherT(clientService.delete(clientUuid.get()))
       } yield r
 
     task.value.shouldReturnSuccess
