@@ -1,6 +1,6 @@
 package com.fullfacing.transport
 
-import com.fullfacing.keycloak4s.auth.akka.http.models.{NodeConfiguration, PathConfiguration}
+import com.fullfacing.keycloak4s.auth.akka.http.authorisation.{NodeAuthorisation, PathAuthorisation}
 
 import scala.io.Source
 
@@ -11,17 +11,17 @@ object Config {
     val b = Source.fromFile(a.getPath)
     b.mkString.stripMargin
   }
-  val apiSecurityConfig: NodeConfiguration = NodeConfiguration(config)
+  val apiSecurityConfig: NodeAuthorisation = NodeAuthorisation(config)
 
-  val clientsApiConfig: NodeConfiguration = {
+  val clientsApiConfig: NodeAuthorisation = {
     val a = getClass.getResource("/clients_configA.json")
     val b = Source.fromFile(a.getPath)
-    NodeConfiguration(b.mkString.stripMargin)
+    NodeAuthorisation(b.mkString.stripMargin)
   }
 
-  val pathClientsConfig: PathConfiguration = {
+  val pathClientsConfig: PathAuthorisation = {
     val a = getClass.getResource("/clients_configB.json")
     val b = Source.fromFile(a.getPath)
-    PathConfiguration(b.mkString.stripMargin)
+    PathAuthorisation(b.mkString.stripMargin)
   }
 }

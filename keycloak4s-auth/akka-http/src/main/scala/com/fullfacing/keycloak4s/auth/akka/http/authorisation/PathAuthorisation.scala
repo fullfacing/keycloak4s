@@ -2,12 +2,50 @@ package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.auth.akka.http.models.{PathConfiguration, PathRoles}
-import com.fullfacing.keycloak4s.core.models.enums.Methods
+import com.fullfacing.keycloak4s.auth.akka.http.models.PathRoles
+import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 
 import scala.annotation.tailrec
 
-object PathAuthorisation {
+/**
+ * Security configuration for a top level authorisation directive.
+ *
+ * Example usages:
+ * {
+ *  "path": "*",
+ *  "roles": [
+ *    {
+ *      "method": "*",
+ *      "roles": [["admin"]]
+ *    }
+ *  ]
+ * }
+ *
+ * {
+ *  "path": "v1/resource1/resource2",
+ *  "roles": [
+ *   {
+ *      "method": "*",
+ *      "roles": [["admin"]]
+ *    },
+ *    {
+ *      "method": "GET",
+ *      "roles": [["resource1-read", "resource1-write"], ["resource2-read", "resource2-write"]]
+ *    },
+ *    {
+ *      "method": "POST",
+ *      "roles": [["resource1-write"], ["resource2-write"]]
+ *    }
+ *  ]
+ * }
+ *
+ * @param service         Name of the server being secured.
+ * @param enforcementMode Determines how requests with no matching sec policy are handled.
+ * @param paths           The configured policies.
+ */
+class PathAuthorisation(val service: String,
+                        val enforcementMode: PolicyEnforcementMode,
+                        val paths: List[PathRoles]) extends Authorisation {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -42,11 +80,10 @@ object PathAuthorisation {
    *
    * @param path      The path of the HTTP request.
    * @param method    The HTTP method of the request.
-   * @param config    The security configuration of the server.
    * @param userRoles The permissions of the user.
    */
-  def authoriseRequest(path: Path, method: HttpMethod, config: PathConfiguration, userRoles: List[String]): Boolean = {
-    val matchedPaths = findMatchingPaths(Utilities.extractResourcesFromPath(path), config.paths)
+  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String]): Boolean = {
+    val matchedPaths = findMatchingPaths(extractResourcesFromPath(path), paths)
 
     matchedPaths.exists { p =>
 
@@ -55,11 +92,28 @@ object PathAuthorisation {
         .exists(_.evaluateUserAccess(userRoles))
 
       val hasMethodRole = p.roles.find(_.method.value == method.value) match {
-        case None    => config.noMatchingPolicy()
+        case None    => noMatchingPolicy()
         case Some(r) => r.evaluateUserAccess(userRoles)
       }
 
       hasMethodRole || hasWildCardRole
     }
+  }
+}
+
+
+object PathAuthorisation {
+  import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+  import org.json4s.jackson.Serialization.read
+
+  case class Create(service: String,
+                    enforcementMode: PolicyEnforcementMode,
+                    paths: List[PathRoles.Create])
+
+  def apply(config: Create): PathAuthorisation =
+    new PathAuthorisation(config.service, config.enforcementMode, config.paths.map(PathRoles(_)))
+
+  def apply(config: String): PathAuthorisation = {
+    apply(read[Create](config))
   }
 }
