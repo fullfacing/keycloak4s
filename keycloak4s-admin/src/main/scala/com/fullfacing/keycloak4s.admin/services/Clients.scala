@@ -74,7 +74,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * @param id  ID of client (not client-id).
    * @return
    */
-  def remove(id: UUID): R[Either[KeycloakError, Unit]] = {
+  def delete(id: UUID): R[Either[KeycloakError, Unit]] = {
     val path: Path = Seq(client.realm, "clients", id)
     client.delete[Unit](path)
   }
