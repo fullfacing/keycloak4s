@@ -23,7 +23,7 @@ object Exceptions {
 
   def buildClaimsException(exceptions: NonEmptyList[KeycloakException]): KeycloakException = {
     val exceptionMessages = exceptions.toList.flatMap(_.message)
-    val message = s"Claims set could not be validated due to:\n - ${exceptionMessages.mkString("\n - ")}"
+    val message = s"Claims set could not be validated due to the following reasons:\n - ${exceptionMessages.mkString("\n - ")}"
 
     KeycloakException(401, "Unauthorized", message.some)
   }

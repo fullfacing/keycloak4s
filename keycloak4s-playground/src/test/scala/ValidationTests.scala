@@ -1,30 +1,31 @@
 import java.time.Instant
-import java.util.{Date, UUID}
+import java.util.Date
 
 import cats.data.NonEmptyList
 import cats.data.Validated.{invalidNel, valid}
-import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.services.{ClaimValidators, TokenValidator}
 import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models.KeycloakException
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.nimbusds.jose.JWSSigner
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
-import com.nimbusds.jwt.SignedJWT
 import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 import utils.TestDataGenerator
 
 class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester with ClaimValidators {
 
-  val scheme  = "http"
-  val host    = "localhost"
-  val port    = 8080
-  val realm   = "test"
+  val scheme = "http"
+  val host = "localhost"
+  val port = 8080
+  val realm = "test"
 
-  val validator     = TokenValidator(scheme, host, port, realm)
-  val validatorUri  = s"$scheme://$host:$port/auth/realms/$realm"
+  val authConfig = KeycloakConfig.Auth("", "", "")
+  val config = KeycloakConfig(scheme, host, port, realm, authConfig)
+
+  val validator = TokenValidator(TestDataGenerator.jwkSet, config)
+  val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"
 
   "validateExp" should "successfully validate an unexpired token" in {
     val now = Instant.now()
@@ -32,7 +33,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp)
 
-    validateExp(token.getJWTClaimsSet, now, 0l) shouldBe valid(())
+    validateExp(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
 
   it should "fail to validate an expired token" in {
@@ -41,7 +42,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp)
 
-    validateExp(token.getJWTClaimsSet, now, 0l) shouldBe invalidNel(Exceptions.EXPIRED)
+    validateExp(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.EXPIRED)
   }
 
   "validateNbf" should "successfully validate a token used after its not-before date" in {
@@ -51,7 +52,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp, withNbf = Some(nbf))
 
-    validateNbf(token.getJWTClaimsSet, now, 0l) shouldBe valid(())
+    validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
 
   it should "fail to validate a token used before its not-before date" in {
@@ -61,7 +62,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp, withNbf = Some(nbf))
 
-    validateNbf(token.getJWTClaimsSet, now, 0l) shouldBe invalidNel(Exceptions.NOT_YET_VALID)
+    validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.NOT_YET_VALID)
   }
 
   it should "successfully validate a token with a not-before date set to the epoch" in {
@@ -71,7 +72,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp, withNbf = Some(nbf))
 
-    validateNbf(token.getJWTClaimsSet, now, 0l) shouldBe valid(())
+    validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
 
   it should "successfully validate a token without a not-before date" in {
@@ -80,7 +81,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp)
 
-    validateNbf(token.getJWTClaimsSet, now, 0l) shouldBe valid(())
+    validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
 
   "validateIat" should "successfully validate a token used after its issued at date" in {
@@ -90,7 +91,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp, withIat = iat.some)
 
-    validateIat(token.getJWTClaimsSet, now, 0l) shouldBe valid(())
+    validateIat(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
 
   it should "fail to validate a token used before its issued at date" in {
@@ -100,7 +101,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp, withIat = iat.some)
 
-    validateIat(token.getJWTClaimsSet, now, 0l) shouldBe invalidNel(Exceptions.IAT_INCORRECT)
+    validateIat(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.IAT_INCORRECT)
   }
 
   it should "fail to validate a token without an issued at date" in {
@@ -109,7 +110,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp)
 
-    validateIat(token.getJWTClaimsSet, now, 0l) shouldBe invalidNel(Exceptions.IAT_MISSING)
+    validateIat(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.IAT_MISSING)
   }
 
   "validateIss" should "successfully validate a token with an issuer that matches the validator's web address details" in {
@@ -138,7 +139,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     validateIss(token.getJWTClaimsSet, validatorUri) shouldBe invalidNel(Exceptions.ISS_MISSING)
   }
 
-  "validateClaims" should "successfully validate a token if all claims are correct" in {
+  "validate" should "successfully validate a token if the signature and all claims pass" in {
     val now = Instant.now()
     val exp = now.plusSeconds(60)
     val nbf = now.minusSeconds(60)
@@ -147,9 +148,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val token = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
 
-    val validateClaims = PrivateMethod[Either[KeycloakException, Unit]]('validateClaims)
-
-    validator invokePrivate validateClaims(token, now) shouldBe Right(())
+    validator.validate(token.serialize()).unsafeRunSync() shouldBe a[Right[_, _]]
   }
 
   it should "fail to validate a token if any of the claims are incorrect" in {
@@ -167,51 +166,27 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val ex2 = Exceptions.buildClaimsException(NonEmptyList(Exceptions.NOT_YET_VALID, Exceptions.IAT_INCORRECT :: Nil))
     val ex3 = Exceptions.buildClaimsException(NonEmptyList(Exceptions.EXPIRED, Nil))
 
-    val validateClaims = PrivateMethod[Either[KeycloakException, Unit]]('validateClaims)
-
-    validator invokePrivate validateClaims(token1, now) shouldBe Left(ex1)
-    validator invokePrivate validateClaims(token2, now) shouldBe Left(ex2)
-    validator invokePrivate validateClaims(token3, now) shouldBe Left(ex3)
-  }
-
-  "parseToken" should "successfully parse a valid token" in {
-    val rawToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-
-    val parseToken = PrivateMethod[IO[Either[KeycloakException, SignedJWT]]]('parseToken)
-
-    (validator invokePrivate parseToken(rawToken)).unsafeRunSync() shouldBe a [Right[_,_]]
+    validator.validate(token1.serialize()).unsafeRunSync() shouldBe Left(ex1)
+    validator.validate(token2.serialize()).unsafeRunSync() shouldBe Left(ex2)
+    validator.validate(token3.serialize()).unsafeRunSync() shouldBe Left(ex3)
   }
 
   it should "fail to parse a malformed token" in {
     val rawToken = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-    val parseToken = PrivateMethod[IO[Either[KeycloakException, SignedJWT]]]('parseToken)
-
-    (validator invokePrivate parseToken(rawToken)).unsafeRunSync() shouldBe Left(Exceptions.PARSE_FAILED)
+    validator.validate(rawToken).unsafeRunSync() shouldBe Left(Exceptions.PARSE_FAILED)
   }
 
-  "validateSignature" should "successfully validate a token with a valid signature" in {
-    val token = TestDataGenerator.createToken(Instant.now())
+  it should "fail to validate a token if there is no public key in the cache matching the token's keyId header" in {
+    val now = Instant.now()
+    val exp = now.plusSeconds(60)
+    val nbf = now.minusSeconds(60)
+    val iat = now.minusSeconds(60)
+    val iss = "http://localhost:8080/auth/realms/test"
 
-    val verifier = TestDataGenerator.verifierMap1
-    val correlationId   = UUID.randomUUID()
+    val token = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
 
-    val validateSignature = PrivateMethod[IO[Either[KeycloakException, Unit]]]('validateSignature)
-
-    (validator invokePrivate validateSignature(token, verifier, true, correlationId))
-      .unsafeRunSync() shouldBe Right(())
-  }
-
-  it should "fail to validate a token if there is no verifier with its public key ID" in {
-    val token = TestDataGenerator.createToken(Instant.now())
-
-    val verifier = TestDataGenerator.verifierMap2
-    val correlationId = UUID.randomUUID()
-
-    val validateSignature = PrivateMethod[IO[Either[KeycloakException, Unit]]]('validateSignature)
-
-    (validator invokePrivate validateSignature(token, verifier, true, correlationId))
-      .unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
+    validator.validate(token.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
   }
 
   it should "fail to validate a token with an invalid signature" in {
@@ -221,15 +196,67 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
     val signer: JWSSigner = new RSASSASigner(rsaJwk)
 
-    val token = TestDataGenerator.createToken(Instant.now(), signerOverride = signer.some)
+    val now = Instant.now()
+    val exp = now.plusSeconds(60)
+    val nbf = now.minusSeconds(60)
+    val iat = now.minusSeconds(60)
+    val iss = "http://localhost:8080/auth/realms/test"
 
-    val verifier = TestDataGenerator.verifierMap1
-    val correlationId = UUID.randomUUID()
+    val token = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, signerOverride = signer.some)
 
-    val validateSignature = PrivateMethod[IO[Either[KeycloakException, Unit]]]('validateSignature)
+    validator.validate(token.serialize()).unsafeRunSync() shouldBe Left(Exceptions.SIG_INVALID)
+  }
 
-    (validator invokePrivate validateSignature(token, verifier, true, correlationId))
-      .unsafeRunSync() shouldBe Left(Exceptions.SIG_INVALID)
+  "validateParallel" should "successfully parse and validate two valid tokens" in {
+    val now = Instant.now()
+    val exp = now.plusSeconds(60)
+    val nbf = now.minusSeconds(60)
+    val iat = now.minusSeconds(60)
+    val iss = "http://localhost:8080/auth/realms/test"
+
+    val token1 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token2 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+
+    validator.validateParallel(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe a[Right[_, _]]
+  }
+
+  it should "fail if the first token is invalid" in {
+    val now = Instant.now()
+    val exp = now.plusSeconds(60)
+    val nbf = now.minusSeconds(60)
+    val iat = now.minusSeconds(60)
+    val iss = "http://localhost:8080/auth/realms/test"
+
+    val token1 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token2 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+
+    validator.validateParallel(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
+  }
+
+  it should "fail if the second token is invalid" in {
+    val now = Instant.now()
+    val exp = now.plusSeconds(60)
+    val nbf = now.minusSeconds(60)
+    val iat = now.minusSeconds(60)
+    val iss = "http://localhost:8080/auth/realms/test"
+
+    val token1 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token2 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+
+    validator.validateParallel(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
+  }
+
+  it should "fail if both tokens are invalid" in {
+    val now = Instant.now()
+    val exp = now.plusSeconds(60)
+    val nbf = now.minusSeconds(60)
+    val iat = now.minusSeconds(60)
+    val iss = "http://localhost:8080/auth/realms/test"
+
+    val token1 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token2 = TestDataGenerator.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+
+    validator.validateParallel(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
   }
 }
 

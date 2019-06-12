@@ -16,21 +16,22 @@ import monix.execution.Scheduler.Implicits.global
 import org.json4s.jackson.Serialization.writePretty
 
 object Main extends TaskApp {
+
+  /**
+   * Config details of the Keycloak server to allow for Admin API calls.
+   * Replace with applicable details.
+   */
+  val host: String        = "localhost"
+  val port: Int           = 8080
+  val targetRealm: String = "master" //Name of a Realm whose data will be accessed/manipulated.
+  val adminRealm: String  = "master" //Name of a Realm with admin rights that can access/manipulate targetRealm.
+  val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
+  val adminSecret: String = "???" //Secret of adminClient.
+
+  val authConfig  = KeycloakConfig.Auth(adminRealm, adminClient, adminSecret)
+  val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)
+
   def run(args: List[String]): Task[ExitCode] = Akka.connect().flatMap { _ =>
-
-    /**
-     * Config details of the Keycloak server to allow for Admin API calls.
-     * Replace with applicable details.
-     */
-    val host: String        = "localhost"
-    val port: Int           = 8080
-    val targetRealm: String = "master" //Name of a Realm whose data will be accessed/manipulated.
-    val adminRealm: String  = "master" //Name of a Realm with admin rights that can access/manipulate targetRealm.
-    val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
-    val adminSecret: String = "???" //Secret of adminClient.
-
-    val authConfig  = KeycloakConfig.Auth(adminRealm, adminClient, adminSecret)
-    val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)
 
     /* KeycloakClient for Admin API calls. Uses any valid SttpBackend and can be modified for any Cats-Effect Concurrent-compatible monad. **/
     val genericClient: KeycloakClient[Task, Source[ByteString, Any]] = {

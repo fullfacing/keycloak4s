@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.{Date, UUID}
 
 import com.nimbusds.jose._
-import com.nimbusds.jose.crypto.{RSASSASigner, RSASSAVerifier}
+import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jose.util.JSONObjectUtils
@@ -25,18 +25,11 @@ object TestDataGenerator {
 
   val signer: JWSSigner = new RSASSASigner(rsaJwk)
 
-  val header: JWSHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
-    .keyID(rsaJwk.getKeyID)
-    .build()
-
-  val verifierMap1: Map[String, RSASSAVerifier] = Map("12345" -> new RSASSAVerifier(TestDataGenerator.publicKey))
-
-  val verifierMap2: Map[String, RSASSAVerifier] = Map("67890" -> new RSASSAVerifier(TestDataGenerator.publicKey))
-
   def createToken(withExp: Instant,
                   withIat: Option[Instant] = None,
                   withNbf: Option[Instant] = None,
                   withIss: Option[String] = None,
+                  keyIdOverride: Option[String] = None,
                   signerOverride: Option[JWSSigner] = None): SignedJWT = {
 
     val claimsSetBuilder = new JWTClaimsSet.Builder()
@@ -56,6 +49,10 @@ object TestDataGenerator {
     }
 
     val claimsSet = addNbf.andThen(addIat).andThen(addIss)(claimsSetBuilder).build()
+
+    val header: JWSHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
+      .keyID(keyIdOverride.getOrElse(rsaJwk.getKeyID))
+      .build()
 
     val jwt: SignedJWT = new SignedJWT(header, claimsSet)
 
