@@ -23,6 +23,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   implicit val client: KeycloakClient     = new KeycloakClient(keycloakConfig)
 
   /* Keycloak Services **/
+  val attackDetService: AttackDetection   = Keycloak.AttackDetection
   val clientService: Clients              = Keycloak.Clients
   val componentService: Components        = Keycloak.Components
   val groupService: Groups                = Keycloak.Groups
