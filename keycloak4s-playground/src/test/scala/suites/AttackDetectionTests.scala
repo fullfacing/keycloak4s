@@ -26,7 +26,8 @@ class AttackDetectionTests extends IntegrationSpec {
     realm = realm,
     id    = realm,
     enabled = Some(true),
-    bruteForceProtected = Some(true)
+    bruteForceProtected = Some(true),
+    failureFactor = Some(3)
   )
 
   val clientCreate = Client.Create(clientId = "AttackClient")
@@ -101,12 +102,28 @@ class AttackDetectionTests extends IntegrationSpec {
     task.value.shouldReturnSuccess
   }
 
+  it should "enable users that have been disabled due to too many login failures" in {
+    val task =
+      for {
+        _ <- EitherT.right(invalidLogin)
+        _ <- EitherT.right(invalidLogin)
+        _ <- EitherT.right(invalidLogin)
+        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        _ <- EitherT(attackDetService.clearAllLoginFailures(realm))
+        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+      } yield {
+        b.numFailures > 0 shouldBe true
+        b.disabled        shouldBe true
+        a.numFailures     shouldBe 0
+        a.disabled        shouldBe false
+      }
 
+    task.value.shouldReturnSuccess
+  }
 
   "clearUserLoginFailure" should "reset all login failures by the given user" in {
     val task =
       for {
-        _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
         b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
         _ <- EitherT(attackDetService.clearUserLoginFailure(realm, tUser.get.id))
@@ -114,6 +131,25 @@ class AttackDetectionTests extends IntegrationSpec {
       } yield {
         b.numFailures > 0 shouldBe true
         a.numFailures     shouldBe 0
+      }
+
+    task.value.shouldReturnSuccess
+  }
+
+  it should "enable the given user that has been disabled due to too many login failures" in {
+    val task =
+      for {
+        _ <- EitherT.right(invalidLogin)
+        _ <- EitherT.right(invalidLogin)
+        _ <- EitherT.right(invalidLogin)
+        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        _ <- EitherT(attackDetService.clearUserLoginFailure(realm, tUser.get.id))
+        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+      } yield {
+        b.numFailures > 0 shouldBe true
+        b.disabled        shouldBe true
+        a.numFailures     shouldBe 0
+        a.disabled        shouldBe false
       }
 
     task.value.shouldReturnSuccess
