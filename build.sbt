@@ -36,8 +36,6 @@ val scalacOpts = Seq(
 addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
 addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.0")
 
-coverageExcludedPackages := "com\\.fullfacing\\.transport\\.*"
-
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 // ---------------------------------- //
@@ -112,11 +110,9 @@ val sttpMonix: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp" %% "json4s"                          % sttpVersion
 )
 
-testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
-
-logBuffered := false
-
 parallelExecution in Test := false
+
+coverageExcludedPackages := ".*transport.*"
 
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
@@ -169,7 +165,7 @@ lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ scalaMeter
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(global: _*)
   .settings(libraryDependencies ++= playgroundDependencies)
-  .settings(name := "keycloak4s-playground", publishArtifact := true)
+  .settings(name := "keycloak4s-playground", publishArtifact := false)
   .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
 
 // ---------------------------------------------- //
