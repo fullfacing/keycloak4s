@@ -36,7 +36,7 @@ val scalacOpts = Seq(
 addCompilerPlugin("org.spire-math" %% "kind-projector"     % "0.9.9")
 addCompilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.0")
 
-coverageExcludedPackages := "<empty>;com.fullfacing.transport.*"
+coverageExcludedPackages := "com\\.fullfacing\\.transport\\.*"
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
