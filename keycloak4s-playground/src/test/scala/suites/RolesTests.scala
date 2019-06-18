@@ -394,7 +394,7 @@ class RolesTests extends IntegrationSpec {
   "Delete Ancillary Objects" should "remove all the ancillary objects created for testing Roles" in {
     val task =
       for {
-        _ <- clientService.remove(clientUuid.get())
+        _ <- clientService.delete(clientUuid.get())
         _ <- userService.delete(user1.get())
         _ <- userService.delete(user2.get())
         _ <- groupService.delete(group1.get())

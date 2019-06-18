@@ -19,9 +19,12 @@ object ProtocolMapper {
                           protocolMapper: String,
                           consentRequired: Boolean)
 
-  final case class Update(config: Option[Map[String, String]] = None,
-                          name: Option[String] = None,
-                          protocol: Option[Protocol] = None,
-                          protocolMapper: Option[String] = None,
-                          consentRequired: Option[Boolean] = None)
+  /**
+   * NB: Based on testing, only the properties in the config field can be changed.
+   * The rest of this object should populated with its existing values.
+   */
+  final case class Update(id: UUID,
+                          config: Option[Map[String, String]] = None,
+                          protocol: Protocol,
+                          protocolMapper: String)
 }
