@@ -23,15 +23,16 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   implicit val client: KeycloakClient     = new KeycloakClient(keycloakConfig)
 
   /* Keycloak Services **/
-  val clientService: Clients            = Keycloak.Clients
-  val componentService: Components      = Keycloak.Components
-  val groupService: Groups              = Keycloak.Groups
-  val idProvService: IdentityProviders  = Keycloak.IdentityProviders
-  val realmService: RealmsAdmin         = Keycloak.RealmsAdmin
-  val rolesByIdService: RolesById       = Keycloak.RolesById
-  val roleService: Roles                = Keycloak.Roles
-  val scopeMapService: ScopeMappings    = Keycloak.ScopeMappings
-  val userService: Users                = Keycloak.Users
+  val authMgmt: AuthenticationManagement  = Keycloak.AuthenticationManagement
+  val clientService: Clients              = Keycloak.Clients
+  val componentService: Components        = Keycloak.Components
+  val groupService: Groups                = Keycloak.Groups
+  val idProvService: IdentityProviders    = Keycloak.IdentityProviders
+  val realmService: RealmsAdmin           = Keycloak.RealmsAdmin
+  val rolesByIdService: RolesById         = Keycloak.RolesById
+  val roleService: Roles                  = Keycloak.Roles
+  val scopeMapService: ScopeMappings      = Keycloak.ScopeMappings
+  val userService: Users                  = Keycloak.Users
 
   /* Sub-Services **/
   val clientRoleService: roleService.ClientLevel.type = roleService.ClientLevel

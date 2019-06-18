@@ -2,15 +2,17 @@ package com.fullfacing.keycloak4s.core.models
 
 import java.util.UUID
 
+import com.fullfacing.keycloak4s.core.models.enums.Requirement
+
 final case class AuthenticationExecutionInfo(alias: Option[String],
                                              authenticationConfig: Option[String],
                                              authenticationFlow: Option[Boolean],
-                                             configurable: Option[Boolean],
-                                             displayName: Option[String],
+                                             configurable: Boolean,
+                                             displayName: String,
                                              flowId: Option[String],
-                                             id: Option[UUID],
-                                             index: Option[Int],
-                                             level: Option[Int],
-                                             providerId: Option[Int],
-                                             requirement: Option[String],
-                                             requirementChoices: Option[List[String]])
+                                             id: UUID,
+                                             index: Int,
+                                             level: Int,
+                                             providerId: Option[String],
+                                             requirement: Requirement,
+                                             requirementChoices: List[Requirement])
