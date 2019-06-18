@@ -7,6 +7,12 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.16.0]
+### Added
+- Added new models and enumerators for Keycloak services.
+### Changed
+- Fixed multiple small issues encountered during integration testing.
+
 ## [0.15.0]
 ### Added
 - Added a json security security structure that is used to configure security for a server.
