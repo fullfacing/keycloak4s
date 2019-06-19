@@ -21,7 +21,10 @@ object SecurityMagnet {
         authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
           extractUnmatchedPath.flatMap { path =>
             extractMethod.flatMap { method =>
+              val t1 = System.nanoTime()
               val isAuthorised = securityConfig.authoriseRequest(path, method, userRoles)
+              val t2 = System.nanoTime()
+              println(t2 - t1)
               if (isAuthorised) pass else authorisationFailed()
             }
           }
