@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
+import java.util.UUID
+
 import akka.http.scaladsl.server.Directive0
 import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass}
 import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation
@@ -14,11 +16,13 @@ trait SecurityMagnet {
 object SecurityMagnet {
 
   implicit def authorise(securityConfig: Authorisation)(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
-    validateToken().flatMap { p =>
+    implicit val correlationId: UUID = UUID.randomUUID()
+
+    validateToken().flatMap { authPayload =>
       if (securityConfig.policyDisabled()) {
         pass
       } else {
-        authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
+        authoriseResourceServerAccess(authPayload, securityConfig.service).flatMap { userRoles =>
           extractUnmatchedPath.flatMap { path =>
             extractMethod.flatMap { method =>
               val isAuthorised = securityConfig.authoriseRequest(path, method, userRoles)

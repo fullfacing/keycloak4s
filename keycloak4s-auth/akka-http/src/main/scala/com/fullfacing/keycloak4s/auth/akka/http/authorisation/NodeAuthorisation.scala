@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.AuthResource
@@ -28,7 +30,7 @@ case class NodeAuthorisation(service: String,
    * @param method    The HTTP method of the request.
    * @param userRoles The permissions of the user.
    */
-  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String]): Boolean = {
+  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
     @tailrec
     def loop(path: List[String], node: Node): Boolean = path match {
       case Nil    => true

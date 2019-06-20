@@ -1,5 +1,5 @@
 import java.time.Instant
-import java.util.Date
+import java.util.{Date, UUID}
 
 import cats.data.NonEmptyList
 import cats.data.Validated.{invalidNel, valid}
@@ -26,6 +26,8 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
 
   val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, config)
   val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"
+
+  implicit val cId: UUID = UUID.randomUUID()
 
   "validateExp" should "successfully validate an unexpired token" in {
     val now = Instant.now()

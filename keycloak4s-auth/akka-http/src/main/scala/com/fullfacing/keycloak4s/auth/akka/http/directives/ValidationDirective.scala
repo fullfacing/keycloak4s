@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
@@ -19,7 +21,7 @@ trait ValidationDirective {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken()(implicit tv: TokenValidator): Directive1[AuthPayload] = {
+  def validateToken()(implicit tv: TokenValidator, cId: UUID): Directive1[AuthPayload] = {
     optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
         case Some(token)  => callValidation(token.token(), idToken)
@@ -29,7 +31,7 @@ trait ValidationDirective {
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[AuthPayload] = {
+  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator, cId: UUID): Directive1[AuthPayload] = {
     val task = idToken.fold(validator.process(token))(validator.parProcess(token, _))
 
     onComplete(task.unsafeToFuture()).flatMap {
