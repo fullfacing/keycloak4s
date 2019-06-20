@@ -1,9 +1,12 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.akka.http.models.node
 
 import akka.http.scaladsl.model.HttpMethod
-import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.PolicyEnforcement
+import com.fullfacing.keycloak4s.auth.akka.http.models.{Evaluation, Result}
+import com.fullfacing.keycloak4s.core.models.enums.PolicyEnforcementMode
 
-trait Node {
+trait Node extends PolicyEnforcement {
+
   val nodes: List[ResourceNode]
   val enforcementMode: PolicyEnforcementMode
 
@@ -19,17 +22,6 @@ trait Node {
 
       hasWildcardRole || hasMethodRole
     }
-  }
-
-  /** Determines what to do when there is no matching policy for the request */
-  def noMatchingPolicy(): Boolean = enforcementMode match {
-    case PolicyEnforcementModes.Enforcing  => false
-    case PolicyEnforcementModes.Permissive => true
-    case PolicyEnforcementModes.Disabled   => true
-  }
-
-  def policyDisabled(): Boolean = {
-    enforcementMode == PolicyEnforcementModes.Disabled
   }
 
   /**

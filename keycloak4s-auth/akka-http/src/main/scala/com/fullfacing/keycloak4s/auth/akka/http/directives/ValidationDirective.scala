@@ -3,7 +3,6 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
-import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
@@ -41,7 +40,7 @@ trait ValidationDirective {
 
   /** Handles the success/failure of the token validation. */
   private def handleValidationResponse(response: Either[KeycloakException, AuthPayload]): Directive1[AuthPayload] = response match {
-    case Right(r) => provide(r.copy(resourceRoles = r.accessToken.extractResourceAccess))
+    case Right(r) => provide(r)
     case Left(t)  => complete(HttpResponse(status = t.code, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, t.getMessage)))
   }
 }

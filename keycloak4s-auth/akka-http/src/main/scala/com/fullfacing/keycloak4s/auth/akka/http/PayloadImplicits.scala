@@ -1,11 +1,11 @@
 package com.fullfacing.keycloak4s.auth.akka.http
 
-import com.fullfacing.keycloak4s.auth.akka.http.models.ResourceRoles
+import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthRoles, ResourceRoles}
 import com.nimbusds.jose.Payload
-
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthRoles
 
 /**
  * Provides helper functions to safely extract values from any Payload object.
@@ -56,14 +56,14 @@ object PayloadImplicits {
 
     /* Access Control Extractors. **/
 
-    def extractResourceAccess: Map[String, ResourceRoles] =
-      extractAs[Map[String, ResourceRoles]]("resource_access").getOrElse(Map.empty[String, ResourceRoles])
+    def extractResourceAccess: Map[String, AuthRoles] =
+      extractAs[Map[String, AuthRoles]]("resource_access").getOrElse(Map.empty[String, AuthRoles])
 
     def extractResourceRoles(resource: String): List[String] =
       extractResourceAccess.get(resource).fold(List.empty[String])(_.roles)
 
-    def extractRealmAccess: Option[ResourceRoles] =
-      extractAs[ResourceRoles]("realm_access")
+    def extractRealmAccess: Option[AuthRoles] =
+      extractAs[AuthRoles]("realm_access")
 
     def extractRealmRoles: List[String] =
       extractRealmAccess.fold(List.empty[String])(_.roles)
