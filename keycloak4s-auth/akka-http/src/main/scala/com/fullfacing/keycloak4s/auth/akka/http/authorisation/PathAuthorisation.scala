@@ -2,8 +2,8 @@ package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthResource, MethodRoles}
 import com.fullfacing.keycloak4s.auth.akka.http.models.path.{PathMethodRoles, PathRoles}
 

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.handles
+package com.fullfacing.keycloak4s.auth.akka.http
 
 import java.util.UUID
 
