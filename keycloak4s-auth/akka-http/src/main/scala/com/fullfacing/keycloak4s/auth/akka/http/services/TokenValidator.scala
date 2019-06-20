@@ -22,19 +22,19 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.global
 
 /**
- * A bearer token validator capable of parsing and validating tokens.
- * Requires JwksStaticCache or JwksDynamicCache (or a custom JwksCache) to be mixed in.
+ * A bearer token validator capable of parsing and validating serialized JSON web tokens.
+ * Requires JwksStaticCache, JwksDynamicCache, or a custom implementation of the JwksCache to be mixed in for signature validation.
  *
- * JwksStaticCache allows a JWK set to be defined. It does not require connection to the Keycloak server,
- * however the JWK set cannot be modified during runtime.
+ * JwksDynamicCache retrieves the JWK set from the Keycloak server and caches it. It requires a connection to the Keycloak
+ * server, but can dynamically re-retrieve the JWK set if it does not contain a public key required by a token.
  *
- * JwksDynamicCache retrieves and caches the JWK set from the Keycloak server. It requires a connection to the Keycloak
- * server, but can dynamically refresh the JWK set if it does not contain a public key required by a token.
+ * JwksStaticCache allows for a predefined JWK set. It does not require connection to the Keycloak server, however
+ * the JWK set cannot be modified during runtime.
  *
  * @param keycloakConfig  A Keycloak configuration containing the Keycloak server details.
- * @param ec              The execution context to be used for parallel token validation. Defaults to the global context.
+ * @param ec              The execution context to be used for parallel token validation.
  */
-abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: ExecutionContext = global)
+abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: ExecutionContext)
   extends JwksCache with ClaimValidators {
 
   /**
@@ -73,8 +73,8 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
     def verify(rsaKey: RSAKey): Boolean = token.verify(new RSASSAVerifier(rsaKey))
 
     Option(jwks.getKeyByKeyId(token.getHeader.getKeyID)) match {
-      case None if !reattempted         => reattemptValidation()                            //No matching public key found in cache. Attempt recache.
-      case None                         => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)  //No matching public key found after recache.
+      case None if !reattempted         => reattemptValidation()                            //No matching public key found in cache. Attempt re-cache.
+      case None                         => IO.pure(Exceptions.PUBLIC_KEY_NOT_FOUND.asLeft)  //No matching public key found after re-cache.
       case Some(k: RSAKey) if verify(k) => IO.pure(().asRight)                              //Public key found, signal verification passed.
       case Some(_)                      => IO.pure(Exceptions.SIG_INVALID.asLeft)           //Public key found, signal verification failed.
     }
@@ -90,15 +90,14 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
   /**
    * Parses a token and passes it through all validators.
    */
-  private def executeValidators(rawToken: String, now: Date, tokenType: TokenType)(implicit cId: UUID): IO[Either[KeycloakException, SignedJWT]] = {
-    val transformer = for {
+  private def validate(rawToken: String, now: Date, tokenType: TokenType, keySet: JWKSet)(implicit cId: UUID): IO[Either[KeycloakException, SignedJWT]] = {
+    val validationResult = for {
       token     <- EitherT(parseToken(rawToken))
       _         <- EitherT.fromEither[IO](validateClaims(token, now))
-      keySet    <- EitherT(getCachedValue())
       _         <- EitherT(validateSignature(token, keySet))
     } yield token
 
-    transformer
+    validationResult
       .leftMap(logValidationEx(_, tokenType))
       .value
       .handleError(ex => logValidationEx(Exceptions.UNEXPECTED(ex.getMessage), tokenType).asLeft)
@@ -107,47 +106,58 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
   /**
    * Parses and validates an access token.
    */
-  def validate(rawToken: String): IO[Either[KeycloakException, AuthPayload]] = {
+  def process(rawToken: String): IO[Either[KeycloakException, AuthPayload]] = {
     implicit val cId: UUID = UUID.randomUUID()
     Logging.tokenValidating(cId)
 
-    executeValidators(rawToken, new Date(), TokenTypes.Access)
-      .map(_.map { token =>
-        Logging.tokenValidated(cId)
-        AuthPayload(token.getPayload)
-      })
-  }
+    for {
+      keySet  <- EitherT(getCachedValue())
+      token   <- EitherT(validate(rawToken, new Date(), TokenTypes.Access, keySet))
+    } yield {
+      Logging.tokenValidated(cId)
+      AuthPayload(token.getPayload)
+    }
+  }.value
 
   /**
    * Parses and validates an access and ID token in parallel.
    */
-  def validateParallel(rawAccessToken: String, rawIdToken: String): IO[Either[KeycloakException, AuthPayload]] = {
+  def parProcess(rawAccessToken: String, rawIdToken: String): IO[Either[KeycloakException, AuthPayload]] = {
     implicit val cId: UUID = UUID.randomUUID()
     implicit val context: ContextShift[IO] = IO.contextShift(ec)
     Logging.tokenValidating(cId)
 
     val now = new Date()
-    val io1 = executeValidators(rawAccessToken, now, TokenTypes.Access)
-    val io2 = executeValidators(rawIdToken, now, TokenTypes.Id)
 
-    (io1, io2).parMapN {
-      case (Left(err), _)           => err.asLeft
-      case (_, Left(err))           => err.asLeft
-      case (Right(a), Right(i))     => Logging.tokenValidated(cId); AuthPayload(a.getPayload, i.getPayload.some).asRight
+    EitherT(getCachedValue()).flatMapF { keySet =>
+      val io1 = validate(rawAccessToken, now, TokenTypes.Access, keySet)
+      val io2 = validate(rawIdToken, now, TokenTypes.Id, keySet)
+
+      (io1, io2).parMapN {
+        case (Left(err), _)       => err.asLeft
+        case (_, Left(err))       => err.asLeft
+        case (Right(a), Right(i)) => Logging.tokenValidated(cId); AuthPayload(a.getPayload, i.getPayload.some).asRight
+      }
     }
-  }
+  }.value
 }
 
 object TokenValidator {
+
   /* TokenValidator instantiable with a static cache. **/
-  class Static(val jwks: JWKSet, val config: KeycloakConfig) extends TokenValidator(config) with JwksStaticCache
+  class Static(val jwks: JWKSet, val config: KeycloakConfig)(implicit ec: ExecutionContext = global)
+    extends TokenValidator(config) with JwksStaticCache
 
   /* TokenValidator instantiable with a dynamic cache. **/
-  class Dynamic(val config: KeycloakConfig) extends TokenValidator(config) with JwksDynamicCache
+  class Dynamic(val config: KeycloakConfig)(implicit ec: ExecutionContext = global)
+    extends TokenValidator(config) with JwksDynamicCache
 
-  /* Apply for TokenValidator.Static **/
-  def apply(jwks: JWKSet, config: KeycloakConfig) = new Static(jwks, config)
+  /* Applies for Static and Dynamic. **/
+  object Static {
+    def apply(jwks: JWKSet, config: KeycloakConfig)(implicit ec: ExecutionContext = global) = new Static(jwks, config)
+  }
 
-  /* Apply for TokenValidator.Dynamic **/
-  def apply(config: KeycloakConfig) = new Dynamic(config)
+  object Dynamic {
+    def apply(config: KeycloakConfig)(implicit ec: ExecutionContext = global) = new Dynamic(config)
+  }
 }

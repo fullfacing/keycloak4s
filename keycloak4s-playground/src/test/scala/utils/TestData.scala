@@ -11,7 +11,7 @@ import com.nimbusds.jose.util.JSONObjectUtils
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
 import net.minidev.json.JSONObject
 
-object TestDataGenerator {
+object TestData {
 
   val rsaJwk: RSAKey = new RSAKeyGenerator(2048)
     .keyID("12345")

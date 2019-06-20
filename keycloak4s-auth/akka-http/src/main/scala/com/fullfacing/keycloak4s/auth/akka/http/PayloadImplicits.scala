@@ -3,21 +3,20 @@ package com.fullfacing.keycloak4s.auth.akka.http
 import com.fullfacing.keycloak4s.auth.akka.http.models.ResourceRoles
 import com.nimbusds.jose.Payload
 
-import scala.util.Try
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
 
 /**
  * Provides helper functions to safely extract values from any Payload object.
- * Note: Any json4s parsing is *not* executed safely and will throw an exception in case of failure.
+ * Note: Only JSON extraction is executed safely, deserialization is not safe and can throw exceptions.
  */
 object PayloadImplicits {
 
   /* A safe extraction method to extract any field's value from a Payload. **/
-  private def safeExtract(payload: Payload, key: String): Option[String] = Try {
+  private def safeExtract(payload: Payload, key: String): Option[String] = Option {
     payload.toJSONObject.getAsString(key)
-  }.toOption
+  }
 
   implicit class PayloadImpl(payload: Payload) {
 

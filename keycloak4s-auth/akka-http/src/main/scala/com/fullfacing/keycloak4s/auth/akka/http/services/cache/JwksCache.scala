@@ -19,5 +19,5 @@ trait JwksCache {
   protected def getCachedValue()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]]
 
   /* If possible forces the cache to re-retrieve the JWK set. Otherwise does nothing. **/
-  protected def attemptRecache()(implicit cId: UUID): IO[Unit] = IO.unit
+  protected def attemptRecache()(implicit cId: UUID): IO[Unit]
 }

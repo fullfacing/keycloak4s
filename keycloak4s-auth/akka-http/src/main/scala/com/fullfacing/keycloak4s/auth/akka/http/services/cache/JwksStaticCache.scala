@@ -12,7 +12,9 @@ trait JwksStaticCache extends JwksCache {
 
   protected def jwks: JWKSet
 
+  protected val ref = new AtomicReference[Either[KeycloakException, JWKSet]](jwks.asRight[KeycloakException])
+
   protected def getCachedValue()(implicit cId: UUID): IO[Either[KeycloakException, JWKSet]] = IO(ref.get())
 
-  protected val ref = new AtomicReference[Either[KeycloakException, JWKSet]](jwks.asRight[KeycloakException])
+  protected def attemptRecache()(implicit ciD: UUID): IO[Unit] = IO.unit
 }

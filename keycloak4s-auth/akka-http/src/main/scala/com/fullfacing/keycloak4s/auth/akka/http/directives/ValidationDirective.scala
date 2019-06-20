@@ -31,7 +31,7 @@ trait ValidationDirective {
 
   /** Runs the validation function. */
   private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator): Directive1[AuthPayload] = {
-    val task = idToken.fold(validator.validate(token))(validator.validateParallel(token, _))
+    val task = idToken.fold(validator.process(token))(validator.parProcess(token, _))
 
     onComplete(task.unsafeToFuture()).flatMap {
       case Success(r) => handleValidationResponse(r)
