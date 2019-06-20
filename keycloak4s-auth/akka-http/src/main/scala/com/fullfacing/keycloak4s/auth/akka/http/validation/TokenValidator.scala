@@ -106,8 +106,7 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
   /**
    * Parses and validates an access token.
    */
-  def process(rawToken: String): IO[Either[KeycloakException, AuthPayload]] = {
-    implicit val cId: UUID = UUID.randomUUID()
+  def process(rawToken: String)(implicit cId: UUID): IO[Either[KeycloakException, AuthPayload]] = {
     Logging.tokenValidating(cId)
 
     for {
@@ -122,8 +121,7 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
   /**
    * Parses and validates an access and ID token in parallel.
    */
-  def parProcess(rawAccessToken: String, rawIdToken: String): IO[Either[KeycloakException, AuthPayload]] = {
-    implicit val cId: UUID = UUID.randomUUID()
+  def parProcess(rawAccessToken: String, rawIdToken: String)(implicit cId: UUID): IO[Either[KeycloakException, AuthPayload]] = {
     implicit val context: ContextShift[IO] = IO.contextShift(ec)
     Logging.tokenValidating(cId)
 

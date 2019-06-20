@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethod, HttpResponse}
 import akka.http.scaladsl.server.Directives.{complete, provide}
@@ -28,7 +30,7 @@ trait Authorisation extends PolicyEnforcement {
     else extractResourcesFromPath(path.tail, acc)
   }
 
-  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String]): Boolean
+  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean
 }
 
 object Authorisation {
