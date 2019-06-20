@@ -7,7 +7,8 @@ import akka.http.scaladsl.server.StandardRoute.toDirective
 import akka.http.scaladsl.server.util.Tuple.yes
 import akka.http.scaladsl.server.{Directive, Directive1, StandardRoute}
 import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
-import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, AuthRoles, PolicyEnforcement}
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.PolicyEnforcement
+import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
 
 import scala.annotation.tailrec
@@ -18,8 +19,6 @@ trait Authorisation extends PolicyEnforcement {
   val service: String
   private val validUuid: Regex = """[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}""".r
 
-  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String]): Boolean
-
   @tailrec
   final def extractResourcesFromPath(path: Path, acc: List[String] = List.empty[String]): List[String] = {
     lazy val isResource = path.startsWithSegment && validUuid.unapplySeq(path.head.toString).isEmpty
@@ -28,6 +27,8 @@ trait Authorisation extends PolicyEnforcement {
     else if (isResource) extractResourcesFromPath(path.tail, acc :+ path.head.toString)
     else extractResourcesFromPath(path.tail, acc)
   }
+
+  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String]): Boolean
 }
 
 object Authorisation {

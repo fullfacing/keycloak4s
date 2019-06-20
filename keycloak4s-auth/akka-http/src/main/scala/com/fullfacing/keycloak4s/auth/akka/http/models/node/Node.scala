@@ -1,6 +1,8 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.akka.http.models.node
 
 import akka.http.scaladsl.model.HttpMethod
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.PolicyEnforcement
+import com.fullfacing.keycloak4s.auth.akka.http.models.{Evaluation, Result}
 import com.fullfacing.keycloak4s.core.models.enums.PolicyEnforcementMode
 
 trait Node extends PolicyEnforcement {

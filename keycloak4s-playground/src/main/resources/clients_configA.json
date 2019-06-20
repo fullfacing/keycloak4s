@@ -2,197 +2,6 @@
   "service": "api-client",
   "nodes": [
     {
-      "resource": "clients",
-      "roles": [
-        {
-          "method": "GET",
-          "roles": [
-            "admin",
-            "client-view",
-            "client-write",
-            "client-delete"
-          ]
-        },
-        {
-          "method": "POST",
-          "roles": [
-            "admin",
-            "client-write",
-            "client-delete"
-          ]
-        },
-        {
-          "method": "PATCH",
-          "roles": [
-            "admin",
-            "client-write",
-            "client-delete"
-          ]
-        },
-        {
-          "method": "DELETE",
-          "roles": [
-            "admin",
-            "client-delete"
-          ]
-        }
-      ],
-      "nodes": [
-        {
-          "resource": "*",
-          "roles": [
-            {
-              "method": "*",
-              "roles": [
-                "admin"
-              ]
-            },
-            {
-              "method": "GET",
-              "roles": [
-                "admin",
-                "client-view",
-                "client-write",
-                "client-delete"
-              ]
-            },
-            {
-              "method": "POST",
-              "roles": [
-                "admin",
-                "client-write",
-                "client-delete"
-              ]
-            },
-            {
-              "method": "PATCH",
-              "roles": [
-                "admin",
-                "client-write",
-                "client-delete"
-              ]
-            },
-            {
-              "method": "DELETE",
-              "roles": [
-                "admin",
-                "client-delete"
-              ]
-            }
-          ],
-          "nodes": [],
-          "enforcementMode": "ENFORCING"
-        }
-      ],
-      "enforcementMode": "ENFORCING"
-    },
-    {
-      "resource": "accounts",
-      "roles": [
-        {
-          "method": "GET",
-          "roles": [
-            "admin",
-            "account-view",
-            "account-write",
-            "account-delete"
-          ]
-        },
-        {
-          "method": "POST",
-          "roles": [
-            "admin",
-            "account-write",
-            "account-delete"
-          ]
-        },
-        {
-          "method": "PATCH",
-          "roles": [
-            "admin",
-            "account-write",
-            "account-delete"
-          ]
-        },
-        {
-          "method": "DELETE",
-          "roles": [
-            "admin",
-            "account-delete"
-          ]
-        }
-      ],
-      "nodes": [
-        {
-          "resource": "*",
-          "roles": [
-            {
-              "method": "*",
-              "roles": [
-                "admin"
-              ]
-            }
-          ],
-          "nodes": [],
-          "enforcementMode": "ENFORCING"
-        }
-      ],
-      "enforcementMode": "ENFORCING"
-    },
-    {
-      "resource": "sites",
-      "roles": [
-        {
-          "method": "GET",
-          "roles": [
-            "admin",
-            "site-view",
-            "site-write",
-            "site-delete"
-          ]
-        },
-        {
-          "method": "POST",
-          "roles": [
-            "admin",
-            "site-write",
-            "site-delete"
-          ]
-        },
-        {
-          "method": "PATCH",
-          "roles": [
-            "admin",
-            "site-write",
-            "site-delete"
-          ]
-        },
-        {
-          "method": "DELETE",
-          "roles": [
-            "admin",
-            "site-delete"
-          ]
-        }
-      ],
-      "nodes": [
-        {
-          "resource": "*",
-          "roles": [
-            {
-              "method": "*",
-              "roles": [
-                "admin"
-              ]
-            }
-          ],
-          "nodes": [],
-          "enforcementMode": "ENFORCING"
-        }
-      ],
-      "enforcementMode": "DISABLED"
-    },
-    {
       "resource": "*",
       "roles": [
         {
@@ -202,9 +11,139 @@
           ]
         }
       ],
-      "nodes": [],
+      "enforcementMode": "ENFORCING"
+    },
+    {
+      "resource": "{{clients}}",
+      "nodes": [
+        {
+          "resource": "{{accounts}}",
+          "nodes": [
+            {
+              "resource": "{{sites}}",
+              "enforcementMode": "ENFORCING"
+            }
+          ],
+          "enforcementMode": "ENFORCING"
+        }
+      ],
+      "enforcementMode": "ENFORCING"
+    },
+    {
+      "resource": "{{accounts}}",
+      "nodes": [
+        {
+          "resource": "{{sites}}",
+          "enforcementMode": "ENFORCING"
+        }
+      ],
+      "enforcementMode": "ENFORCING"
+    },
+    {
+      "resource": "{{sites}}",
       "enforcementMode": "ENFORCING"
     }
   ],
-  "enforcementMode": "ENFORCING"
+  "enforcementMode": "ENFORCING",
+  "resources": [
+    {
+      "resource": "sites",
+      "auth": [
+        {
+          "method": "GET",
+          "roles": [
+            "site-view",
+            "site-write",
+            "site-delete"
+          ]
+        },
+        {
+          "method": "POST",
+          "roles": [
+            "site-write",
+            "site-delete"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "roles": [
+            "site-write",
+            "site-delete"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "roles": [
+            "site-delete"
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "clients",
+      "auth": [
+        {
+          "method": "GET",
+          "roles": [
+            "client-view",
+            "client-write",
+            "client-delete"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "roles": [
+            "client-write",
+            "client-delete"
+          ]
+        },
+        {
+          "method": "POST",
+          "roles": [
+            "client-write",
+            "client-delete"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "roles": [
+            "client-delete"
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "accounts",
+      "auth": [
+        {
+          "method": "GET",
+          "roles": [
+            "account-view",
+            "account-write",
+            "account-delete"
+          ]
+        },
+        {
+          "method": "PATCH",
+          "roles": [
+            "account-write",
+            "account-delete"
+          ]
+        },
+        {
+          "method": "POST",
+          "roles": [
+            "account-write",
+            "account-delete"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "roles": [
+            "account-delete"
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -1,7 +1,7 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.akka.http.models.path
 
+import com.fullfacing.keycloak4s.auth.akka.http.models.path.PathMethodRoles.ResourceRoles
 import com.fullfacing.keycloak4s.core.models.enums.Method
-import com.fullfacing.keycloak4s.auth.akka.http.models.PathMethodRoles.ResourceRoles
 
 /**
  * Object containing roles required for access to be granted to the request path using the specified HTTP method.

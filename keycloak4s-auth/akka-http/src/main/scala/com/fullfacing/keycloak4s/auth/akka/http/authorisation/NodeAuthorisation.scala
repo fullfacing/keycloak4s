@@ -2,7 +2,9 @@ package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Node, ResourceNode, Result}
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.AuthResource
+import com.fullfacing.keycloak4s.auth.akka.http.models.node.{Node, ResourceNode}
+import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Result}
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
 
 import scala.annotation.tailrec
@@ -14,9 +16,9 @@ import scala.annotation.tailrec
  * @param enforcementMode Determines how requests with no matching policies are handled.
  * @param nodes           The configured and secured resource segments on the server.
  */
-class NodeAuthorisation(val service: String,
-                        val nodes: List[ResourceNode],
-                        val enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Authorisation with Node {
+case class NodeAuthorisation(service: String,
+                             nodes: List[ResourceNode],
+                             enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Authorisation with Node {
 
   /**
    * Compares the request path to the server's security policy to determine which permissions are required
@@ -43,15 +45,36 @@ class NodeAuthorisation(val service: String,
 }
 
 object NodeAuthorisation {
+  import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+  import org.json4s.jackson.Serialization.read
+
+  case class Create(service: String,
+                    nodes: List[ResourceNode],
+                    enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
+                    resources: List[AuthResource])
 
   def apply(config: String): NodeAuthorisation = {
-    import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-    import org.json4s.jackson.Serialization.read
-    read[NodeAuthorisation](config)
-  }
+    val create = read[Create](config)
 
-  def apply(service: String,
-            nodes: List[ResourceNode],
-            enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing): NodeAuthorisation =
-    new NodeAuthorisation(service, nodes, enforcementMode)
+    def traverse(node: ResourceNode): Option[ResourceNode] = {
+      val n = if (node.resource.startsWith("{{") && node.resource.endsWith("}}")) {
+        val r = node.resource.drop(2).dropRight(2)
+        val ma = create.resources.find(_.resource == r)
+        ma.map(a => node.copy(roles = a.auth, resource = r))
+      } else {
+        Some(node)
+      }
+
+      node.nodes match {
+        case Nil => n
+        case _   => n.map(_.copy(nodes = node.nodes.flatMap(traverse)))
+      }
+    }
+
+    NodeAuthorisation(
+      service         = create.service,
+      enforcementMode = create.enforcementMode,
+      nodes           = create.nodes.flatMap(traverse)
+    )
+  }
 }

@@ -1,6 +1,8 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.akka.http.models.node
 
 import akka.http.scaladsl.model.HttpMethod
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.MethodRoles
+import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Evaluation, Result}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode, PolicyEnforcementModes}
 
 /**
@@ -11,7 +13,7 @@ import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMo
  * @param nodes         The next configured path segments.
  */
 case class ResourceNode(resource: String,
-                        roles: List[NodeMethodRoles],
+                        roles: List[MethodRoles],
                         nodes: List[ResourceNode] = List.empty[ResourceNode],
                         enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {
 

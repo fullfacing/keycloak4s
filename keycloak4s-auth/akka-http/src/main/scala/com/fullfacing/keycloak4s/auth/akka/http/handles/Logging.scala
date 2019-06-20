@@ -54,6 +54,9 @@ object Logging {
   def methodAuthorizationFailed(method: => String, cId: => UUID): Unit =
     logger.logTrace(s"${cIdErr(cId)}Method $method is not authorized.")
 
+  def authResourceNotFound(ar: => String): Unit =
+    logger.error(s"${re}Auth Initialisation failed: No $ar auth resource found.$rs")
+
   /* Logging Helper **/
   def logException(exception: KeycloakException)(log: => Unit): KeycloakException = {
     log; exception
