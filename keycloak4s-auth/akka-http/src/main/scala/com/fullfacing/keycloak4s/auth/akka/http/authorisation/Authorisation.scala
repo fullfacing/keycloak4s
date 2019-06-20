@@ -43,7 +43,7 @@ object Authorisation {
    * @return             The resulting directive from the auth result and the function provided.
    */
   def checkPermissions[A](resource: String, permissions: AuthPayload, success: AuthRoles => Directive[A]): Directive[A] = {
-    permissions.accessToken.extractResources.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
+    permissions.accessToken.extractResourceAccess.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
       case Some((_, v)) => success(v)
       case None         => authorisationFailed()
     }

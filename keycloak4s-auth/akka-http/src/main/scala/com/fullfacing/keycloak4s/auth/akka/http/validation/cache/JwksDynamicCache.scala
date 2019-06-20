@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.services.cache
+package com.fullfacing.keycloak4s.auth.akka.http.validation.cache
 
 import java.net.URL
 import java.util.UUID

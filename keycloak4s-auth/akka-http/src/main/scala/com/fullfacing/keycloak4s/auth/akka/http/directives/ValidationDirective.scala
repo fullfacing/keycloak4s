@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusC
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
-import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
+import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 
 import scala.util.{Failure, Success}

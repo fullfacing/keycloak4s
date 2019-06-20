@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.services
+package com.fullfacing.keycloak4s.auth.akka.http.validation
 
 import java.util.Date
 

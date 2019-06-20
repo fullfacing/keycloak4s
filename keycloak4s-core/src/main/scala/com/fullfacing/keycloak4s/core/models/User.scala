@@ -2,8 +2,6 @@ package com.fullfacing.keycloak4s.core.models
 
 import java.util.UUID
 
-import com.fullfacing.keycloak4s.core.models.enums.RequiredAction
-
 final case class User(username: String,
                       access: Option[UserAccess] = None,
                       attributes: Map[String, List[String]] = Map.empty[String, List[String]],

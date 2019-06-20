@@ -4,7 +4,7 @@ import java.util.Date
 import cats.data.NonEmptyList
 import cats.data.Validated.{invalidNel, valid}
 import cats.implicits._
-import com.fullfacing.keycloak4s.auth.akka.http.services.{ClaimValidators, TokenValidator}
+import com.fullfacing.keycloak4s.auth.akka.http.validation.{ClaimValidators, TokenValidator}
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.nimbusds.jose.JWSSigner

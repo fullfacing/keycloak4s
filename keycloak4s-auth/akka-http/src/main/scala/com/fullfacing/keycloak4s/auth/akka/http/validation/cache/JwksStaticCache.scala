@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.services.cache
+package com.fullfacing.keycloak4s.auth.akka.http.validation.cache
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference

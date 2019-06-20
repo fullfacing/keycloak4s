@@ -1,11 +1,10 @@
 package com.fullfacing.keycloak4s.auth.akka.http
 
-import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthRoles, ResourceRoles}
-import com.nimbusds.jose.Payload
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthRoles
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+import com.nimbusds.jose.Payload
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
-import com.fullfacing.keycloak4s.auth.akka.http.models.AuthRoles
 
 /**
  * Provides helper functions to safely extract values from any Payload object.

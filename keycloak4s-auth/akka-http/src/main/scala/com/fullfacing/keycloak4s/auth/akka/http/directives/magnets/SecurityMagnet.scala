@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath
 import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation
 import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
-import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
+import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
 
 trait SecurityMagnet {
   def apply(): Directive0

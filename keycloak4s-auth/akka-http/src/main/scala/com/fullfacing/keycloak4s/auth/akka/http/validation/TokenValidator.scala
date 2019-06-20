@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.services
+package com.fullfacing.keycloak4s.auth.akka.http.validation
 
 import java.util.{Date, UUID}
 
@@ -8,7 +8,7 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logValidationEx
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
-import com.fullfacing.keycloak4s.auth.akka.http.services.cache.{JwksCache, JwksDynamicCache, JwksStaticCache}
+import com.fullfacing.keycloak4s.auth.akka.http.validation.cache.{JwksCache, JwksDynamicCache, JwksStaticCache}
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.Exceptions.buildClaimsException
 import com.fullfacing.keycloak4s.core.models.enums.{TokenType, TokenTypes}
