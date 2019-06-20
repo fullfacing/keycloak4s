@@ -110,11 +110,9 @@ val sttpMonix: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp" %% "json4s"                          % sttpVersion
 )
 
-testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
-
-logBuffered := false
-
 parallelExecution in Test := false
+
+coverageExcludedPackages := ".*transport.*"
 
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //

@@ -287,10 +287,10 @@ class ClientsTests extends IntegrationSpec {
   "Delete Ancillary Objects" should "remove all the ancillary objects created for testing Clients" in {
     val task =
       for {
-        _ <- clientService.remove(client1.get)
-        _ <- clientService.remove(client2.get)
-        _ <- clientService.remove(client3.get)
-        _ <- clientService.remove(client4.get)
+        _ <- clientService.delete(client1.get)
+        _ <- clientService.delete(client2.get)
+        _ <- clientService.delete(client3.get)
+        _ <- clientService.delete(client4.get)
         r <- userService.delete(user1.get)
       } yield r
 
