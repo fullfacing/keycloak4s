@@ -4,10 +4,12 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthResource, MethodRoles}
 import com.fullfacing.keycloak4s.auth.akka.http.models.path.{PathMethodRoles, PathRoles}
+import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+import org.json4s.jackson.Serialization.read
 
 import scala.annotation.tailrec
 
@@ -87,7 +89,7 @@ case class PathAuthorisation(service: String,
    * @param userRoles The permissions of the user.
    */
   def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
-    val matchedPaths = findMatchingPaths(extractResourcesFromPath(path), paths)
+    val matchedPaths = findMatchingPaths(extractSegmentsFromPath(path), paths)
 
     matchedPaths.exists { p =>
 
@@ -107,8 +109,6 @@ case class PathAuthorisation(service: String,
 
 
 object PathAuthorisation {
-  import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-  import org.json4s.jackson.Serialization.read
 
   case class Create(service: String,
                     enforcementMode: PolicyEnforcementMode,

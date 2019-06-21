@@ -37,23 +37,17 @@ object Logging {
   def tokenValidationFailed(cId: => UUID, exMessage: String, tokenType: TokenType): Unit =
     logger.error(s"${cIdErr(cId)}${tokenType.value} validation failed - $exMessage")
 
-  def resourceAuthorizing(resource: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Checking resource $gr$resource ${cy}authorization...$rs")
+  def requestAuthorising(cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Authorising request...$rs")
 
-  def resourceAuthorized(resource: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Resource $gr$resource ${cy}authorized.$rs")
+  def requestAuthorised(cId: => UUID): Unit =
+    logger.logTrace(s"${cIdLog(cId)}Authorisation successful.$rs")
 
-  def resourceAuthorizationFailed(resource: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdErr(cId)}Resource $resource is not authorized.")
+  def authorisationFailed(cId: => UUID): Unit =
+    logger.logDebug(s"$re${cIdErr(cId)}Authorisation failed. Request rejected.$rs")
 
-  def methodAuthorizing(method: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Checking method $gr$method ${cy}authorization...$rs")
-
-  def methodAuthorized(method: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Method $gr$method ${cy}authorized.$rs")
-
-  def methodAuthorizationFailed(method: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdErr(cId)}Method $method is not authorized.")
+  def configSetupError(): Unit =
+    logger.error("Could not parse json string into policy configuration object")
 
   def authResourceNotFound(ar: => String): Unit =
     logger.error(s"${re}Auth Initialisation failed: No $ar auth resource found.$rs")

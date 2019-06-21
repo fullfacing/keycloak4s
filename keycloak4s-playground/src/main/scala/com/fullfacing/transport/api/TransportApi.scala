@@ -11,7 +11,7 @@ object TransportApi extends SecurityDirectives {
 
   val api: Route = {
     pathPrefix("transport") {
-      secure(apiSecurityConfig) {
+      secure(nodeClientsConfig) {
         cars ~ bikes ~ buses
       }
     }
