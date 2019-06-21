@@ -3,14 +3,15 @@ package com.fullfacing.transport.api
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirectives
-import com.fullfacing.transport.Implicits._
 import com.fullfacing.transport.Config._
+import com.fullfacing.transport.Implicits._
 
 object ClientsApi extends SecurityDirectives {
 
-  val api: Route = secure(clientsApiConfig) {
-    ClientsRoutes.api ~
+  val api: Route =
+    secure(pathClientsConfig) {
+      ClientsRoutes.api ~
       AccountRoutes.api ~
       SiteRoutes.api
-  }
+    }
 }

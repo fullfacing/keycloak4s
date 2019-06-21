@@ -3,7 +3,7 @@ organization := "com.fullfacing"
 
 lazy val global = {
   Seq(
-    version       := "0.16.0-SNAPSHOT",
+    version       := "0.17.0-SNAPSHOT",
     scalaVersion  := "2.12.8",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts
@@ -112,8 +112,6 @@ val sttpMonix: Seq[ModuleID] = Seq(
 
 parallelExecution in Test := false
 
-coverageExcludedPackages := ".*transport.*"
-
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
 // --------------------------------------------- //
@@ -165,6 +163,7 @@ lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ scalaMeter
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(global: _*)
   .settings(libraryDependencies ++= playgroundDependencies)
+  .settings(coverageEnabled := false)
   .settings(name := "keycloak4s-playground", publishArtifact := false)
   .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
 

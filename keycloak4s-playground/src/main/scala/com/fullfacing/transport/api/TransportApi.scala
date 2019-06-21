@@ -7,11 +7,11 @@ import com.fullfacing.transport.Config._
 import com.fullfacing.transport.Implicits._
 
 
-object TransportAPI extends SecurityDirectives {
+object TransportApi extends SecurityDirectives {
 
   val api: Route = {
     pathPrefix("transport") {
-      secure(apiSecurityConfig) {
+      secure(nodeClientsConfig) {
         cars ~ bikes ~ buses
       }
     }

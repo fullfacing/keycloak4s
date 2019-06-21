@@ -1,6 +1,8 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.akka.http.models.node
 
 import akka.http.scaladsl.model.HttpMethod
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.MethodRoles
+import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Evaluation, Result}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode, PolicyEnforcementModes}
 
 /**
