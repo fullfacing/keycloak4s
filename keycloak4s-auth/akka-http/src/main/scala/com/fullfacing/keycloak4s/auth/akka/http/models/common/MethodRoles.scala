@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.akka.http.models.common
 
 import com.fullfacing.keycloak4s.core.models.enums.Method
 

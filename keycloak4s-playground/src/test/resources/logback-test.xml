@@ -17,8 +17,8 @@
         </encoder>
     </appender>
 
-    <logger name="keycloak4s.admin" level="trace"/>
-    <logger name="keycloak4s.auth"  level="trace"/>
+    <logger name="keycloak4s.admin" level="error"/>
+    <logger name="keycloak4s.auth"  level="error"/>
 
     <root level="error">
         <appender-ref ref="STDOUT"/>

@@ -1,12 +1,17 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
+import java.util.UUID
+
 import akka.http.scaladsl.server.Directive0
-import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthorisationDirectives._
+import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass, _}
+import cats.effect.IO
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
+import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation
+import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
-import com.fullfacing.keycloak4s.auth.akka.http.models.SecurityConfig
-import com.fullfacing.keycloak4s.auth.akka.http.services.Authorisation._
-import com.fullfacing.keycloak4s.auth.akka.http.services.TokenValidator
+import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+
+import scala.util.Success
 
 trait SecurityMagnet {
   def apply(): Directive0
@@ -14,16 +19,35 @@ trait SecurityMagnet {
 
 object SecurityMagnet {
 
-  implicit def authorise(securityConfig: SecurityConfig)(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
-    validateToken().flatMap { p =>
+  implicit def run(parameters: (Authorisation, UUID))(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
+    val (securityConfig, cId) = parameters
+    authorise(securityConfig)(tokenValidator, cId)
+  }
+
+  implicit def run(securityConfig: Authorisation)(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
+    onComplete(IO(UUID.randomUUID()).unsafeToFuture()).flatMap {
+      case Success(correlationId) => authorise(securityConfig)(tokenValidator, correlationId)
+      case _                      => reject
+    }
+  }
+
+  private def authorise(securityConfig: Authorisation)(implicit tokenValidator: TokenValidator, cId: UUID): Directive0 = {
+    validateToken().flatMap { authPayload =>
       if (securityConfig.policyDisabled()) {
         pass
       } else {
-        authoriseResourceServerAccess(p, securityConfig.service).flatMap { userRoles =>
+        authoriseResourceServerAccess(authPayload, securityConfig.service).flatMap { userRoles =>
           extractUnmatchedPath.flatMap { path =>
             extractMethod.flatMap { method =>
-              val isAuthorised = authoriseRequest(path, method, securityConfig, userRoles)
-              if (isAuthorised) pass else authorisationFailed()
+              Logging.requestAuthorising(cId)
+              val isAuthorised = securityConfig.authoriseRequest(path, method, userRoles)
+
+              if (isAuthorised) {
+                Logging.requestAuthorised(cId)
+                pass
+              } else {
+                authorisationFailed()
+              }
             }
           }
         }

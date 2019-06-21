@@ -2,16 +2,16 @@ package com.fullfacing.keycloak4s.core.models
 
 import java.util.UUID
 
-final case class AuthenticationExecution(authenticator: Option[String],
-                                         authenticatorConfig: Option[String],
-                                         authenticatorFlow: Option[Boolean],
+final case class AuthenticationExecution(authenticator: String,
+                                         authenticatorConfig: Option[UUID],
+                                         authenticatorFlow: Boolean,
                                          flowId: Option[String],
-                                         id: Option[UUID],
-                                         parentFlow: Option[String],
-                                         priority: Option[Int],
-                                         requirement: Option[String],
-                                         enabled: Option[Boolean],
-                                         disabled: Option[Boolean],
-                                         required: Option[Boolean],
-                                         optional: Option[Boolean],
-                                         alternative: Option[Boolean])
+                                         id: UUID,
+                                         parentFlow: String,
+                                         priority: Int,
+                                         requirement: String,
+                                         enabled: Boolean,
+                                         disabled: Boolean,
+                                         required: Boolean,
+                                         optional: Boolean,
+                                         alternative: Boolean)

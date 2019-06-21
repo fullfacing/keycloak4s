@@ -7,7 +7,7 @@ import cats.data.EitherT
 import cats.implicits._
 import utils.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
+import com.fullfacing.keycloak4s.core.models.enums.{CredentialTypes, ProviderTypes}
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
 
@@ -202,10 +202,10 @@ class UsersTests extends IntegrationSpec {
       "clientSecret"      -> "secret"
     )
 
-    val identityProvider = IdentityProvider(
-      config      = config.some,
-      alias       = Some("oidc"),
-      providerId  = Some("oidc")
+    val identityProvider = IdentityProvider.Create(
+      config      = config,
+      alias       = "oidc",
+      providerId  = ProviderTypes.Oidc
     )
 
     val user = storedTestUser1.get()

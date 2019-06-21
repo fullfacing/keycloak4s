@@ -51,7 +51,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
   private def call[B <: Any : Manifest](request: RequestT[Id, String, Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
     implicit val cId: UUID = UUID.randomUUID()
 
-    val resp = setResponse[B](request)
+    val resp = setResponse[B](request.header("Accept", "application/json"))
 
     Logging.requestSent(requestInfo, cId)
 
