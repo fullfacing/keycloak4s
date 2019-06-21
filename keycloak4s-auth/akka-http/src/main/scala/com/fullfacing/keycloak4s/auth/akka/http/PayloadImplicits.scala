@@ -53,6 +53,8 @@ object PayloadImplicits {
     def extractFullName: Option[String] =
       safeExtract(payload, "name")
 
+    //TODO Add phone number and phone number verified extractors
+
     /* Access Control Extractors. **/
 
     def extractResourceAccess: Map[String, AuthRoles] =

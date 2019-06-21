@@ -143,11 +143,11 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
 object TokenValidator {
 
   /* TokenValidator instantiable with a static cache. **/
-  class Static(val jwks: JWKSet, val config: KeycloakConfig)(implicit ec: ExecutionContext = global)
+  final class Static(val jwks: JWKSet, val config: KeycloakConfig)(implicit ec: ExecutionContext = global)
     extends TokenValidator(config) with JwksStaticCache
 
   /* TokenValidator instantiable with a dynamic cache. **/
-  class Dynamic(val config: KeycloakConfig)(implicit ec: ExecutionContext = global)
+  final class Dynamic(val config: KeycloakConfig)(implicit ec: ExecutionContext = global)
     extends TokenValidator(config) with JwksDynamicCache
 
   /* Applies for Static and Dynamic. **/
