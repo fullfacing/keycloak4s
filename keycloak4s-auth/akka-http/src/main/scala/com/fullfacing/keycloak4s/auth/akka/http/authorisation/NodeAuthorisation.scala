@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.AuthResource
 import com.fullfacing.keycloak4s.auth.akka.http.models.node.{Node, ResourceNode}
 import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Result}

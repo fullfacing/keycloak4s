@@ -5,10 +5,10 @@ import java.util.UUID
 import akka.http.scaladsl.server.Directive0
 import akka.http.scaladsl.server.Directives.{extractMethod, extractUnmatchedPath, pass, _}
 import cats.effect.IO
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation
 import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
 
 import scala.util.Success

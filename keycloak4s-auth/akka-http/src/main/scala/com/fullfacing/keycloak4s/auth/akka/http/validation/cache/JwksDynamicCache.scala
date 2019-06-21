@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.IO
 import cats.implicits._
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging.logException
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
+import com.fullfacing.keycloak4s.auth.akka.http.Logging.logException
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 import com.nimbusds.jose.jwk.JWKSet

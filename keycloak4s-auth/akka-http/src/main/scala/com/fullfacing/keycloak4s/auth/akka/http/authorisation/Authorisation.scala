@@ -8,8 +8,8 @@ import akka.http.scaladsl.server.Directives.{complete, provide}
 import akka.http.scaladsl.server.StandardRoute.toDirective
 import akka.http.scaladsl.server.util.Tuple.yes
 import akka.http.scaladsl.server.{Directive, Directive1, StandardRoute}
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
-import com.fullfacing.keycloak4s.auth.akka.http.handles.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.PolicyEnforcement
 import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
