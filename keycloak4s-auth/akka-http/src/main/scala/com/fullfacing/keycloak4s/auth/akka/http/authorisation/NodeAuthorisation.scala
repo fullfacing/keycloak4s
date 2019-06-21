@@ -4,10 +4,13 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.AuthResource
 import com.fullfacing.keycloak4s.auth.akka.http.models.node.{Node, ResourceNode}
 import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Result}
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
+import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
+import org.json4s.jackson.Serialization.read
 
 import scala.annotation.tailrec
 
@@ -41,14 +44,12 @@ case class NodeAuthorisation(service: String,
         }
     }
 
-    lazy val listPath = extractResourcesFromPath(path)
+    lazy val listPath = extractSegmentsFromPath(path)
     listPath.nonEmpty && loop(listPath, this)
   }
 }
 
 object NodeAuthorisation {
-  import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-  import org.json4s.jackson.Serialization.read
 
   case class Create(service: String,
                     nodes: List[ResourceNode],
@@ -69,7 +70,9 @@ object NodeAuthorisation {
 
       node.nodes match {
         case Nil => n
-        case _   => n.map(_.copy(nodes = node.nodes.flatMap(traverse)))
+        case _   =>
+          if (n.isEmpty) Logging.authResourceNotFound(node.resource)
+          n.map(_.copy(nodes = node.nodes.flatMap(traverse)))
       }
     }
 

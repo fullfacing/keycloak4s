@@ -105,6 +105,10 @@
       "resource": "accounts",
       "auth": [
         {
+          "method": "*",
+          "roles": ["accounts-delete"]
+        },
+        {
           "method": "GET",
           "roles": [
             "account-view",
