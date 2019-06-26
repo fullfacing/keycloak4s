@@ -22,6 +22,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
   val realm: String = config.realm
 
+  /* Extracts the Manifest out of an implicit Anything. **/
   private implicit def ma[A : Anything]: Manifest[A] = implicitly[Anything[A]].manifest
 
   /* URI Builder **/

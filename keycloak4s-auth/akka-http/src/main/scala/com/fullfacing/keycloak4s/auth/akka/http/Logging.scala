@@ -2,6 +2,8 @@ package com.fullfacing.keycloak4s.auth.akka.http
 
 import java.util.UUID
 
+import akka.http.scaladsl.model.HttpMethod
+import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.core.logging.Logging._
 import com.fullfacing.keycloak4s.core.logging._
 import com.fullfacing.keycloak4s.core.models.KeycloakException
@@ -12,7 +14,8 @@ object Logging {
 
   implicit val logger: Logger = LoggerFactory.getLogger("keycloak4s.auth")
 
-  /* VALIDATION LOGGING **/
+  /* Validation Logging **/
+
   def jwksRequest(realm: => String, cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Requesting public keys from Keycloak for Realm $gr$realm.$rs")
 
@@ -22,7 +25,7 @@ object Logging {
   def jwksRetrieved(realm: => String, cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Public keys retrieved for Realm $gr$realm.$rs")
 
-  def jwksRequestFailed(cId: => UUID, ex: Throwable): Unit =
+  def jwksRequestFailed(cId: UUID, ex: Throwable): Unit =
     logger.error(s"${cIdErr(cId)}", ex)
 
   def tokenValidating(cId: => UUID): Unit =
@@ -31,28 +34,39 @@ object Logging {
   def tokenValidated(cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Bearer token(s) successfully validated.$rs")
 
-  def tokenValidationFailed(cId: => UUID, ex: Throwable, tokenType: TokenType): Unit =
+  def tokenValidationFailed(cId: UUID, ex: Throwable, tokenType: TokenType): Unit =
     logger.error(s"${cIdErr(cId)}${tokenType.value} validation failed.", ex)
 
-  def tokenValidationFailed(cId: => UUID, exMessage: String, tokenType: TokenType): Unit =
+  def tokenValidationFailed(cId: UUID, exMessage: String, tokenType: TokenType): Unit =
     logger.error(s"${cIdErr(cId)}${tokenType.value} validation failed - $exMessage")
 
-  def requestAuthorising(cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Authorising request...$rs")
+  /* Authorisation Logging **/
+
+  def requestAuthorising(cId: => UUID, path: => Path, method: => HttpMethod): Unit = {
+    logger.logDebugIff(s"${cIdLog(cId)}Authorising $gr${method.value}$cy request...$rs")
+    logger.logTrace(s"${cIdLog(cId)}Authorising $gr${method.value}$cy request for path $gr$path$cy...$rs")
+  }
 
   def requestAuthorised(cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Authorisation successful.$rs")
+    logger.logTrace(s"${cIdLog(cId)}Request successfully authorized.$rs")
 
-  def authorisationFailed(cId: => UUID): Unit =
-    logger.logDebug(s"$re${cIdErr(cId)}Authorisation failed. Request rejected.$rs")
+  def authorisationDenied(cId: UUID, service: String): Unit =
+    logger.logDebug(s"$re${cIdErr(cId)}Authorisation denied, user is not allowed access to $service.$rs")
+
+  def authorisationPathDenied(cId: UUID, method: HttpMethod, path: Path): Unit =
+    logger.logDebug(s"$re${cIdErr(cId)}Authorisation denied, user is not allowed access to ${method.value} $path.$rs")
+
+  def configFileNotFound(filename: String): Unit =
+    logger.error(s"Policy Enforcement configuration JSON file $filename not found.")
 
   def configSetupError(): Unit =
-    logger.error("Could not parse json string into policy configuration object")
+    logger.error("Failed to parse policy configuration JSON file.")
 
-  def authResourceNotFound(ar: => String): Unit =
-    logger.error(s"${re}Auth Initialisation failed: No $ar auth resource found.$rs")
+  def authResourceNotFound(ar: String): Unit =
+    logger.error(s"Authorisation initialization failed: Segment variable $ar not found in JSON configuration.")
 
-  /* Logging Helper **/
+  /* Logging Helpers **/
+
   def logException(exception: KeycloakException)(log: => Unit): KeycloakException = {
     log; exception
   }

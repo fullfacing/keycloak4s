@@ -7,6 +7,11 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.18.0]
+## Added
+- Added policy enforcement object builders.
+- Expanded logging to cover authorization.
+
 ## [0.17.0]
 ## Added
 - Added a new policy config structure that uses full paths to define rules instead of rules configured on nodes for each segment of the request path.
