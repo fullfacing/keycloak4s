@@ -18,6 +18,7 @@ object Exceptions {
   val AUTH_MISSING          = KeycloakException(403, "Forbidden", "Authorization details not included in bearer token.".some)
   val UNAUTHORIZED          = KeycloakException(403, "Forbidden", "Authorization denied.".some)
 
+  def CONFIG_NOT_FOUND(filename: String)  = KeycloakException(500, "Internal Server Error", s"Policy Enforcement configuration JSON file $filename not found.".some, None)
   def JWKS_SERVER_ERROR(details: String)  = KeycloakException(500, "Internal Server Error", "Public keys could not be retrieved.".some, details.some)
   def UNEXPECTED(details: String)         = KeycloakException(500, "Internal Server Error", "An unexpected error has occurred.".some, details.some)
 

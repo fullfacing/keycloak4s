@@ -91,7 +91,7 @@ case class PathAuthorisation(service: String,
   def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
     val matchedPaths = findMatchingPaths(extractSegmentsFromPath(path), paths)
 
-    matchedPaths.exists { p =>
+    val methodAllowed = matchedPaths.exists { p =>
 
       lazy val hasWildCardRole = p.roles
         .find(_.method == Methods.All)
@@ -104,6 +104,9 @@ case class PathAuthorisation(service: String,
 
       hasMethodRole || hasWildCardRole
     }
+
+    if (!methodAllowed) Logging.authorisationPathDenied(cId, method, path)
+    methodAllowed
   }
 }
 
