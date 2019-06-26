@@ -6,14 +6,14 @@ import scala.io.Source
 
 object Config {
 
-  val config: String = {
+  lazy val config: String = {
     val a = getClass.getResource("/config.json")
     val b = Source.fromFile(a.getPath)
     b.mkString.stripMargin
   }
-  val apiSecurityConfig: NodeAuthorisation = NodeAuthorisation(config)
+  lazy val apiSecurityConfig: NodeAuthorisation = NodeAuthorisation(config)
 
-  val nodeClientsConfig: NodeAuthorisation = {
+  lazy val nodeClientsConfig: NodeAuthorisation = {
     val a = getClass.getResource("/clients_configA.json")
     val b = Source.fromFile(a.getPath)
     NodeAuthorisation(b.mkString.stripMargin)
