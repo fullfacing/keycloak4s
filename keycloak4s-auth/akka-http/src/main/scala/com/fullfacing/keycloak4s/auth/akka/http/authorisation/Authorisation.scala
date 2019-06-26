@@ -24,11 +24,15 @@ trait Authorisation extends PolicyEnforcement {
 
   @tailrec
   final def extractSegmentsFromPath(path: Path, acc: List[String] = List.empty[String]): List[String] = {
-    lazy val isResource = path.startsWithSegment && validUuid.unapplySeq(path.head.toString).isEmpty
-
-    if (path.isEmpty) acc
-    else if (isResource) extractSegmentsFromPath(path.tail, acc :+ path.head.toString)
-    else extractSegmentsFromPath(path.tail, acc)
+    if (path.isEmpty) {
+      acc
+    } else if (validUuid.unapplySeq(path.head.toString).isEmpty) {
+      extractSegmentsFromPath(path.tail, acc :+ "{id}")
+    } else if (path.startsWithSegment) {
+      extractSegmentsFromPath(path.tail, acc :+ path.head.toString)
+    } else {
+      extractSegmentsFromPath(path.tail, acc)
+    }
   }
 
   def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean
@@ -43,13 +47,13 @@ object Authorisation {
    * Looks for the requested resource in the user's permissions from the validated access token.
    * The request is rejected if not found.
    *
-   * @param resource     The resource the user is attempting to access.
+   * @param segment      The resource/action the user is attempting to access.
    * @param permissions  The resources and methods allowed for the user.
    * @param success      A directive to create if the user has access to the resource.
    * @return             The resulting directive from the auth result and the function provided.
    */
-  def checkPermissions[A](resource: String, permissions: AuthPayload, success: AuthRoles => Directive[A])(implicit cId: UUID): Directive[A] = {
-    permissions.accessToken.extractResourceAccess.find { case (k, _) => k.equalsIgnoreCase(resource) } match {
+  def checkPermissions[A](segment: String, permissions: AuthPayload, success: AuthRoles => Directive[A])(implicit cId: UUID): Directive[A] = {
+    permissions.accessToken.extractResourceAccess.find { case (k, _) => k.equalsIgnoreCase(segment) } match {
       case Some((_, v)) => success(v)
       case None         => authorisationFailed()
     }

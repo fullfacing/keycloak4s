@@ -8,11 +8,11 @@ import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMo
 /**
  * Policy configuration for a particular path segment, as well as all its sub paths.
  *
- * @param resource      Path of this node.
+ * @param segment       Path of this node.
  * @param roles         Required permissions for this resource based on the HTTP method.
  * @param nodes         The next configured path segments.
  */
-case class ResourceNode(resource: String,
+case class ResourceNode(segment: String,
                         roles: List[MethodRoles],
                         nodes: List[ResourceNode] = List.empty[ResourceNode],
                         enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {

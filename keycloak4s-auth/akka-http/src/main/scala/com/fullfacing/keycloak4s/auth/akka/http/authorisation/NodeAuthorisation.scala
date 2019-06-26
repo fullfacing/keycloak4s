@@ -60,10 +60,10 @@ object NodeAuthorisation {
     val create = read[Create](config)
 
     def traverse(node: ResourceNode): Option[ResourceNode] = {
-      val n = if (node.resource.startsWith("{{") && node.resource.endsWith("}}")) {
-        val r = node.resource.drop(2).dropRight(2)
+      val n = if (node.segment.startsWith("{{") && node.segment.endsWith("}}")) {
+        val r = node.segment.drop(2).dropRight(2)
         val ma = create.resources.find(_.resource == r)
-        ma.map(a => node.copy(roles = a.auth, resource = r))
+        ma.map(a => node.copy(roles = a.auth, segment = r))
       } else {
         Some(node)
       }
@@ -71,7 +71,7 @@ object NodeAuthorisation {
       node.nodes match {
         case Nil => n
         case _   =>
-          if (n.isEmpty) Logging.authResourceNotFound(node.resource)
+          if (n.isEmpty) Logging.authResourceNotFound(node.segment)
           n.map(_.copy(nodes = node.nodes.flatMap(traverse)))
       }
     }
