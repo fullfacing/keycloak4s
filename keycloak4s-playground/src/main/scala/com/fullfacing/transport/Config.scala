@@ -11,7 +11,7 @@ object Config {
     val b = Source.fromFile(a.getPath)
     b.mkString.stripMargin
   }
-  val apiSecurityConfig: NodeAuthorisation = NodeAuthorisation(config)
+  lazy val apiSecurityConfig: NodeAuthorisation = NodeAuthorisation(config)
 
   val nodeClientsConfig: NodeAuthorisation = {
     val a = getClass.getResource("/clients_configA.json")
