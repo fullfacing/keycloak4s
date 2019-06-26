@@ -14,14 +14,12 @@ object PolicyEnforcement {
   private def attemptBuild(filename: String): BufferedSource = {
     val url = getClass.getResource(s"/$filename")
 
-    try {
-      if (url == null) {
-        throw Exceptions.CONFIG_NOT_FOUND(filename)
-      } else try {
-        Source.fromFile(url.getPath)
-      } catch {
-        case th: Throwable => Logging.configSetupError(); throw th
-      }
+    if (url == null) {
+      throw Exceptions.CONFIG_NOT_FOUND(filename)
+    } else try {
+      Source.fromFile(url.getPath)
+    } catch {
+      case th: Throwable => Logging.configSetupError(); throw th
     }
   }
 
