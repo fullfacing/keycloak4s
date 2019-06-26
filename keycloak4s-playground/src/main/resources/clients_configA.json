@@ -2,7 +2,7 @@
   "service": "api-client",
   "nodes": [
     {
-      "resource": "*",
+      "segment": "*",
       "roles": [
         {
           "method": "*",
@@ -14,13 +14,13 @@
       "enforcementMode": "ENFORCING"
     },
     {
-      "resource": "{{clients}}",
+      "segment": "{{clients}}",
       "nodes": [
         {
-          "resource": "{{accounts}}",
+          "segment": "{{accounts}}",
           "nodes": [
             {
-              "resource": "{{sites}}",
+              "segment": "{{sites}}",
               "enforcementMode": "ENFORCING"
             }
           ],
@@ -30,24 +30,24 @@
       "enforcementMode": "ENFORCING"
     },
     {
-      "resource": "{{accounts}}",
+      "segment": "{{accounts}}",
       "nodes": [
         {
-          "resource": "{{sites}}",
+          "segment": "{{sites}}",
           "enforcementMode": "ENFORCING"
         }
       ],
       "enforcementMode": "ENFORCING"
     },
     {
-      "resource": "{{sites}}",
+      "segment": "{{sites}}",
       "enforcementMode": "ENFORCING"
     }
   ],
   "enforcementMode": "ENFORCING",
-  "resources": [
+  "segments": [
     {
-      "resource": "sites",
+      "segment": "sites",
       "auth": [
         {
           "method": "GET",
@@ -80,7 +80,7 @@
       ]
     },
     {
-      "resource": "clients",
+      "segment": "clients",
       "auth": [
         {
           "method": "GET",
@@ -113,7 +113,7 @@
       ]
     },
     {
-      "resource": "accounts",
+      "segment": "accounts",
       "auth": [
         {
           "method": "GET",

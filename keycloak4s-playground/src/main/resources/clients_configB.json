@@ -34,9 +34,9 @@
       "path": "{{clients}}/{{accounts}}/{{sites}}"
     }
   ],
-  "resources": [
+  "segments": [
     {
-      "resource": "sites",
+      "segment": "sites",
       "auth": [
         {
           "method": "GET",
@@ -69,7 +69,7 @@
       ]
     },
     {
-      "resource": "clients",
+      "segment": "clients",
       "auth": [
         {
           "method": "GET",
@@ -102,7 +102,7 @@
       ]
     },
     {
-      "resource": "accounts",
+      "segment": "accounts",
       "auth": [
         {
           "method": "*",

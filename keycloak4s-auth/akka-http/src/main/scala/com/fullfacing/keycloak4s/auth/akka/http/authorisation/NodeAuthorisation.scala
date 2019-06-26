@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.models.common.AuthResource
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.AuthSegment
 import com.fullfacing.keycloak4s.auth.akka.http.models.node.{Node, ResourceNode}
 import com.fullfacing.keycloak4s.auth.akka.http.models.{Continue, Result}
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
@@ -54,7 +54,7 @@ object NodeAuthorisation {
   case class Create(service: String,
                     nodes: List[ResourceNode],
                     enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
-                    resources: List[AuthResource])
+                    segments: List[AuthSegment])
 
   def apply(config: String): NodeAuthorisation = {
     val create = read[Create](config)
@@ -62,7 +62,7 @@ object NodeAuthorisation {
     def traverse(node: ResourceNode): Option[ResourceNode] = {
       val n = if (node.segment.startsWith("{{") && node.segment.endsWith("}}")) {
         val r = node.segment.drop(2).dropRight(2)
-        val ma = create.resources.find(_.resource == r)
+        val ma = create.segments.find(_.segment == r)
         ma.map(a => node.copy(roles = a.auth, segment = r))
       } else {
         Some(node)
