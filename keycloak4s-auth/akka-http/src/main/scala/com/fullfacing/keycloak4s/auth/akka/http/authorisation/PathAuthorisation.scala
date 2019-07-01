@@ -1,12 +1,13 @@
 package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
+import cats.implicits._
 import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{PathMethodRoles, PathRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRoles}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
@@ -95,11 +96,11 @@ case class PathAuthorisation(service: String,
 
       lazy val hasWildCardRole = p.roles
         .find(_.method == Methods.All)
-        .exists(_.evaluateUserAccess(userRoles))
+        .exists(_.evaluateUserAccess(userRoles = userRoles))
 
       val hasMethodRole = p.roles.find(_.method.value == method.value) match {
         case None    => noMatchingPolicy()
-        case Some(r) => r.evaluateUserAccess(userRoles)
+        case Some(r) => r.evaluateUserAccess(userRoles = userRoles)
       }
 
       hasMethodRole || hasWildCardRole
@@ -115,11 +116,8 @@ object PathAuthorisation {
 
   case class Create(service: String,
                     enforcementMode: PolicyEnforcementMode,
-                    paths: List[PathRoles.Create],
+                    paths: List[PathRoles.Create2],
                     segments: List[AuthSegment])
-
-  def apply(config: Create): PathAuthorisation =
-    new PathAuthorisation(config.service, config.enforcementMode, config.paths.map(PathRoles(_)))
 
   def apply(config: String): PathAuthorisation = {
     val create = read[Create](config)
@@ -137,8 +135,8 @@ object PathAuthorisation {
           }
         }.toList
 
-      pathConfig.copy(
-        roles = merge(roles.flatten),
+      PathRoles.Create(
+        roles = pathConfig.roles.map(PathMethodRoles(_)) ++ merge(roles.flatten),
         path  = pathConfig.path.replace("{{", "").replace("}}", "")
       )
     }
@@ -152,7 +150,7 @@ object PathAuthorisation {
 
   def merge(roles: List[MethodRoles]): List[PathMethodRoles] = {
     roles.groupBy(_.method).map { case (m, r) =>
-      PathMethodRoles(m, r.map(_.roles))
+      PathMethodRoles(m, And(r.map(e => Or(e.roles.map(_.asRight)).asLeft)))
     }.toList
   }
 }

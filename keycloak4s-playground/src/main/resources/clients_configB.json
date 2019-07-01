@@ -7,11 +7,7 @@
       "roles": [
         {
           "method": "*",
-          "roles": [
-            [
-              "admin"
-            ]
-          ]
+          "roles": { "and" : [ "admin" ] }
         }
       ]
     },
@@ -32,6 +28,27 @@
     },
     {
       "path": "{{clients}}/{{accounts}}/{{sites}}"
+    },
+    {
+      "path": "test/segment",
+      "roles": [
+        {
+          "method": "*",
+          "roles": {
+            "and" : [
+              {
+                "or" : [ "client-read", "client-write", "client-delete" ]
+              },
+              {
+                "or" : [ "account-read", "account-write", "account-delete" ]
+              },
+              {
+                "or" : [ "site-read", "site-write", "site-delete" ]
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "segments": [

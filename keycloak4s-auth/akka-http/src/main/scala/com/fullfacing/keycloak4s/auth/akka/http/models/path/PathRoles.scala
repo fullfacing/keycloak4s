@@ -14,8 +14,14 @@ object PathRoles {
   case class Create(path: String,
                     roles: List[PathMethodRoles])
 
+  case class Create2(path: String,
+                     roles: List[PathMethodRoles.Create])
 
-  def apply(pathRoles: Create): PathRoles = new PathRoles(pathRoles.path.split("/").toList, pathRoles.roles)
+  def apply(pathRoles: Create): PathRoles =
+    PathRoles(
+      pathRoles.path.split("/").toList,
+      pathRoles.roles
+    )
 
   /**
    * Alternative constructor that reads the path as a string, and converts it to the needed format.
