@@ -10,8 +10,8 @@ import org.json4s.JsonAST.JObject
  * @param roles  The roles required by the user to be granted access.
  */
 
-case class PathMethodRoles(method: Method,
-                           roles: AndOr) {
+final case class PathMethodRoles(method: Method,
+                                 roles: AndOr) {
 
   private def eval(e: Either[AndOr, String], userRoles: List[String]): Boolean = e match {
     case Right(s)  => userRoles.contains(s)
@@ -26,8 +26,8 @@ case class PathMethodRoles(method: Method,
 
 object PathMethodRoles {
 
-  case class Create(method: Method,
-                    roles: JObject)
+  final case class Create(method: Method,
+                          roles: JObject)
 
   def apply(methodRoles: Create): PathMethodRoles = {
     PathMethodRoles(methodRoles.method, AndOr(methodRoles.roles))

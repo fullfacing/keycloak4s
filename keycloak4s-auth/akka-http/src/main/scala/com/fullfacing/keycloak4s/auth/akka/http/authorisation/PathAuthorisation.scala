@@ -17,42 +17,13 @@ import scala.annotation.tailrec
 /**
  * Security configuration for a top level authorisation directive.
  *
- * Example usages:
- * {
- *  "path": "*",
- *  "roles": [
- *    {
- *      "method": "*",
- *      "roles": [["admin"]]
- *    }
- *  ]
- * }
- *
- * {
- *  "path": "v1/resource1/resource2",
- *  "roles": [
- *   {
- *      "method": "*",
- *      "roles": [["admin"]]
- *    },
- *    {
- *      "method": "GET",
- *      "roles": [["resource1-read", "resource1-write"], ["resource2-read", "resource2-write"]]
- *    },
- *    {
- *      "method": "POST",
- *      "roles": [["resource1-write"], ["resource2-write"]]
- *    }
- *  ]
- * }
- *
  * @param service         Name of the server being secured.
  * @param enforcementMode Determines how requests with no matching sec policy are handled.
  * @param paths           The configured policies.
  */
-case class PathAuthorisation(service: String,
-                             enforcementMode: PolicyEnforcementMode,
-                             paths: List[PathRoles]) extends Authorisation {
+final case class PathAuthorisation(service: String,
+                                   enforcementMode: PolicyEnforcementMode,
+                                   paths: List[PathRoles]) extends Authorisation {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -114,41 +85,47 @@ case class PathAuthorisation(service: String,
 
 object PathAuthorisation {
 
-  case class Create(service: String,
-                    enforcementMode: PolicyEnforcementMode,
-                    paths: List[PathRoles.Create2],
-                    segments: List[AuthSegment])
+  final case class Create(service: String,
+                          enforcementMode: PolicyEnforcementMode,
+                          paths: List[PathRoles.Create],
+                          segments: List[AuthSegment])
 
+  /**
+   * Apply that converts certain simplifications in the json config object into the required case class
+   * structure needed for evaluation.
+   */
   def apply(config: String): PathAuthorisation = {
     val create = read[Create](config)
 
     val pathRoles = create.paths.map { pathConfig =>
-      val roles = pathConfig.path.split("/")
-        .filter(seg => seg.startsWith("{{") && seg.endsWith("}}"))
-        .flatMap { segment =>
-          val r = segment.drop(2).dropRight(2)
-          create.segments.find(_.segment == r) match {
-            case Some(s) => Some(s.auth)
-            case _       =>
-              Logging.authResourceNotFound(r)
-              None
-          }
-        }.toList
-
-      PathRoles.Create(
-        roles = pathConfig.roles.map(PathMethodRoles(_)) ++ merge(roles.flatten),
-        path  = pathConfig.path.replace("{{", "").replace("}}", "")
+      PathRoles(
+        path  = pathConfig.path.replace("{{", "").replace("}}", ""),
+        roles = pathConfig.roles.map(PathMethodRoles.apply) ++
+          merge(findAuthValuesInConfig(pathConfig, create.segments))
       )
     }
 
     PathAuthorisation(
       service         = create.service,
       enforcementMode = create.enforcementMode,
-      paths           = pathRoles.map(PathRoles(_))
+      paths           = pathRoles
     )
   }
 
-  def merge(roles: List[MethodRoles]): List[PathMethodRoles] = {
+  private def findAuthValuesInConfig(pathConfig: PathRoles.Create, savedSegments: List[AuthSegment]): List[MethodRoles] =
+    pathConfig.path.split("/")
+      .filter(seg => seg.startsWith("{{") && seg.endsWith("}}"))
+      .flatMap { segment =>
+        val r = segment.drop(2).dropRight(2)
+        savedSegments.find(_.segment == r) match {
+          case Some(s) => Some(s.auth)
+          case _       =>
+            Logging.authResourceNotFound(r)
+            None
+        }
+      }.toList.flatten
+
+  private def merge(roles: List[MethodRoles]): List[PathMethodRoles] = {
     roles.groupBy(_.method).map { case (m, r) =>
       PathMethodRoles(m, And(r.map(e => Or(e.roles.map(_.asRight)).asLeft)))
     }.toList

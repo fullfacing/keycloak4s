@@ -21,9 +21,9 @@ import scala.annotation.tailrec
  * @param enforcementMode Determines how requests with no matching policies are handled.
  * @param nodes           The configured and secured resource segments on the server.
  */
-case class NodeAuthorisation(service: String,
-                             nodes: List[ResourceNode],
-                             enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Authorisation with Node {
+final case class NodeAuthorisation(service: String,
+                                   nodes: List[ResourceNode],
+                                   enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Authorisation with Node {
 
   /**
    * Compares the request path to the server's security policy to determine which permissions are required
@@ -45,16 +45,19 @@ case class NodeAuthorisation(service: String,
     }
 
     lazy val listPath = extractSegmentsFromPath(path)
-    listPath.nonEmpty && loop(listPath, this)
+    val isAllowed = listPath.nonEmpty && loop(listPath, this)
+
+    if (!isAllowed) Logging.authorisationPathDenied(cId, method, path)
+    isAllowed
   }
 }
 
 object NodeAuthorisation {
 
-  case class Create(service: String,
-                    nodes: List[ResourceNode],
-                    enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
-                    segments: List[AuthSegment])
+  final case class Create(service: String,
+                          nodes: List[ResourceNode],
+                          enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
+                          segments: List[AuthSegment])
 
   def apply(config: String): NodeAuthorisation = {
     val create = read[Create](config)

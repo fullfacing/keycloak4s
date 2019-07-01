@@ -39,7 +39,7 @@ object SecurityMagnet {
             Logging.requestAuthorised(cId)
             pass
           } else {
-            authorisationFailed()(cId)
+            authorisationFailed()
           }
         }
       }

@@ -68,7 +68,7 @@ object Authorisation {
     }
   }
 
-  def authorisationFailed()(implicit cId: UUID): StandardRoute = {
+  def authorisationFailed(): StandardRoute =
     complete(HttpResponse(UNAUTHORIZED.code, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, UNAUTHORIZED.getMessage)))
-  }
+
 }

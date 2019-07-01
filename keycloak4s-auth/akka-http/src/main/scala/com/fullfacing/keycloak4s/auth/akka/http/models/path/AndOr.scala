@@ -4,8 +4,8 @@ import org.json4s.JsonAST.{JArray, JObject, JString, JValue}
 
 trait AndOr
 
-case class And(and: List[Either[AndOr, String]]) extends AndOr
-case class Or(or: List[Either[AndOr, String]])  extends AndOr
+final case class And(and: List[Either[AndOr, String]]) extends AndOr
+final case class Or(or: List[Either[AndOr, String]])  extends AndOr
 
 object AndOr {
 
