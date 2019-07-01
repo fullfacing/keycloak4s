@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.auth.akka.http.models.path
 
 import com.fullfacing.keycloak4s.core.models.enums.Method
-import org.json4s.JsonAST.JObject
+import org.json4s.JsonAST.{JObject, JString, JValue}
 
 /**
  * Object containing roles required for access to be granted to the request path using the specified HTTP method.
@@ -11,14 +11,14 @@ import org.json4s.JsonAST.JObject
  */
 
 final case class PathMethodRoles(method: Method,
-                                 roles: AndOr) {
+                                 roles: RequiredRoles) {
 
-  private def eval(e: Either[AndOr, String], userRoles: List[String]): Boolean = e match {
+  private def eval(e: Either[RequiredRoles, String], userRoles: List[String]): Boolean = e match {
     case Right(s)  => userRoles.contains(s)
     case Left(obj) => evaluateUserAccess(obj, userRoles)
   }
 
-  def evaluateUserAccess(configRoles: AndOr = roles, userRoles: List[String]): Boolean = configRoles match {
+  def evaluateUserAccess(configRoles: RequiredRoles = roles, userRoles: List[String]): Boolean = configRoles match {
     case And(eithers) => eithers.forall(eval(_, userRoles))
     case Or(eithers)  => eithers.exists(eval(_, userRoles))
   }
@@ -27,9 +27,12 @@ final case class PathMethodRoles(method: Method,
 object PathMethodRoles {
 
   final case class Create(method: Method,
-                          roles: JObject)
+                          roles: JValue)
 
-  def apply(methodRoles: Create): PathMethodRoles = {
-    PathMethodRoles(methodRoles.method, AndOr(methodRoles.roles))
+  def apply(methodRoles: Create): PathMethodRoles = methodRoles.roles match {
+    case andOr: JObject =>
+      PathMethodRoles(methodRoles.method, RequiredRoles(andOr))
+    case JString(s) =>
+      PathMethodRoles(methodRoles.method, And(List(Right(s))))
   }
 }

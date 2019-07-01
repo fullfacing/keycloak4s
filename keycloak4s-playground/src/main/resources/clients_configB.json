@@ -7,7 +7,7 @@
       "roles": [
         {
           "method": "*",
-          "roles": { "and" : [ "admin" ] }
+          "roles": "admin"
         }
       ]
     },

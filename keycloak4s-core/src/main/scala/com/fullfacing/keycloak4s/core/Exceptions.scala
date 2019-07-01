@@ -22,6 +22,8 @@ object Exceptions {
   def JWKS_SERVER_ERROR(details: String)  = KeycloakException(500, "Internal Server Error", "Public keys could not be retrieved.".some, details.some)
   def UNEXPECTED(details: String)         = KeycloakException(500, "Internal Server Error", "An unexpected error has occurred.".some, details.some)
 
+  class ConfigInitialisationException extends Throwable
+
   def buildClaimsException(exceptions: NonEmptyList[KeycloakException]): KeycloakException = {
     val exceptionMessages = exceptions.toList.flatMap(_.message)
     val message = s"Claims set could not be validated due to the following reasons:\n - ${exceptionMessages.mkString("\n - ")}"
