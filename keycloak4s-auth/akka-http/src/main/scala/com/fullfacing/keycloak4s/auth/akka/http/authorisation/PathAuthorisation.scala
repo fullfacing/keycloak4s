@@ -46,7 +46,7 @@ final case class PathAuthorisation(service: String,
         cfgPath.path.drop(d).headOption.contains(h)
       }
 
-      //If there is not matching configured path, the accumulated wildcard paths are returned,
+      //If there is no matching configured path, the accumulated wildcard paths are returned,
       //else the evaluation continues with the rest of the request path and the remaining matching configured paths.
       if (matched.nonEmpty) findMatchingPaths(t, matched, d + 1, wildcard) else wildcard
   }
