@@ -33,6 +33,7 @@ class ClientsTests extends IntegrationSpec {
   val client2: AtomicReference[UUID]                        = new AtomicReference[UUID]()
   val client3: AtomicReference[UUID]                        = new AtomicReference[UUID]()
   val client4: AtomicReference[UUID]                        = new AtomicReference[UUID]()
+  val client5: AtomicReference[UUID]                        = new AtomicReference[UUID]()
   val user1: AtomicReference[UUID]                          = new AtomicReference[UUID]()
   val clientScope1: AtomicReference[UUID]                   = new AtomicReference[UUID]()
   val clientScope2: AtomicReference[UUID]                   = new AtomicReference[UUID]()
@@ -66,6 +67,12 @@ class ClientsTests extends IntegrationSpec {
     task.value.shouldReturnSuccess
   }
 
+  "createAndRetrieve" should "create a Client and subsequently fetch it" in {
+    clientService.createAndRetrieve(Client.Create("Client 5")).map(_.map { client =>
+      client5.set(client.id)
+    })
+  }.shouldReturnSuccess
+
   "fetchClients" should "successfully retrieve all clients" in {
     clientService.fetch().map { response =>
       response.map(clients => storedClients.set(clients))
@@ -87,9 +94,9 @@ class ClientsTests extends IntegrationSpec {
   "update" should "update a specific client" in {
     val task =
       (for {
-        _  <- EitherT(clientService.update(client1.get, Client.Update(client1.get, "Client 5")))
+        _  <- EitherT(clientService.update(client1.get, Client.Update(client1.get, "Client 6")))
         uc <- EitherT(clientService.fetchById(client1.get))
-      } yield uc.clientId should equal ("Client 5")).value
+      } yield uc.clientId should equal ("Client 6")).value
     task.shouldReturnSuccess
   }
 
@@ -127,8 +134,16 @@ class ClientsTests extends IntegrationSpec {
     clientService.fetchUserSessions(client1.get).shouldReturnSuccess
   }
 
+  "fetchUserSessionsS" should "stream a list of user sessions associated with this client" in {
+    clientService.fetchUserSessionsS(id = client1.get).completedL.map(_ shouldBe (())).runToFuture
+  }
+
   "fetchOfflineSessions" should "return a list of offline user sessions associated with this client" in {
     clientService.fetchOfflineSessions(client1.get).shouldReturnSuccess
+  }
+
+  "fetchOfflineSessionsS" should "stream a list of offline user sessions associated with this client" in {
+    clientService.fetchOfflineSessionsS(id = client1.get).completedL.map(_ shouldBe (())).runToFuture
   }
 
   "generateNewCertificate" should "return a new certificate with new key pair" in {
@@ -291,6 +306,7 @@ class ClientsTests extends IntegrationSpec {
         _ <- clientService.delete(client2.get)
         _ <- clientService.delete(client3.get)
         _ <- clientService.delete(client4.get)
+        _ <- clientService.delete(client5.get)
         r <- userService.delete(user1.get)
       } yield r
 

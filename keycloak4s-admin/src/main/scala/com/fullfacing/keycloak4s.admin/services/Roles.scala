@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
@@ -24,6 +25,11 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       val path: Path = Seq(client.realm, clients_path, clientId, roles_path)
       client.post[Unit](path, role.copy(clientRole = true))
     }
+
+    def createAndRetrieve(clientId: UUID, role: Role.Create): R[Either[KeycloakError, Role]] =
+      Concurrent[R].flatMap(create(clientId, role)) { _ =>
+        fetchByName(clientId, role.name)
+      }
 
     def fetch(clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
       val path: Path = Seq(client.realm, clients_path, clientId, roles_path)
@@ -107,6 +113,11 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       val path: Path = Seq(client.realm, roles_path)
       client.post[Unit](path, role.copy(clientRole = false))
     }
+
+    def createAndRetrieve(role: Role.Create): R[Either[KeycloakError, Role]] =
+      Concurrent[R].flatMap(create(role)) { _ =>
+        fetchByName(role.name)
+      }
 
     def fetch(): R[Either[KeycloakError, List[Role]]] = {
       val path: Path = Seq(client.realm, roles_path)

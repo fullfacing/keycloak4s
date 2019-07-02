@@ -56,9 +56,12 @@ class UsersTests extends IntegrationSpec {
     }
   }.runToFuture
 
+  "createAndRetrieve" should "create a User and subsequently return it" in {
+    userService.create(User.Create(username = "test_user1", enabled = true))
+  }.shouldReturnSuccess
+
   "create" should "create a User" in {
     for {
-      _     <- EitherT(userService.create(User.Create(username = "test_user1", enabled = true)))
       _     <- EitherT(userService.create(User.Create(username = "test_user2", enabled = true)))
       _     <- EitherT(userService.create(User.Create(username = "test_user3", enabled = true)))
       users <- EitherT(userService.fetch())

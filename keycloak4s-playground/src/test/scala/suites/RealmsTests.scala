@@ -47,6 +47,10 @@ class RealmsTests extends IntegrationSpec {
     } yield ()
   }.value.shouldReturnSuccess
 
+  "createAndRetrieve" should "create a Realm and subsequently return it" in {
+    realmService.createAndRetrieve(RealmRepresentation.Create(id = "test_realm2", realm = "test_realm2"))
+  }.shouldReturnSuccess
+
   "fetch" should "retrieve the Realm as configured in KeycloakClient" in {
     realmService.fetch().map(_.map { realm =>
       realm.id shouldBe "master"
@@ -61,7 +65,7 @@ class RealmsTests extends IntegrationSpec {
 
   "fetchAll" should "retrieve all Realms" in {
     realmService.fetchAll().map(_.map { realms =>
-      realms.map(_.id) should contain only ("master", "test_realm")
+      realms.map(_.id) should contain only ("master", "test_realm", "test_realm2")
     })
   }.shouldReturnSuccess
 
@@ -293,6 +297,9 @@ class RealmsTests extends IntegrationSpec {
   }
 
   "delete" should "delete a Realm with a specified name" in {
-    realmService.delete("test_realm").shouldReturnSuccess
-  }
+    for {
+      _ <- EitherT(realmService.delete("test_realm"))
+      _ <- EitherT(realmService.delete("test_realm2"))
+    } yield ()
+  }.value.shouldReturnSuccess
 }

@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
@@ -18,6 +19,11 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     val path = Seq.empty[String]
     client.post[Unit](path, realm)
   }
+
+  def createAndRetrieve(realm: RealmRepresentation.Create): R[Either[KeycloakError, RealmRepresentation]] =
+    Concurrent[R].flatMap(create(realm)) { _ =>
+      fetch(realm.realm)
+    }
 
   /**
    * Get the top-level representation of the realm.
