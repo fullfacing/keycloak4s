@@ -5,7 +5,7 @@ import akka.util.ByteString
 import cats.effect.ExitCode
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak => KeycloakM, KeycloakClient => KeycloakClientM}
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+import com.fullfacing.keycloak4s.core.models.{Group, KeycloakConfig, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.transport.backends.{AkkaHttpBackendL, MonixHttpBackendL}
 import com.fullfacing.transport.handles.Akka
@@ -22,11 +22,11 @@ object Main extends TaskApp {
    * Replace with applicable details.
    */
   val host: String        = "localhost"
-  val port: Int           = 8080
-  val targetRealm: String = "master" //Name of a Realm whose data will be accessed/manipulated.
+  val port: Int           = 8088
+  val targetRealm: String = "test" //Name of a Realm whose data will be accessed/manipulated.
   val adminRealm: String  = "master" //Name of a Realm with admin rights that can access/manipulate targetRealm.
   val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
-  val adminSecret: String = "???" //Secret of adminClient.
+  val adminSecret: String = "ade6263d-2f16-405e-8c64-ea810ef536d0" //Secret of adminClient.
 
   val authConfig  = KeycloakConfig.Auth(adminRealm, adminClient, adminSecret)
   val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)
@@ -51,13 +51,14 @@ object Main extends TaskApp {
     /* Example Usage: Provides access to the Users calls using the implicit client. **/
     val users = Keycloak.Users[Task, Source[ByteString, Any]]
     val usersM = KeycloakM.Users
+    val groups = Keycloak.Groups[Task, Source[ByteString, Any]]
 
-    usersM.fetchS().foreachL(println).onErrorHandle(_.printStackTrace())
+    //usersM.fetchS().foreachL(println).onErrorHandle(_.printStackTrace())
 
     /* Example Usage: Returns and prints all Users for the given Realm. **/
-    users.fetch().foreachL {
+    groups.createAndRetrieve(Group.Create(name = "tryThis")).foreachL {
       case Left(l)  => println(l)
-      case Right(r) => println(writePretty(r.map(_.username)))
+      case Right(r) => println(writePretty(r))
     }.map(_ => ExitCode.Success)
   }.onErrorHandle { ex => ex.printStackTrace(); ExitCode.Error }
 }

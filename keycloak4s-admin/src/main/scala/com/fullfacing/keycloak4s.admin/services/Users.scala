@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
@@ -19,6 +20,14 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   def create(user: User.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, users_path)
     client.post[Unit](path, user)
+  }
+
+  def createAndRetrieve(user: User.Create): R[Either[KeycloakError, User]] = {
+    Concurrent[R].flatMap(create(user)) { _ =>
+      Concurrent[R].map(fetch(username = Some(user.username))) { response =>
+        response.flatMap(_.headOption.toRight(Exceptions.RESOURCE_NOT_FOUND("User")))
+      }
+    }
   }
 
   def fetch(briefRep: Option[Boolean] = None, username: Option[String] = None, email: Option[String] = None, first: Option[Int] = None,
