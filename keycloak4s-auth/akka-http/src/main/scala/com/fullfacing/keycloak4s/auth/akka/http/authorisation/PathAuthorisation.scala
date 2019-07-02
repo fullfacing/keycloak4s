@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
@@ -23,7 +23,7 @@ import scala.annotation.tailrec
  */
 final case class PathAuthorisation(service: String,
                                    enforcementMode: PolicyEnforcementMode,
-                                   paths: List[PathRoles]) extends Authorisation {
+                                   paths: List[PathRule]) extends Authorisation {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -34,7 +34,7 @@ final case class PathAuthorisation(service: String,
    * @param acc      Accumulated configured wildcard paths that can authorise the path at a higher level.
    */
   @tailrec
-  private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRoles], d: Int = 0, acc: List[PathRoles] = List.empty): List[PathRoles] = reqPath match {
+  private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRule], d: Int = 0, acc: List[PathRule] = List.empty): List[PathRule] = reqPath match {
     //Return the accumulated wildcard paths, as well as the remaining path that matches the request
     case Nil    => acc ++ cfgPaths.filter(_.path.drop(d).isEmpty)
     case h :: t =>
@@ -65,11 +65,11 @@ final case class PathAuthorisation(service: String,
 
     val methodAllowed = matchedPaths.exists { p =>
 
-      lazy val hasWildCardRole = p.roles
+      lazy val hasWildCardRole = p.methodRoles
         .find(_.method == Methods.All)
         .exists(_.evaluateUserAccess(userRoles = userRoles))
 
-      val hasMethodRole = p.roles.find(_.method.value == method.value) match {
+      val hasMethodRole = p.methodRoles.find(_.method.value == method.value) match {
         case None    => noMatchingPolicy()
         case Some(r) => r.evaluateUserAccess(userRoles = userRoles)
       }
@@ -87,7 +87,7 @@ object PathAuthorisation {
 
   final case class Create(service: String,
                           enforcementMode: PolicyEnforcementMode,
-                          paths: List[PathRoles.Create],
+                          paths: List[PathRule.Create],
                           segments: List[AuthSegment])
 
   /**
@@ -98,9 +98,9 @@ object PathAuthorisation {
     val create = read[Create](config)
 
     val pathRoles = create.paths.map { pathConfig =>
-      PathRoles(
+      PathRule(
         path  = pathConfig.path.replace("{{", "").replace("}}", ""),
-        roles = pathConfig.roles.map(PathMethodRoles.apply) ++
+        methodRoles = pathConfig.methodRoles.map(PathMethodRoles.apply) ++
           merge(findAuthValuesInConfig(pathConfig, create.segments))
       )
     }
@@ -112,7 +112,7 @@ object PathAuthorisation {
     )
   }
 
-  private def findAuthValuesInConfig(pathConfig: PathRoles.Create, savedSegments: List[AuthSegment]): List[MethodRoles] =
+  private def findAuthValuesInConfig(pathConfig: PathRule.Create, savedSegments: List[AuthSegment]): List[MethodRoles] =
     pathConfig.path.split("/")
       .filter(seg => seg.startsWith("{{") && seg.endsWith("}}"))
       .flatMap { segment =>
