@@ -22,13 +22,12 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.post[Unit](path, user)
   }
 
-  def createAndRetrieve(user: User.Create): R[Either[KeycloakError, User]] = {
+  def createAndRetrieve(user: User.Create): R[Either[KeycloakError, User]] =
     Concurrent[R].flatMap(create(user)) { _ =>
       Concurrent[R].map(fetch(username = Some(user.username))) { response =>
         response.flatMap(_.headOption.toRight(Exceptions.RESOURCE_NOT_FOUND("User")))
       }
     }
-  }
 
   def fetch(briefRep: Option[Boolean] = None, username: Option[String] = None, email: Option[String] = None, first: Option[Int] = None,
             firstName: Option[String] = None, lastName: Option[String] = None, max: Option[Int] = None, search: Option[String] = None): R[Either[KeycloakError, List[User]]] = {
