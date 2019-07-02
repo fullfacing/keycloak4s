@@ -13,5 +13,5 @@ object PathRule {
                           methodRoles: List[PathMethodRoles.Create])
 
   def apply(path: String, methodRoles: List[PathMethodRoles]): PathRule =
-    PathRule(path.split("/").toList, methodRoles)
+    PathRule(path.split("/").filter(_.nonEmpty).toList, methodRoles)
 }

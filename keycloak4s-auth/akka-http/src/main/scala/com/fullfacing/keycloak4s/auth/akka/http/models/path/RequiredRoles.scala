@@ -1,7 +1,6 @@
 package com.fullfacing.keycloak4s.auth.akka.http.models.path
 
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.core.Exceptions.ConfigInitialisationException
 import org.json4s.JsonAST.{JArray, JObject, JString, JValue}
 
 sealed trait RequiredRoles
@@ -21,8 +20,5 @@ object RequiredRoles {
   def convert(obj: JObject): RequiredRoles = obj.obj.headOption.collect {
     case ("and", JArray(arr)) => And(toEithers(arr))
     case ("or", JArray(arr))  => Or(toEithers(arr))
-  }.getOrElse {
-    Logging.configSetupError()
-    throw new ConfigInitialisationException
-  }
+  }.getOrElse(Logging.authConfigInitException())
 }

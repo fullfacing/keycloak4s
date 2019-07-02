@@ -4,7 +4,7 @@
   "paths": [
     {
       "path": "*",
-      "roles": [
+      "methodRoles": [
         {
           "method": "*",
           "roles": "admin"
@@ -34,7 +34,7 @@
     },
     {
       "path": "test/segment",
-      "roles": [
+      "methodRoles": [
         {
           "method": "*",
           "roles": {

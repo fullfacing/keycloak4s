@@ -4,6 +4,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
+import com.fullfacing.keycloak4s.core.Exceptions.ConfigInitialisationException
 import com.fullfacing.keycloak4s.core.logging.Logging._
 import com.fullfacing.keycloak4s.core.logging._
 import com.fullfacing.keycloak4s.core.models.KeycloakException
@@ -69,6 +70,11 @@ object Logging {
 
   def logException(exception: KeycloakException)(log: => Unit): KeycloakException = {
     log; exception
+  }
+
+  def authConfigInitException(): Nothing = {
+    configSetupError()
+    throw new ConfigInitialisationException
   }
 
   def logValidationEx(exception: KeycloakException, tokenType: TokenType)(implicit cId: UUID): KeycloakException = {

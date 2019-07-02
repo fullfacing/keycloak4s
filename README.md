@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.19.0]
 ### Added
-- Created an And/Or data structure for better configuration of required roles on a path.
+- Added an And/Or data structure for better configuration of required roles on a path.
 - Added support for UUID ( /{id}/ ) segments in configured paths.
 
 ## [0.18.0]

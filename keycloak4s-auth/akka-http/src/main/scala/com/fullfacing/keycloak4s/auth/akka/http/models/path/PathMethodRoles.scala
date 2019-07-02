@@ -1,5 +1,6 @@
 package com.fullfacing.keycloak4s.auth.akka.http.models.path
 
+import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.core.models.enums.Method
 import org.json4s.JsonAST.{JObject, JString, JValue}
 
@@ -34,5 +35,7 @@ object PathMethodRoles {
       PathMethodRoles(methodRoles.method, RequiredRoles(andOr))
     case JString(s) =>
       PathMethodRoles(methodRoles.method, And(List(Right(s))))
+    case _ =>
+      Logging.authConfigInitException()
   }
 }
