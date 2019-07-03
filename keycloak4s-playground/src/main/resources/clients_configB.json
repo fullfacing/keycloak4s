@@ -4,14 +4,10 @@
   "paths": [
     {
       "path": "*",
-      "roles": [
+      "methodRoles": [
         {
           "method": "*",
-          "roles": [
-            [
-              "admin"
-            ]
-          ]
+          "roles": [ "admin", "super-admin" ]
         }
       ]
     },
@@ -32,6 +28,30 @@
     },
     {
       "path": "{{clients}}/{{accounts}}/{{sites}}"
+    },
+    {
+      "path": "{{clients}}/{id}/{{accounts}}/{id}/{{sites}}/{id}"
+    },
+    {
+      "path": "test/segment",
+      "methodRoles": [
+        {
+          "method": "*",
+          "roles": {
+            "and" : [
+              {
+                "or" : [ "client-view", "client-write", "client-delete" ]
+              },
+              {
+                "or" : [ "account-view", "account-write", "account-delete" ]
+              },
+              {
+                "or" : [ "site-view", "site-write", "site-delete" ]
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "segments": [

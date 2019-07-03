@@ -7,13 +7,18 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.19.0]
+### Added
+- Added an And/Or data structure for better configuration of required roles on a path.
+- Added support for UUID ( /{id}/ ) segments in configured paths.
+
 ## [0.18.0]
-## Added
+### Added
 - Added policy enforcement object builders.
 - Expanded logging to cover authorization.
 
 ## [0.17.0]
-## Added
+### Added
 - Added a new policy config structure that uses full paths to define rules instead of rules configured on nodes for each segment of the request path.
 - TokenValidator now has a validateParallel function that parses and validates an access and ID token asynchronously.
 - Leeway for the exp, iat and nbf fields can now be specified in the TokenValidator constructor.

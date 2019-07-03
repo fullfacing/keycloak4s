@@ -1,12 +1,13 @@
 package com.fullfacing.keycloak4s.auth.akka.http.authorisation
 
+import cats.implicits._
 import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{PathMethodRoles, PathRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
@@ -16,42 +17,13 @@ import scala.annotation.tailrec
 /**
  * Security configuration for a top level authorisation directive.
  *
- * Example usages:
- * {
- *  "path": "*",
- *  "roles": [
- *    {
- *      "method": "*",
- *      "roles": [["admin"]]
- *    }
- *  ]
- * }
- *
- * {
- *  "path": "v1/resource1/resource2",
- *  "roles": [
- *   {
- *      "method": "*",
- *      "roles": [["admin"]]
- *    },
- *    {
- *      "method": "GET",
- *      "roles": [["resource1-read", "resource1-write"], ["resource2-read", "resource2-write"]]
- *    },
- *    {
- *      "method": "POST",
- *      "roles": [["resource1-write"], ["resource2-write"]]
- *    }
- *  ]
- * }
- *
  * @param service         Name of the server being secured.
  * @param enforcementMode Determines how requests with no matching sec policy are handled.
  * @param paths           The configured policies.
  */
-case class PathAuthorisation(service: String,
-                             enforcementMode: PolicyEnforcementMode,
-                             paths: List[PathRoles]) extends Authorisation {
+final case class PathAuthorisation(service: String,
+                                   enforcementMode: PolicyEnforcementMode,
+                                   paths: List[PathRule]) extends Authorisation {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -62,7 +34,7 @@ case class PathAuthorisation(service: String,
    * @param acc      Accumulated configured wildcard paths that can authorise the path at a higher level.
    */
   @tailrec
-  private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRoles], d: Int = 0, acc: List[PathRoles] = List.empty): List[PathRoles] = reqPath match {
+  private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRule], d: Int = 0, acc: List[PathRule] = List.empty): List[PathRule] = reqPath match {
     //Return the accumulated wildcard paths, as well as the remaining path that matches the request
     case Nil    => acc ++ cfgPaths.filter(_.path.drop(d).isEmpty)
     case h :: t =>
@@ -74,7 +46,7 @@ case class PathAuthorisation(service: String,
         cfgPath.path.drop(d).headOption.contains(h)
       }
 
-      //If there is not matching configured path, the accumulated wildcard paths are returned,
+      //If there is no matching configured path, the accumulated wildcard paths are returned,
       //else the evaluation continues with the rest of the request path and the remaining matching configured paths.
       if (matched.nonEmpty) findMatchingPaths(t, matched, d + 1, wildcard) else wildcard
   }
@@ -93,13 +65,13 @@ case class PathAuthorisation(service: String,
 
     val methodAllowed = matchedPaths.exists { p =>
 
-      lazy val hasWildCardRole = p.roles
+      lazy val hasWildCardRole = p.methodRoles
         .find(_.method == Methods.All)
-        .exists(_.evaluateUserAccess(userRoles))
+        .exists(_.evaluateUserAccess(userRoles = userRoles))
 
-      val hasMethodRole = p.roles.find(_.method.value == method.value) match {
+      val hasMethodRole = p.methodRoles.find(_.method.value == method.value) match {
         case None    => noMatchingPolicy()
-        case Some(r) => r.evaluateUserAccess(userRoles)
+        case Some(r) => r.evaluateUserAccess(userRoles = userRoles)
       }
 
       hasMethodRole || hasWildCardRole
@@ -113,46 +85,49 @@ case class PathAuthorisation(service: String,
 
 object PathAuthorisation {
 
-  case class Create(service: String,
-                    enforcementMode: PolicyEnforcementMode,
-                    paths: List[PathRoles.Create],
-                    segments: List[AuthSegment])
+  final case class Create(service: String,
+                          enforcementMode: PolicyEnforcementMode,
+                          paths: List[PathRule.Create],
+                          segments: List[AuthSegment])
 
-  def apply(config: Create): PathAuthorisation =
-    new PathAuthorisation(config.service, config.enforcementMode, config.paths.map(PathRoles(_)))
-
+  /**
+   * Apply that converts certain simplifications in the json config object into the required case class
+   * structure needed for evaluation.
+   */
   def apply(config: String): PathAuthorisation = {
     val create = read[Create](config)
 
     val pathRoles = create.paths.map { pathConfig =>
-      val roles = pathConfig.path.split("/")
-        .filter(seg => seg.startsWith("{{") && seg.endsWith("}}"))
-        .flatMap { segment =>
-          val r = segment.drop(2).dropRight(2)
-          create.segments.find(_.segment == r) match {
-            case Some(s) => Some(s.auth)
-            case _       =>
-              Logging.authResourceNotFound(r)
-              None
-          }
-        }.toList
-
-      pathConfig.copy(
-        roles = merge(roles.flatten),
-        path  = pathConfig.path.replace("{{", "").replace("}}", "")
+      PathRule(
+        path  = pathConfig.path.replace("{{", "").replace("}}", ""),
+        methodRoles = pathConfig.methodRoles.map(PathMethodRoles.apply) ++
+          merge(findAuthValuesInConfig(pathConfig, create.segments))
       )
     }
 
     PathAuthorisation(
       service         = create.service,
       enforcementMode = create.enforcementMode,
-      paths           = pathRoles.map(PathRoles(_))
+      paths           = pathRoles
     )
   }
 
-  def merge(roles: List[MethodRoles]): List[PathMethodRoles] = {
+  private def findAuthValuesInConfig(pathConfig: PathRule.Create, savedSegments: List[AuthSegment]): List[MethodRoles] =
+    pathConfig.path.split("/")
+      .filter(seg => seg.startsWith("{{") && seg.endsWith("}}"))
+      .flatMap { segment =>
+        val r = segment.drop(2).dropRight(2)
+        savedSegments.find(_.segment == r) match {
+          case Some(s) => Some(s.auth)
+          case _       =>
+            Logging.authResourceNotFound(r)
+            None
+        }
+      }.toList.flatten
+
+  private def merge(roles: List[MethodRoles]): List[PathMethodRoles] = {
     roles.groupBy(_.method).map { case (m, r) =>
-      PathMethodRoles(m, r.map(_.roles))
+      PathMethodRoles(m, And(r.map(e => Or(e.roles.map(_.asRight)).asLeft)))
     }.toList
   }
 }
