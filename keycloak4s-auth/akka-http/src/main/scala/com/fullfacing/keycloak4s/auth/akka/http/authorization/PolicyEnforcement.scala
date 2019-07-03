@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.authorisation
+package com.fullfacing.keycloak4s.auth.akka.http.authorization
 
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.core.Exceptions
@@ -8,7 +8,7 @@ import scala.io.{BufferedSource, Source}
 object PolicyEnforcement {
 
   /**
-   * Attempts to build an Authorisation object from a JSON configuration in resources.
+   * Attempts to build an Authorization object from a JSON configuration in resources.
    * Throws an Exception in case of failure.
    */
   private def attemptBuild(filename: String): BufferedSource = {
@@ -24,26 +24,26 @@ object PolicyEnforcement {
   }
 
   /**
-   * Builds a NodeAuthorisation object from a JSON configuration file using a node structure.
+   * Builds a NodeAuthorization object from a JSON configuration file using a node structure.
    * The JSON file must be located in the resources directory.
    *
    * @param filename The file name and extension of the JSON configuration inside the Resources directory.
    *                 Example: config.json
    */
-  def buildNodeAuthorisation(filename: String): NodeAuthorisation = {
+  def buildNodeAuthorization(filename: String): NodeAuthorization = {
     val source = attemptBuild(filename)
-    NodeAuthorisation(source.mkString.stripMargin)
+    NodeAuthorization(source.mkString.stripMargin)
   }
 
   /**
-   * Builds a PathAuthorisation object from a JSON configuration file using a path structure.
+   * Builds a PathAuthorization object from a JSON configuration file using a path structure.
    * The JSON file must be located in the resources directory.
    *
    * @param filename The file name and extension of the JSON configuration inside the Resources directory.
    *                 Example: config.json
    */
-  def buildPathAuthorisation(filename: String): PathAuthorisation = {
+  def buildPathAuthorization(filename: String): PathAuthorization = {
     val source = attemptBuild(filename)
-    PathAuthorisation(source.mkString.stripMargin)
+    PathAuthorization(source.mkString.stripMargin)
   }
 }

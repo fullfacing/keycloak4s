@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.authorisation
+package com.fullfacing.keycloak4s.auth.akka.http.authorization
 
 import java.util.UUID
 
@@ -21,9 +21,9 @@ import scala.annotation.tailrec
  * @param enforcementMode Determines how requests with no matching policies are handled.
  * @param nodes           The configured and secured resource segments on the server.
  */
-final case class NodeAuthorisation(service: String,
+final case class NodeAuthorization(service: String,
                                    nodes: List[ResourceNode],
-                                   enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Authorisation with Node {
+                                   enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Authorization with Node {
 
   /**
    * Compares the request path to the server's security policy to determine which permissions are required
@@ -33,7 +33,7 @@ final case class NodeAuthorisation(service: String,
    * @param method    The HTTP method of the request.
    * @param userRoles The permissions of the user.
    */
-  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
+  def authorizeRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
     @tailrec
     def loop(path: List[String], node: Node): Boolean = path match {
       case Nil    => true
@@ -47,19 +47,19 @@ final case class NodeAuthorisation(service: String,
     lazy val listPath = extractSegmentsFromPath(path)
     val isAllowed = listPath.nonEmpty && loop(listPath, this)
 
-    if (!isAllowed) Logging.authorisationPathDenied(cId, method, path)
+    if (!isAllowed) Logging.authorizationPathDenied(cId, method, path)
     isAllowed
   }
 }
 
-object NodeAuthorisation {
+object NodeAuthorization {
 
   final case class Create(service: String,
                           nodes: List[ResourceNode],
                           enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing,
                           segments: List[AuthSegment])
 
-  def apply(config: String): NodeAuthorisation = {
+  def apply(config: String): NodeAuthorization = {
     val create = read[Create](config)
 
     def traverse(node: ResourceNode): Option[ResourceNode] = {
@@ -79,7 +79,7 @@ object NodeAuthorisation {
       }
     }
 
-    NodeAuthorisation(
+    NodeAuthorization(
       service         = create.service,
       enforcementMode = create.enforcementMode,
       nodes           = create.nodes.flatMap(traverse)
