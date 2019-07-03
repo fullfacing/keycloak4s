@@ -12,10 +12,10 @@ import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMo
  * @param roles         Required permissions for this resource based on the HTTP method.
  * @param nodes         The next configured path segments.
  */
-case class ResourceNode(segment: String,
-                        roles: List[MethodRoles],
-                        nodes: List[ResourceNode] = List.empty[ResourceNode],
-                        enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {
+final case class ResourceNode(segment: String,
+                              roles: List[MethodRoles],
+                              nodes: List[ResourceNode] = List.empty[ResourceNode],
+                              enforcementMode: PolicyEnforcementMode = PolicyEnforcementModes.Enforcing) extends Node {
 
   /**
    * Looks for a configured MethodRole that can apply to all HTTP Methods of the request,
