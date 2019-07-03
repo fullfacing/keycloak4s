@@ -34,5 +34,11 @@ developers := List(
     name  = "Stuart Jameson",
     email = "sjameson@fullfacing.com",
     url   = url("https://www.fullfacing.com/")
+  ),
+  Developer(
+    id    = "neil-fladderak",
+    name  = "Neil Fladderak",
+    email = "neil@fullfacing.com",
+    url   = url("https://www.fullfacing.com/")
   )
 )
