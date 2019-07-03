@@ -38,7 +38,7 @@ object PathMethodRoles {
       PathMethodRoles(methodRoles.method, And(List(Right(s))))
 
     case JArray(arr) =>
-      val roles = arr.collect { case string: JString => Right(string.s)}
+      val roles = arr.collect { case string: JString => Right(string.s) }
       PathMethodRoles(methodRoles.method, Or(roles))
 
     case _ =>
