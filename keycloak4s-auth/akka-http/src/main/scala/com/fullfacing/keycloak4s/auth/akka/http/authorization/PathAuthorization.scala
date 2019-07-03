@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.authorisation
+package com.fullfacing.keycloak4s.auth.akka.http.authorization
 
 import cats.implicits._
 import java.util.UUID
@@ -15,15 +15,15 @@ import org.json4s.jackson.Serialization.read
 import scala.annotation.tailrec
 
 /**
- * Security configuration for a top level authorisation directive.
+ * Security configuration for a top level authorization directive.
  *
  * @param service         Name of the server being secured.
  * @param enforcementMode Determines how requests with no matching sec policy are handled.
  * @param paths           The configured policies.
  */
-final case class PathAuthorisation(service: String,
+final case class PathAuthorization(service: String,
                                    enforcementMode: PolicyEnforcementMode,
-                                   paths: List[PathRule]) extends Authorisation {
+                                   paths: List[PathRule]) extends Authorization {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -31,7 +31,7 @@ final case class PathAuthorisation(service: String,
    * @param reqPath  The relevant segments in the request path.
    * @param cfgPaths The configured secure paths of the server.
    * @param d        The segment number of the path, used to compare the request path to the configured paths.
-   * @param acc      Accumulated configured wildcard paths that can authorise the path at a higher level.
+   * @param acc      Accumulated configured wildcard paths that can authorize the path at a higher level.
    */
   @tailrec
   private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRule], d: Int = 0, acc: List[PathRule] = List.empty): List[PathRule] = reqPath match {
@@ -60,7 +60,7 @@ final case class PathAuthorisation(service: String,
    * @param method    The HTTP method of the request.
    * @param userRoles The permissions of the user.
    */
-  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
+  def authorizeRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
     val matchedPaths = findMatchingPaths(extractSegmentsFromPath(path), paths)
 
     val methodAllowed = matchedPaths.exists { p =>
@@ -77,13 +77,13 @@ final case class PathAuthorisation(service: String,
       hasMethodRole || hasWildCardRole
     }
 
-    if (!methodAllowed) Logging.authorisationPathDenied(cId, method, path)
+    if (!methodAllowed) Logging.authorizationPathDenied(cId, method, path)
     methodAllowed
   }
 }
 
 
-object PathAuthorisation {
+object PathAuthorization {
 
   final case class Create(service: String,
                           enforcementMode: PolicyEnforcementMode,
@@ -94,7 +94,7 @@ object PathAuthorisation {
    * Apply that converts certain simplifications in the json config object into the required case class
    * structure needed for evaluation.
    */
-  def apply(config: String): PathAuthorisation = {
+  def apply(config: String): PathAuthorization = {
     val create = read[Create](config)
 
     val pathRoles = create.paths.map { pathConfig =>
@@ -105,7 +105,7 @@ object PathAuthorisation {
       )
     }
 
-    PathAuthorisation(
+    PathAuthorization(
       service         = create.service,
       enforcementMode = create.enforcementMode,
       paths           = pathRoles

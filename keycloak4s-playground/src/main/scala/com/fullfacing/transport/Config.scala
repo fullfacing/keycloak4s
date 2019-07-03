@@ -1,12 +1,12 @@
 package com.fullfacing.transport
 
-import com.fullfacing.keycloak4s.auth.akka.http.authorisation.{NodeAuthorisation, PathAuthorisation, PolicyEnforcement}
+import com.fullfacing.keycloak4s.auth.akka.http.authorization.{NodeAuthorization, PathAuthorization, PolicyEnforcement}
 
 object Config {
 
-  lazy val apiSecurityConfig: NodeAuthorisation = PolicyEnforcement.buildNodeAuthorisation("config.json")
+  lazy val apiSecurityConfig: NodeAuthorization = PolicyEnforcement.buildNodeAuthorization("config.json")
 
-  lazy val nodeClientsConfig: NodeAuthorisation = PolicyEnforcement.buildNodeAuthorisation("clients_configA.json")
+  lazy val nodeClientsConfig: NodeAuthorization = PolicyEnforcement.buildNodeAuthorization("clients_configA.json")
 
-  val pathClientsConfig: PathAuthorisation = PolicyEnforcement.buildPathAuthorisation("clients_configB.json")
+  val pathClientsConfig: PathAuthorization = PolicyEnforcement.buildPathAuthorization("clients_configB.json")
 }
