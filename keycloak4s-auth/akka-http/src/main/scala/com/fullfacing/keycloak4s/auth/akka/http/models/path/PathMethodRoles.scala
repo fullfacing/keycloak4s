@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.auth.akka.http.models.path
 
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.core.models.enums.Method
-import org.json4s.JsonAST.{JObject, JString, JValue}
+import org.json4s.JsonAST.{JArray, JObject, JString, JValue}
 
 /**
  * Object containing roles required for access to be granted to the request path using the specified HTTP method.
@@ -33,8 +33,14 @@ object PathMethodRoles {
   def apply(methodRoles: Create): PathMethodRoles = methodRoles.roles match {
     case andOr: JObject =>
       PathMethodRoles(methodRoles.method, RequiredRoles(andOr))
+
     case JString(s) =>
       PathMethodRoles(methodRoles.method, And(List(Right(s))))
+
+    case JArray(arr) =>
+      val roles = arr.collect { case string: JString => Right(string.s)}
+      PathMethodRoles(methodRoles.method, Or(roles))
+
     case _ =>
       Logging.authConfigInitException()
   }
