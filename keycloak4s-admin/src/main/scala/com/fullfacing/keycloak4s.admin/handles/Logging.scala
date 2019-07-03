@@ -14,10 +14,10 @@ object Logging {
   /* ACCESS TOKEN LOGGING **/
 
   def tokenRequest(realm: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Requesting Access Token from Keycloak for Realm $gr$realm$rs.")
+    logger.logTrace(s"${cIdLog(cId)}Requesting Access Token from Keycloak for Realm $gr$realm$cy.$rs")
 
   def tokenReceived(realm: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Access Token retrieved for Realm $gr$realm$rs.")
+    logger.logTrace(s"${cIdLog(cId)}Access Token retrieved for Realm $gr$realm$cy.$rs")
 
   def tokenRequestFailed(realm: String, cId: UUID, ex: Throwable): Unit =
     logger.error(s"${cIdErr(cId)}Access Token could not be retrieved for Realm $realm.", ex)
@@ -25,10 +25,10 @@ object Logging {
   /* REFRESH TOKEN LOGGING **/
 
   def tokenRefresh(realm: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Refreshing Access Token for Realm $gr$realm$rs.")
+    logger.logTrace(s"${cIdLog(cId)}Refreshing Access Token for Realm $gr$realm$cy.$rs")
 
   def tokenRefreshed(realm: => String, cId: => UUID): Unit =
-    logger.logTrace(s"${cIdLog(cId)}Access Token refreshed for Realm $gr$realm$rs.")
+    logger.logTrace(s"${cIdLog(cId)}Access Token refreshed for Realm $gr$realm$cy.$rs")
 
   def tokenRefreshFailed(realm: String, cId: UUID, ex: Throwable): Unit =
     logger.error(s"${cIdErr(cId)}Access Token could not be refreshed for Realm $realm.", ex)

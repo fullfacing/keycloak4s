@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
 import java.nio.ByteBuffer
+import java.util.UUID
 
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
@@ -44,13 +45,13 @@ class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Obse
    * @param batchSize  The amount of users each call should return.
    * @return
    */
-  def fetchUsersS(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[User] = {
-    val path  = Seq(client.realm, "groups", groupId, "members")
+  def fetchUsersS(groupId: UUID, first: Int = 0, limit: Int = Integer.MAX_VALUE, batchSize: Int = 100): Observable[User] = {
+    val path  = Seq(client.realm, "groups", groupId.toString, "members")
 
     client.getList[User](path, offset = first, limit = limit, batch = batchSize)
   }
 
-  def fetchUsersL(groupId: String, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Seq[User]] = {
+  def fetchUsersL(groupId: UUID, first: Int = 0, limit: Int = Integer.MAX_VALUE): Task[Seq[User]] = {
     fetchUsersS(groupId, first, limit).consumeWith(consumer())
   }
 }

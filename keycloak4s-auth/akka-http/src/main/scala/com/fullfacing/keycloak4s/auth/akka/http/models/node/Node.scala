@@ -12,7 +12,7 @@ trait Node extends PolicyEnforcement {
 
   /** Looks for a wildcard role configured for this node */
   def evaluateWildcardRole(method: HttpMethod, userRoles: List[String]): Boolean = {
-    nodes.find(_.resource == "*").exists { node =>
+    nodes.find(_.segment == "*").exists { node =>
       val hasWildcardRole    = node.evaluateWildcardMethodsRole(userRoles)
 
       lazy val hasMethodRole = node.roles.find(_.method.value == method.value) match {
@@ -25,20 +25,20 @@ trait Node extends PolicyEnforcement {
   }
 
   /**
-   * Determines user's access to the given resource.
+   * Determines user's access to the given segment.
    * A check is done to see if there is an admin role configured for this resource, and immediately accepts the request
    * if the user has that role. Otherwise a search is done for the roles configured for the HTTP method
    * of the request and either denies the request or allows evaluation to continue further down the request path.
    *
-   * @param resource  The resource segment the user is trying to access.
+   * @param segment   The resource/action the user is trying to access.
    * @param method    The HTTP method of the request.
    * @param userRoles The user's permissions
    */
-  def evaluateSecurityPolicy(resource: String, method: HttpMethod, userRoles: List[String]): Evaluation[ResourceNode] = {
+  def evaluateSecurityPolicy(segment: String, method: HttpMethod, userRoles: List[String]): Evaluation[ResourceNode] = {
     if (evaluateWildcardRole(method, userRoles)) {
       Result(true)
     } else {
-      nodes.find(_.resource == resource) match {
+      nodes.find(_.segment == segment) match {
         case None       => Result(noMatchingPolicy())
         case Some(node) => if (node.policyDisabled()) Result(true) else node.evaluate(method, userRoles)
       }

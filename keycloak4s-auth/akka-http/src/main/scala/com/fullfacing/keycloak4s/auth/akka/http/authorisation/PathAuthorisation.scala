@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthResource, MethodRoles}
+import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
 import com.fullfacing.keycloak4s.auth.akka.http.models.path.{PathMethodRoles, PathRoles}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
@@ -91,7 +91,7 @@ case class PathAuthorisation(service: String,
   def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
     val matchedPaths = findMatchingPaths(extractSegmentsFromPath(path), paths)
 
-    matchedPaths.exists { p =>
+    val methodAllowed = matchedPaths.exists { p =>
 
       lazy val hasWildCardRole = p.roles
         .find(_.method == Methods.All)
@@ -104,6 +104,9 @@ case class PathAuthorisation(service: String,
 
       hasMethodRole || hasWildCardRole
     }
+
+    if (!methodAllowed) Logging.authorisationPathDenied(cId, method, path)
+    methodAllowed
   }
 }
 
@@ -113,7 +116,7 @@ object PathAuthorisation {
   case class Create(service: String,
                     enforcementMode: PolicyEnforcementMode,
                     paths: List[PathRoles.Create],
-                    resources: List[AuthResource])
+                    segments: List[AuthSegment])
 
   def apply(config: Create): PathAuthorisation =
     new PathAuthorisation(config.service, config.enforcementMode, config.paths.map(PathRoles(_)))
@@ -126,7 +129,7 @@ object PathAuthorisation {
         .filter(seg => seg.startsWith("{{") && seg.endsWith("}}"))
         .flatMap { segment =>
           val r = segment.drop(2).dropRight(2)
-          create.resources.find(_.resource == r) match {
+          create.segments.find(_.segment == r) match {
             case Some(s) => Some(s.auth)
             case _       =>
               Logging.authResourceNotFound(r)

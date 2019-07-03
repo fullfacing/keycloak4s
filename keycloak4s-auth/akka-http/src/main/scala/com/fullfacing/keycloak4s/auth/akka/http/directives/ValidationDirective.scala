@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives
 import java.util.UUID
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.{Directive, Directive1}
 import akka.http.scaladsl.server.Directives.{complete, extractCredentials, onComplete, optionalHeaderValueByName, provide}
 import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
@@ -13,6 +13,8 @@ import scala.util.{Failure, Success}
 
 trait ValidationDirective {
 
+  type AuthPayloadWithId = (UUID, AuthPayload)
+
   /**
    * Token Validation directive to secure all inner directives.
    * Extracts the token and has it validated by the implicit instance of the TokenValidator.
@@ -21,21 +23,21 @@ trait ValidationDirective {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken()(implicit tv: TokenValidator, cId: UUID): Directive1[AuthPayload] = {
+  def validateToken(cId: => UUID)(implicit tv: TokenValidator): Directive[AuthPayloadWithId] = {
     optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
-        case Some(token)  => callValidation(token.token(), idToken)
+        case Some(token)  => callValidation(token.token(), idToken)(tv, cId)
         case None         => complete(HttpResponse(StatusCodes.Unauthorized, entity = "No token provided"))
       }
     }
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator, cId: UUID): Directive1[AuthPayload] = {
+  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator, cId: UUID): Directive[AuthPayloadWithId] = {
     val task = idToken.fold(validator.process(token))(validator.parProcess(token, _))
 
     onComplete(task.unsafeToFuture()).flatMap {
-      case Success(r) => handleValidationResponse(r)
+      case Success(r) => handleValidationResponse(r).map(payload => (cId, payload))
       case Failure(_) => complete(HttpResponse(StatusCodes.InternalServerError, entity = "An unexpected error occurred"))
     }
   }
