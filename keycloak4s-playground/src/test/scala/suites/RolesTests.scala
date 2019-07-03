@@ -43,6 +43,13 @@ class RolesTests extends IntegrationSpec {
     name       = rRole2Name
   )
 
+  private val rRole3Name = "realmRole3"
+  val rRole3Create: Role.Create = Role.Create(
+    clientRole = false,
+    composite  = false,
+    name       = rRole3Name
+  )
+
   private val cRole1Name = "clientRole1"
   val cRole1Create: Role.Create = Role.Create(
     clientRole = true,
@@ -57,6 +64,13 @@ class RolesTests extends IntegrationSpec {
     name       = cRole2Name
   )
 
+  private val cRole3Name = "clientRole3"
+  val cRole3Create: Role.Create = Role.Create(
+    clientRole = true,
+    composite  = false,
+    name       = cRole3Name
+  )
+
   private val group1Create = Group.Create("group1")
   private val group2Create = Group.Create("group2")
 
@@ -66,8 +80,10 @@ class RolesTests extends IntegrationSpec {
   /* References for storing tests results to be used in subsequent tests. **/
   private val rRole1     = new AtomicReference[UUID]()
   private val rRole2     = new AtomicReference[UUID]()
+  private val rRole3     = new AtomicReference[UUID]()
   private val cRole1     = new AtomicReference[UUID]()
   private val cRole2     = new AtomicReference[UUID]()
+  private val cRole3     = new AtomicReference[UUID]()
   private val clientUuid = new AtomicReference[UUID]()
   private val user1      = new AtomicReference[UUID]()
   private val user2      = new AtomicReference[UUID]()
@@ -128,6 +144,18 @@ class RolesTests extends IntegrationSpec {
 
     task.shouldReturnSuccess
   }
+
+  "createAndRetrieve" should "create a realm level role and subsequently return it" in {
+    realmRoleService.createAndRetrieve(rRole3Create).map(_.map { role =>
+      rRole3.set(role.id)
+    })
+  }.shouldReturnSuccess
+
+  it should "create a client level role and subsequently return it" in {
+    clientRoleService.createAndRetrieve(clientUuid.get(), cRole3Create).map(_.map { role =>
+      cRole3.set(role.id)
+    })
+  }.shouldReturnSuccess
 
   "Fetch" should "successfully fetch the previously created realm roles" in {
     val task =
@@ -376,6 +404,7 @@ class RolesTests extends IntegrationSpec {
       for {
         _ <- realmRoleService.remove(rRole1Name)
         _ <- realmRoleService.remove(rRole2Name)
+        _ <- realmRoleService.remove(rRole3Name)
       } yield Right(())
 
     task.shouldReturnSuccess
@@ -385,7 +414,8 @@ class RolesTests extends IntegrationSpec {
     val task =
       for {
         _ <- clientRoleService.remove(clientUuid.get(), cRole1Name)
-        r <- clientRoleService.remove(clientUuid.get(), cRole2Name)
+        _ <- clientRoleService.remove(clientUuid.get(), cRole2Name)
+        r <- clientRoleService.remove(clientUuid.get(), cRole3Name)
       } yield r
 
     task.shouldReturnSuccess

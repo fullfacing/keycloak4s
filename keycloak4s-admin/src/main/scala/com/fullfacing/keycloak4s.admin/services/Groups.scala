@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 
@@ -18,6 +19,13 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     val path = Seq(client.realm, "groups")
     client.post[Unit](path, group)
   }
+
+  def createAndRetrieve(group: Group.Create): R[Either[KeycloakError, Group]] =
+    Concurrent[R].flatMap(create(group)) { _ =>
+      Concurrent[R].map(fetch(search = Some(group.name))) { response =>
+        response.flatMap(_.find(_.name == group.name).toRight(Exceptions.RESOURCE_NOT_FOUND("Group")))
+      }
+    }
 
   def createSubGroup(groupId: UUID, group: Group.Create): R[Either[KeycloakError, Group]] = {
     val path = Seq(client.realm, "groups", groupId.toString, "children")

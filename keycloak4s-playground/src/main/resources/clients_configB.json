@@ -7,7 +7,7 @@
       "methodRoles": [
         {
           "method": "*",
-          "roles": "admin"
+          "roles": [ "admin", "super-admin" ]
         }
       ]
     },

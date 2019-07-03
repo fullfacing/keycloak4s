@@ -19,6 +19,7 @@ class GroupsTests extends IntegrationSpec {
   val group1: AtomicReference[UUID]             = new AtomicReference[UUID]()
   val group2: AtomicReference[UUID]             = new AtomicReference[UUID]()
   val group3: AtomicReference[UUID]             = new AtomicReference[UUID]()
+  val group4: AtomicReference[UUID]             = new AtomicReference[UUID]()
   val storedRoleId: AtomicReference[UUID]       = new AtomicReference[UUID]()
   val storedClientId: AtomicReference[UUID]     = new AtomicReference[UUID]()
 
@@ -53,16 +54,46 @@ class GroupsTests extends IntegrationSpec {
     task.value.shouldReturnSuccess
   }
 
+  "createAndRetrieve" should "create a Group and subsequently return it" in {
+    groupService.createAndRetrieve(Group.Create("Group 4")).map(_.map { group =>
+      group4.set(group.id)
+    })
+  }.shouldReturnSuccess
+
   "fetchGroups" should "successfully retrieve all groups" in {
     groupService.fetch().map(_.map { response =>
       storedGroups.set(response)
     }).shouldReturnSuccess
   }
 
+  "fetchS" should "stream all groups" in {
+    groupService.fetchS().toListL.map { groups =>
+      groups.sortBy(_.name) shouldBe storedGroups.get().toList.sortBy(_.name)
+    }.runToFuture
+  }
+
+  "fetchL" should "stream all groups and return it as a list" in {
+    groupService.fetchL().map { groups =>
+      groups.sortBy(_.name) shouldBe storedGroups.get().toList.sortBy(_.name)
+    }.runToFuture
+  }
+
   "fetchUsers" should "successfully retrieve all users" in {
     userService.fetch().map(_.map { response =>
       storedUsers.set(response)
     }).shouldReturnSuccess
+  }
+
+  "fetchUsersS" should "stream all users" in {
+    groupService.fetchUsersS(group1.get()).toListL.map { groups =>
+      groups shouldBe empty
+    }.runToFuture
+  }
+
+  "fetchUsersL" should "stream all users and return it as a list" in {
+    groupService.fetchUsersL(group1.get()).map { groups =>
+      groups shouldBe empty
+    }.runToFuture
   }
 
   "fetchByName" should "successfully return a sequence of Group model" in {
@@ -187,7 +218,7 @@ class GroupsTests extends IntegrationSpec {
 
   "Count a specific number of groups" should "successfully return an expected number of groups" in {
     groupService.count().map(_.map( count =>
-      count shouldBe Count(4)
+      count shouldBe Count(5)
     )).shouldReturnSuccess
   }
 
@@ -207,6 +238,7 @@ class GroupsTests extends IntegrationSpec {
         _ <- groupService.delete(group1.get())
         _ <- groupService.delete(group2.get())
         _ <- groupService.delete(group3.get())
+        _ <- groupService.delete(group4.get())
         r <- userService.delete(user1.get())
       } yield r
 
