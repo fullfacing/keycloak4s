@@ -110,6 +110,10 @@ val sttpMonix: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp" %% "json4s"                          % sttpVersion
 )
 
+val akkaTestKit: Seq[ModuleID] = Seq(
+  "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion
+)
+
 parallelExecution in Test := false
 
 // --------------------------------------------- //
@@ -158,7 +162,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
-lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ scalaMeter
+lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ scalaMeter ++ akkaTestKit
 
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(global: _*)

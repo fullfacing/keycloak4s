@@ -12,6 +12,24 @@
       ]
     },
     {
+      "path" : "segment/*",
+      "methodRoles" : [
+        {
+          "method" : "*",
+          "roles" : { "and": [ "segment-star", "segment" ] }
+        }
+      ]
+    },
+    {
+      "path" : "segment",
+      "methodRoles" : [
+        {
+          "method" : "*",
+          "roles" : "segment"
+        }
+      ]
+    },
+    {
       "path": "{{sites}}"
     },
     {

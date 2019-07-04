@@ -5,7 +5,7 @@ import com.fullfacing.keycloak4s.core.Exceptions
 
 import scala.io.{BufferedSource, Source}
 
-object PolicyEnforcement {
+object PolicyBuilders {
 
   /**
    * Attempts to build an Authorization object from a JSON configuration in resources.

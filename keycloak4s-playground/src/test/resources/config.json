@@ -41,6 +41,15 @@
       ]
     },
     {
+      "path" : "/v1/segment/{id}/*",
+      "methodRoles" : [
+        {
+          "method": "*",
+          "roles": "wildcard-role"
+        }
+      ]
+    },
+    {
       "path" : "/v1/segment/{id}/action",
       "methodRoles" : [
         {
