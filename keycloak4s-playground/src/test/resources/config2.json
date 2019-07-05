@@ -13,6 +13,19 @@
     },
     {
       "path" : "/v1/{{resource1}}/{id}/{{resource2}}/{id}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/{{resource2}}/action",
+      "methodRoles": [
+        {
+          "method" : "GET",
+          "roles" : "action-get"
+        },
+        {
+          "method" : "HEAD",
+          "roles" : "action-head"
+        }
+      ]
     }
   ],
   "segments" : [

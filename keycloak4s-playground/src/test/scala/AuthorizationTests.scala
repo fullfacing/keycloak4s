@@ -48,7 +48,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
 
     auth.service shouldBe "api-test"
     auth.enforcementMode shouldBe PolicyEnforcementModes.Enforcing
-    auth.paths.size shouldBe 4
+    auth.paths.size shouldBe 5
     auth.paths shouldBe AuthTestData.config2.paths
 
     config2.set(auth)
@@ -64,7 +64,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     result shouldBe true
   }
 
-  it should "accept" in {
+  it should "recognise a UUID segment in the request and handle accordingly" in {
     val path      = Path("/v1/segment/689c4936-5274-4543-85d7-296cc456100b/anything/here")
     val method    = HttpMethods.HEAD
     val userRoles = List("wildcard-role")
@@ -133,6 +133,4 @@ class AuthorizationTests extends FlatSpec with Matchers {
 
     result shouldBe false
   }
-
-
 }

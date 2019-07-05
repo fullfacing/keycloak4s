@@ -19,7 +19,7 @@ object SecurityMagnet {
   /* Authorizes a request with a correlation ID passed through. **/
   implicit def run(parameters: (Authorization, UUID))(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
     val (securityConfig, cId) = parameters
-    authorize(securityConfig, cId)(tokenValidator)
+    authorize(securityConfig, cId)
   }
 
   /* Authorizes a request and generates a new correlation ID. **/

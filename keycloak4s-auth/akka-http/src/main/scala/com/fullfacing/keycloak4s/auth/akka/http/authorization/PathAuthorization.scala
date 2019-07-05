@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule}
+import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule, RequiredRoles}
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
@@ -99,9 +99,11 @@ object PathAuthorization {
 
     val pathRoles = create.paths.map { pathConfig =>
       PathRule(
-        path  = pathConfig.path.replace("{{", "").replace("}}", ""),
-        methodRoles = pathConfig.methodRoles.map(PathMethodRoles.apply) ++
-          merge(findAuthValuesInConfig(pathConfig, create.segments))
+        path = pathConfig.path.replace("{{", "").replace("}}", ""),
+        methodRoles = merge(
+          findAuthValuesInConfig(pathConfig, create.segments),
+          pathConfig.methodRoles.map(PathMethodRoles.apply)
+        )
       )
     }
 
@@ -125,9 +127,26 @@ object PathAuthorization {
         }
       }.toList.flatten
 
-  private def merge(roles: List[MethodRoles]): List[PathMethodRoles] = {
-    roles.groupBy(_.method).map { case (m, r) =>
-      PathMethodRoles(m, And(r.map(e => Or(e.roles.map(_.asRight)).asLeft)))
-    }.toList
+
+  private def merge(segmentRoles: List[MethodRoles], pathRoles: List[PathMethodRoles]): List[PathMethodRoles] = {
+    Methods.values.toList.flatMap { method =>
+
+      val sr: Option[RequiredRoles] = segmentRoles.filter(_.method == method) match {
+        case Nil      => None
+        case h :: Nil => Some(Or(h.roles.map(_.asRight)))
+        case l        => Some(And(l.map(r => Or(r.roles.map(_.asRight)).asLeft)))
+      }
+
+      val pr = pathRoles.find(_.method == method).map(_.roles)
+
+      val roles = (sr, pr) match {
+        case (Some(s), Some(p)) => Some(And(List(Left(s), Left(p))))
+        case (None, Some(p))    => Some(p)
+        case (Some(s), None)    => Some(s)
+        case (None, None)       => None
+      }
+
+      roles.map(r => PathMethodRoles(method, r))
+    }
   }
 }

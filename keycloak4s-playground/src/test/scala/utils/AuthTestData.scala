@@ -9,35 +9,42 @@ object AuthTestData {
 
     val resource1MethodRoles: List[PathMethodRoles] = List(
       PathMethodRoles(
-        method = Methods.Get,
-        roles  = And(List(Left(Or(List(Right("read1"), Right("write1"), Right("delete1"))))))
+        method = Methods.Delete,
+        roles  = Or(List(Right("delete1")))
       ),
       PathMethodRoles(
-        method = Methods.Delete,
-        roles  = And(List(Left(Or(List(Right("delete1"))))))
+        method = Methods.Get,
+        roles  = Or(List(Right("read1"), Right("write1"), Right("delete1")))
       ),
       PathMethodRoles(
         method = Methods.Post,
-        roles  = And(List(Left(Or(List(Right("write1"), Right("delete1"))))))
+        roles  = Or(List(Right("write1"), Right("delete1")))
       )
     )
 
     val resource2MethodRoles: List[PathMethodRoles] = List(
       PathMethodRoles(
-        method = Methods.Get,
-        roles  = And(List(Left(Or(List(Right("read2"), Right("write2"), Right("delete2"))))))
+        method = Methods.Delete,
+        roles  = Or(List(Right("delete2")))
       ),
       PathMethodRoles(
-        method = Methods.Delete,
-        roles  = And(List(Left(Or(List(Right("delete2"))))))
+        method = Methods.Get,
+        roles  = Or(List(Right("read2"), Right("write2"), Right("delete2")))
       ),
       PathMethodRoles(
         method = Methods.Post,
-        roles  = And(List(Left(Or(List(Right("write2"), Right("delete2"))))))
+        roles  = Or(List(Right("write2"), Right("delete2")))
       )
     )
 
     val resourceMergeMethodRoles: List[PathMethodRoles] = List(
+      PathMethodRoles(
+        method = Methods.Delete,
+        roles  = And(List(
+          Left(Or(List(Right("delete1")))),
+          Left(Or(List(Right("delete2"))))
+        ))
+      ),
       PathMethodRoles(
         method = Methods.Get,
         roles  = And(List(
@@ -46,11 +53,35 @@ object AuthTestData {
         ))
       ),
       PathMethodRoles(
+        method = Methods.Post,
+        roles  = And(List(
+          Left(Or(List(Right("write1"), Right("delete1")))),
+          Left(Or(List(Right("write2"), Right("delete2"))))
+        ))
+      )
+    )
+
+    val resourceActionMethodRoles: List[PathMethodRoles] = List(
+      PathMethodRoles(
         method = Methods.Delete,
         roles  = And(List(
           Left(Or(List(Right("delete1")))),
           Left(Or(List(Right("delete2"))))
         ))
+      ),
+      PathMethodRoles(
+        method = Methods.Get,
+        roles  = And(List(
+          Left(And(List(
+            Left(Or(List(Right("read1"), Right("write1"), Right("delete1")))),
+            Left(Or(List(Right("read2"), Right("write2"), Right("delete2"))))
+          ))),
+          Left(And(List(Right("action-get")))),
+        ))
+      ),
+      PathMethodRoles(
+        method = Methods.Head,
+        roles  = And(List(Right("action-head")))
       ),
       PathMethodRoles(
         method = Methods.Post,
@@ -81,6 +112,11 @@ object AuthTestData {
       methodRoles = resourceMergeMethodRoles
     )
 
-    val paths: List[PathRule] = List(path1, path2, path3, path4)
+    val path5: PathRule = PathRule(
+      path = List("v1", "resource1", "{id}", "resource2", "action"),
+      methodRoles = resourceActionMethodRoles
+    )
+
+    val paths: List[PathRule] = List(path1, path2, path3, path4, path5)
   }
 }
