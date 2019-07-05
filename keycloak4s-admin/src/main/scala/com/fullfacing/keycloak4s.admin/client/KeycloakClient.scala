@@ -54,13 +54,6 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
 
     val resp = setResponse[B](request.header("Accept", "application/json"))
 
-    /*Logging.requestSent(requestInfo, cId)
-
-    val response = F.flatMap(resp) {
-      case Right(r) => F.map(r.send())(liftM(_, requestInfo))
-      case Left(e)  => F.unit(e.asLeft[B])
-    }*/
-
     def sendWithLogging(req: RequestT[Id, B, Nothing]) = {
       Logging.requestSent(requestInfo, cId)
       req.send()
