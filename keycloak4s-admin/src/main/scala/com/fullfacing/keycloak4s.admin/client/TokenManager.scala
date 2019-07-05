@@ -74,15 +74,17 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
   private def issueAccessToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
 
-    val sttpRequest = sttp.post(tokenEndpoint)
-      .body(password)
-      .response(asJson[TokenResponse])
-      .mapResponse(mapToToken)
-      .send()
+    val sendF = Concurrent[F].unit.flatMap { _ =>
+      Logging.tokenRequest(config.realm, cId)
 
-    Logging.tokenRequest(config.realm, cId)
+      sttp.post(tokenEndpoint)
+        .body(password)
+        .response(asJson[TokenResponse])
+        .mapResponse(mapToToken)
+        .send()
+    }
 
-    Concurrent[F].map(sttpRequest)(liftM(_, requestInfo)).map {
+    sendF.map(liftM(_, requestInfo)).map {
       handleLogging(_)(
         success = _ => Logging.tokenReceived(config.realm, cId),
         failure = Logging.tokenRequestFailed(config.realm, cId, _)
@@ -93,15 +95,17 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
   private def refreshAccessToken(t: Token)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
 
-    Logging.tokenRefresh(config.realm, cId)
+    val sendF = Concurrent[F].unit.flatMap { _ =>
+      Logging.tokenRefresh(config.realm, cId)
 
-    val sttpRequest = sttp.post(tokenEndpoint)
-      .body(refresh(t))
-      .response(asJson[TokenResponse])
-      .mapResponse(mapToToken)
-      .send()
+      sttp.post(tokenEndpoint)
+        .body(refresh(t))
+        .response(asJson[TokenResponse])
+        .mapResponse(mapToToken)
+        .send()
+    }
 
-    Concurrent[F].map(sttpRequest)(liftM(_, requestInfo)).map {
+    sendF.map(liftM(_, requestInfo)).map {
       handleLogging(_)(
         success = _ => Logging.tokenRefreshed(config.realm, cId),
         failure = Logging.tokenRefreshFailed(config.realm, cId, _)
