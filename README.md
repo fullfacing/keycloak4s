@@ -9,8 +9,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.19.2]
 ### Changed
-- Groups service role mapping functions (add and remove) now use Role.Mapping case class.
-- Changed the fields in the Role.Mapping case to be mandatory.
+- Groups service role mapping functions (add and remove) now take Role.Mapping case class.
+- Changed the fields in the Role.Mapping case class to be mandatory.
 
 ## [0.19.1]
 ### Fixed
