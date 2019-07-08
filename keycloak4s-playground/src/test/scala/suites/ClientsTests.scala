@@ -157,15 +157,15 @@ class ClientsTests extends IntegrationSpec {
   "Create Ancillary Objects" should "create all objects needed to test all the clients service scope calls" in {
     val task =
       for {
-        _ <- clientService.createClientScope(ClientScope.Create("ClientScope 1"))
-        r <- clientService.createClientScope(ClientScope.Create("ClientScope 2"))
+        _ <- clientScopeService.create(ClientScope.Create("ClientScope 1"))
+        r <- clientScopeService.create(ClientScope.Create("ClientScope 2"))
       } yield r
 
     task.shouldReturnSuccess
   }
 
   "fetch client scope" should "successfully retrieve all client scopes" in {
-    clientService.fetchClientScopes().map { response =>
+    clientScopeService.fetch().map { response =>
       response.map(scopes => storedClientScopes.set(scopes))
       response shouldBe a [Right[_, _]]
     }.runToFuture
@@ -173,7 +173,7 @@ class ClientsTests extends IntegrationSpec {
 
   "Fetch Ancillary Object's UUIDs for ClientScopes" should
     "retrieve the created objects and store their IDs for ClientScopes" in {
-    val task = clientService.fetchClientScopes().map(_.map { c =>
+    val task = clientScopeService.fetch().map(_.map { c =>
       clientScope1.set(c.find(_.name == "ClientScope_1").get.id)
       clientScope2.set(c.find(_.name == "ClientScope_2").get.id)
     })
@@ -182,7 +182,7 @@ class ClientsTests extends IntegrationSpec {
   }
 
   "fetch client scope by id" should "retrieve a specific client scope" in {
-    clientService.fetchClientScopeById(clientScope1.get).map(_.map { scope =>
+    clientScopeService.fetchById(clientScope1.get).map(_.map { scope =>
       scope.name should be ("ClientScope_1")
     }).shouldReturnSuccess
   }
@@ -190,8 +190,8 @@ class ClientsTests extends IntegrationSpec {
   "update client scope" should "return the updated client scope" in {
     val task =
       (for {
-        _     <- EitherT(clientService.updateClientScope(clientScope1.get, ClientScope.Update("ClientScope 3".some)))
-        scope <- EitherT(clientService.fetchClientScopeById(clientScope1.get))
+        _     <- EitherT(clientScopeService.update(clientScope1.get, ClientScope.Update("ClientScope 3".some)))
+        scope <- EitherT(clientScopeService.fetchById(clientScope1.get))
       } yield {
         scope.name should be ("ClientScope_3")
       }).value
@@ -237,15 +237,15 @@ class ClientsTests extends IntegrationSpec {
   "deleteClientScope" should "delete all client scopes" in {
     val task =
       (for {
-        _  <- EitherT(clientService.deleteClientScope(clientScope1.get))
-        cs <- EitherT(clientService.deleteClientScope(clientScope2.get))
+        _  <- EitherT(clientScopeService.delete(clientScope1.get))
+        cs <- EitherT(clientScopeService.delete(clientScope2.get))
       }yield cs ).value
     task.shouldReturnSuccess
   }
 
   "fetchClientScopeAfterDelete" should
     "successfully retrieve all client scopes to check if ll of them were deleted" in {
-    clientService.fetchClientScopes().map(_.map { response =>
+    clientScopeService.fetch().map(_.map { response =>
       response shouldNot contain only ("ClientScope_1", "ClientScope_2")
     }).shouldReturnSuccess
   }

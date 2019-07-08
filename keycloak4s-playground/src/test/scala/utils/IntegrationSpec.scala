@@ -2,6 +2,7 @@ package utils
 
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services._
+import com.fullfacing.keycloak4s.admin.monix.services.ClientScopes
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.transport.backends.MonixHttpBackendL
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
@@ -25,6 +26,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   /* Keycloak Services **/
   val attackDetService: AttackDetection   = Keycloak.AttackDetection
   val authMgmt: AuthenticationManagement  = Keycloak.AuthenticationManagement
+  val clientScopeService: ClientScopes    = Keycloak.ClientScopes
   val clientService: Clients              = Keycloak.Clients
   val componentService: Components        = Keycloak.Components
   val groupService: Groups                = Keycloak.Groups
@@ -33,7 +35,6 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   val realmService: RealmsAdmin           = Keycloak.RealmsAdmin
   val rolesByIdService: RolesById         = Keycloak.RolesById
   val roleService: Roles                  = Keycloak.Roles
-  val scopeMapService: ScopeMappings      = Keycloak.ScopeMappings
   val userService: Users                  = Keycloak.Users
 
   /* Sub-Services **/
