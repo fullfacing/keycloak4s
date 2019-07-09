@@ -5,8 +5,7 @@ import java.util.UUID
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
@@ -43,7 +42,7 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[Group](path)
   }
 
-  def update(groupId: UUID, group: Group): R[Either[KeycloakError, Unit]] = {
+  def update(groupId: UUID, group: Group.Update): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups", groupId.toString)
     client.put[Unit](path, group)
   }

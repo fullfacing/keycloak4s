@@ -3,8 +3,7 @@ package com.fullfacing.keycloak4s.admin.services
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.core.models.enums.{Direction, TriggerSyncAction}
-import com.fullfacing.keycloak4s.core.models.{SimpleNameResponse, Synchronization}
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, SimpleNameResponse, Synchronization}
 
 import scala.collection.immutable.Seq
 

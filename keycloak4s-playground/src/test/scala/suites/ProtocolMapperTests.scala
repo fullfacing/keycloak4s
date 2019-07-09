@@ -38,8 +38,8 @@ class ProtocolMapperTests extends IntegrationSpec {
         c  <- EitherT(clientService.fetch(clientId = Some("protocol-mappers-test")))
         c1 <- EitherT.fromOption[Task](c.headOption, Errors.CLIENT_NOT_FOUND)
         _  =  clientUuid.set(c1.id)
-        _  <- EitherT(clientService.createClientScope(scope1Create))
-        cs <- EitherT(clientService.fetchClientScopes())
+        _  <- EitherT(clientScopeService.create(scope1Create))
+        cs <- EitherT(clientScopeService.fetch())
         s1 <- EitherT.fromOption[Task](cs.find(_.name == "scope1"), Errors.SCOPE_NOT_FOUND)
       } yield scope1.set(s1.id)
 
@@ -203,7 +203,7 @@ class ProtocolMapperTests extends IntegrationSpec {
     val task =
       for {
         _ <- clientService.delete(clientUuid.get())
-        r <- clientService.deleteClientScope(scope1.get())
+        r <- clientScopeService.delete(scope1.get())
       } yield r
 
     task.shouldReturnSuccess

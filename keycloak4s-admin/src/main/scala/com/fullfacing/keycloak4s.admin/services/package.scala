@@ -11,9 +11,6 @@ import scala.collection.immutable.{Seq => ImmutableSeq}
 
 package object services {
 
-  case class Id(id: UUID)
-  case class Name(name: String)
-
   type Path = ImmutableSeq[String]
 
   def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = {

@@ -278,7 +278,7 @@ class UsersTests extends IntegrationSpec {
 
     for {
       _     <- EitherT(userService.removeRealmRoles(user.id, List(role)))
-      _     <- EitherT(realmRoleService.remove("test_role"))
+      _     <- EitherT(realmRoleService.delete("test_role"))
       roles <- EitherT(userService.fetchRealmRoles(user.id))
     } yield roles.map(_.name) shouldNot contain ("test_role")
   }.value.shouldReturnSuccess
@@ -341,7 +341,7 @@ class UsersTests extends IntegrationSpec {
     for {
       _     <- EitherT(userService.removeClientRoles(storedClientId.get(), user.id, List(role)))
       roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
-      _     <- EitherT(clientRoleService.remove(storedClientId.get(), "test_role"))
+      _     <- EitherT(clientRoleService.delete(storedClientId.get(), "test_role"))
     } yield roles shouldNot be (empty)
   }.value.shouldReturnSuccess
 
