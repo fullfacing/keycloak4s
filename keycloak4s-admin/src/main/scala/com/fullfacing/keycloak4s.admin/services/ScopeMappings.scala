@@ -29,7 +29,7 @@ class ScopeMappings[R[+_]: Concurrent, S](implicit keycloakClient: KeycloakClien
    * @param roleNames Names of the client level roles to be mapped to the client scope.
    */
   def addClientRoles(id: UUID, clientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
-    val body = roleNames.map(r => Role.Mapping(name = Some(r)))
+    val body = roleNames.map(Name)
     val path = Seq(keycloakClient.realm, `client-scopes`, id.toString, `scope-mappings`, "clients", clientId.toString)
     keycloakClient.post[Unit](path, body)
   }
@@ -46,7 +46,7 @@ class ScopeMappings[R[+_]: Concurrent, S](implicit keycloakClient: KeycloakClien
    * @param roleNames Names of the client level roles to be removed from the client scope.
    */
   def removeClientRoles(id: UUID, clientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
-    val body = roleNames.map(r => Role.Mapping(name = Some(r)))
+    val body = roleNames.map(Name)
     val path = Seq(keycloakClient.realm, `client-scopes`, id.toString, `scope-mappings`, "clients", clientId.toString)
     keycloakClient.delete[Unit](path, body)
   }
@@ -79,7 +79,7 @@ class ScopeMappings[R[+_]: Concurrent, S](implicit keycloakClient: KeycloakClien
    * @param roleIds IDs of the realm level roles to be mapped to the client scope.
    */
   def addRealmRoles(id: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(r => Role.Mapping(Some(r)))
+    val body = roleIds.map(Id)
     val path = Seq(keycloakClient.realm, `client-scopes`, id.toString, `scope-mappings`, "realm")
     keycloakClient.post[Unit](path, body)
   }
@@ -97,7 +97,7 @@ class ScopeMappings[R[+_]: Concurrent, S](implicit keycloakClient: KeycloakClien
    * @param roleIds IDs of the realm level roles to be removed from the client scope.
    */
   def removeRealmRoles(id: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(r => Role.Mapping(Some(r)))
+    val body = roleIds.map(Id)
     val path = Seq(keycloakClient.realm, `client-scopes`, id.toString, `scope-mappings`, "realm")
     keycloakClient.delete[Unit](path, body)
   }
