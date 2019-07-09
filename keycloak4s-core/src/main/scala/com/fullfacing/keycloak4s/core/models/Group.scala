@@ -15,4 +15,7 @@ object Group {
 
   final case class Create(name: String,
                           attributes: Map[String, List[String]] = Map.empty[String, List[String]])
+
+  final case class Update(name: Option[String] = None,
+                          attributes: Option[Map[String, List[String]]] = None)
 }

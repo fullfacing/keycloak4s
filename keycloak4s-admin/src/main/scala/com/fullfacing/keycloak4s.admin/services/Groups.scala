@@ -42,7 +42,7 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[Group](path)
   }
 
-  def update(groupId: UUID, group: Group): R[Either[KeycloakError, Unit]] = {
+  def update(groupId: UUID, group: Group.Update): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups", groupId.toString)
     client.put[Unit](path, group)
   }
