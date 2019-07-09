@@ -161,7 +161,7 @@ class GroupsTests extends IntegrationSpec {
 
     for {
       _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(Role.Mapping(role.id, role.name))))
-      _ <- EitherT(realmRoleService.remove("test_role1"))
+      _ <- EitherT(realmRoleService.delete("test_role1"))
     } yield ()
   }.value.shouldReturnSuccess
 
@@ -201,7 +201,7 @@ class GroupsTests extends IntegrationSpec {
 
     for {
       _ <- EitherT(groupService.removeClientRoles(storedClientId.get(), group2.get(), List(Role.Mapping(role.id, role.name))))
-      _ <- EitherT(clientRoleService.remove(storedClientId.get(), role.name))
+      _ <- EitherT(clientRoleService.delete(storedClientId.get(), role.name))
     } yield ()
   }.value.shouldReturnSuccess
 

@@ -38,7 +38,7 @@ class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) 
 
 
   /** Get all scope mappings for the client scope */
-  def fetchScopeMappings(scopeId: UUID): R[Either[KeycloakError, Mappings]] = {
+  def fetchMappedRoles(scopeId: UUID): R[Either[KeycloakError, Mappings]] = {
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings")
     client.get[Mappings](path)
   }
@@ -52,13 +52,13 @@ class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) 
    * @param roleNames Names of the client level roles to be mapped to the client scope.
    */
   def addClientRoles(scopeId: UUID, clientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
-    val body = roleNames.map(Name)
+    val body = roleNames.map(Role.Name)
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings", "clients", clientId.toString)
     client.post[Unit](path, body)
   }
 
   /** Get the roles associated with a client’s scope. Returns roles for the client. */
-  def fetchClientRoles(scopeId: UUID, clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+  def fetchMappedClientRoles(scopeId: UUID, clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings", "clients", clientId.toString)
     client.get[List[Role]](path)
   }
@@ -69,7 +69,7 @@ class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) 
    * @param roleNames Names of the client level roles to be removed from the client scope.
    */
   def removeClientRoles(scopeId: UUID, clientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
-    val body = roleNames.map(Name)
+    val body = roleNames.map(Role.Name)
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings", "clients", clientId.toString)
     client.delete[Unit](path, body)
   }
@@ -102,13 +102,13 @@ class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) 
    * @param roleIds IDs of the realm level roles to be mapped to the client scope.
    */
   def addRealmRoles(scopeId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(Id)
+    val body = roleIds.map(Role.Id)
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings", "realm")
     client.post[Unit](path, body)
   }
 
   /** Get realm-level roles associated with the client-scope. */
-  def fetchRealmRoles(scopeId: UUID): R[Either[KeycloakError, List[Role]]] = {
+  def fetchMappedRealmRoles(scopeId: UUID): R[Either[KeycloakError, List[Role]]] = {
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings", "realm")
     client.get[List[Role]](path)
   }
@@ -120,7 +120,7 @@ class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) 
    * @param roleIds IDs of the realm level roles to be removed from the client scope.
    */
   def removeRealmRoles(scopeId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(Id)
+    val body = roleIds.map(Role.Id)
     val path = Seq(client.realm, "client-scopes", scopeId.toString, "scope-mappings", "realm")
     client.delete[Unit](path, body)
   }

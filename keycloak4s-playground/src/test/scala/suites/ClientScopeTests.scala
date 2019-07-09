@@ -2,8 +2,8 @@ package suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
-
-import cats.data.EitherT
+import cats.implicits._
+import cats.data.{EitherT, Nested}
 import com.fullfacing.keycloak4s.core.models._
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
@@ -59,7 +59,7 @@ class ClientScopeTests extends IntegrationSpec {
   private val scope2     = new AtomicReference[UUID]()
 
 
-  "Create Ancillary Objects" should "create all objects needed to test all the ScopeMappings service calls" in {
+  "Create Ancillary Objects" should "create all objects needed to test all the ClientScope service calls" in {
     val task =
       for {
         _ <- EitherT(clientService.create(Client.Create("scope-mappings-test")))
@@ -69,9 +69,7 @@ class ClientScopeTests extends IntegrationSpec {
         _ <- EitherT(realmRoleService.create(rRole1Create))
         _ <- EitherT(realmRoleService.create(rRole2Create))
         _ <- EitherT(clientRoleService.create(clientUuid.get(), cRole1Create))
-        _ <- EitherT(clientRoleService.create(clientUuid.get(), cRole2Create))
-        _ <- EitherT(clientScopeService.create(scope1Create))
-        r <- EitherT(clientScopeService.create(scope2Create))
+        r <- EitherT(clientRoleService.create(clientUuid.get(), cRole2Create))
       } yield r
 
     task.value.shouldReturnSuccess
@@ -82,18 +80,31 @@ class ClientScopeTests extends IntegrationSpec {
       for {
         rr  <- EitherT(realmRoleService.fetch())
         cr  <- EitherT(clientRoleService.fetch(clientUuid.get()))
-        s   <- EitherT(clientScopeService.fetch())
+
         r1  <- EitherT.fromOption[Task](rr.find(_.name == rRole1Name), Errors.ROLE_NOT_FOUND)
         r2  <- EitherT.fromOption[Task](rr.find(_.name == rRole2Name), Errors.ROLE_NOT_FOUND)
         c1  <- EitherT.fromOption[Task](cr.find(_.name == cRole1Name), Errors.ROLE_NOT_FOUND)
         c2  <- EitherT.fromOption[Task](cr.find(_.name == cRole2Name), Errors.ROLE_NOT_FOUND)
-        s1  <- EitherT.fromOption[Task](s.find(_.name == "scope1"), Errors.SCOPE_NOT_FOUND)
-        s2  <- EitherT.fromOption[Task](s.find(_.name == "scope2"), Errors.SCOPE_NOT_FOUND)
+
       } yield {
         rRole1.set(r1.id)
         rRole2.set(r2.id)
         cRole1.set(c1.id)
         cRole2.set(c2.id)
+      }
+
+    task.value.shouldReturnSuccess
+  }
+
+  "create" should "successfully create new client-scope objects" in {
+    val task =
+      for {
+        _  <- EitherT(clientScopeService.create(scope1Create))
+        _  <- EitherT(clientScopeService.create(scope2Create))
+        s  <- EitherT(clientScopeService.fetch())
+        s1 <- EitherT.fromOption[Task](s.find(_.name == "scope1"), Errors.SCOPE_NOT_FOUND)
+        s2 <- EitherT.fromOption[Task](s.find(_.name == "scope2"), Errors.SCOPE_NOT_FOUND)
+      } yield {
         scope1.set(s1.id)
         scope2.set(s2.id)
       }
@@ -101,11 +112,37 @@ class ClientScopeTests extends IntegrationSpec {
     task.value.shouldReturnSuccess
   }
 
-  "fetchScopeMappings" should "not return any role mappings" in {
+  "fetch" should "retrieve all client-scopes matching the query" in {
+    Nested(clientScopeService.fetch()).map { s =>
+      s.map(_.name) should contain allOf ("scope1", "scope2")
+    }.value.shouldReturnSuccess
+  }
+
+  "fetchById" should "retrieve the client-scope object matching the given ID" in {
+    Nested(clientScopeService.fetchById(scope1.get())).map { s =>
+      s.name shouldBe "scope1"
+    }.value.shouldReturnSuccess
+  }
+
+  "update" should "" in {
+    val update = ClientScope.Update(name = Some("scope2Update"), description = Some("Description"))
     val task =
       for {
-        s1 <- EitherT(clientScopeService.fetchScopeMappings(scope1.get()))
-        s2 <- EitherT(clientScopeService.fetchScopeMappings(scope2.get()))
+        _ <- EitherT(clientScopeService.update(scope2.get(), update))
+        s <- EitherT(clientScopeService.fetchById(scope2.get()))
+      } yield {
+        s.name shouldBe "scope2Update"
+        s.description shouldBe Some("Description")
+      }
+
+    task.value.shouldReturnSuccess
+  }
+
+  "fetchMappedRoles" should "not return any role mappings" in {
+    val task =
+      for {
+        s1 <- EitherT(clientScopeService.fetchMappedRoles(scope1.get()))
+        s2 <- EitherT(clientScopeService.fetchMappedRoles(scope2.get()))
       } yield {
         s1.clientMappings shouldBe Map.empty[String, ClientMappings]
         s1.realmMappings  shouldBe List.empty[Role]
@@ -123,7 +160,7 @@ class ClientScopeTests extends IntegrationSpec {
 
   "fetchClientRoles" should "retrieve all client roles mapped to this scope" in {
     val task =
-      EitherT(clientScopeService.fetchClientRoles(scope1.get(), clientUuid.get())).map { s =>
+      EitherT(clientScopeService.fetchMappedClientRoles(scope1.get(), clientUuid.get())).map { s =>
         s.size                   shouldBe 1
         s.headOption.map(_.name) shouldBe Some(cRole1Name)
       }
@@ -165,7 +202,7 @@ class ClientScopeTests extends IntegrationSpec {
     val task =
       for {
         _ <- EitherT(clientScopeService.removeClientRoles(scope1.get(), clientUuid.get(), List(cRole1Name)))
-        s <- EitherT(clientScopeService.fetchScopeMappings(scope1.get()))
+        s <- EitherT(clientScopeService.fetchMappedRoles(scope1.get()))
       } yield {
         s.clientMappings.isEmpty shouldBe true
       }
@@ -180,7 +217,7 @@ class ClientScopeTests extends IntegrationSpec {
 
   "fetchRealmRoles" should "retrieve all client roles mapped to this scope" in {
     val task =
-      EitherT(clientScopeService.fetchRealmRoles(scope2.get())).map { s =>
+      EitherT(clientScopeService.fetchMappedRealmRoles(scope2.get())).map { s =>
         s.size                   shouldBe 1
         s.headOption.map(_.name) shouldBe Some(rRole1Name)
       }
@@ -222,9 +259,22 @@ class ClientScopeTests extends IntegrationSpec {
     val task =
       for {
         _ <- EitherT(clientScopeService.removeRealmRoles(scope1.get(), List(rRole1.get())))
-        s <- EitherT(clientScopeService.fetchScopeMappings(scope1.get()))
+        s <- EitherT(clientScopeService.fetchMappedRoles(scope1.get()))
       } yield {
         s.clientMappings.isEmpty shouldBe true
+      }
+
+    task.value.shouldReturnSuccess
+  }
+
+  "delete" should "remove the given client-scope objects from the server" in {
+    val task =
+      for {
+        _ <- EitherT(clientScopeService.delete(scope1.get()))
+        _ <- EitherT(clientScopeService.delete(scope2.get()))
+        s <- EitherT(clientScopeService.fetch())
+      } yield {
+        s.map(_.id) should not contain allOf (scope1.get(), scope2.get())
       }
 
     task.value.shouldReturnSuccess
@@ -233,12 +283,10 @@ class ClientScopeTests extends IntegrationSpec {
   "Delete Ancillary Objects" should "delete all objects needed to test all the ScopeMappings service calls" in {
     val task =
       for {
-        _ <- EitherT(clientScopeService.delete(scope1.get()))
-        _ <- EitherT(clientScopeService.delete(scope2.get()))
-        _ <- EitherT(realmRoleService.remove(rRole1Name))
-        _ <- EitherT(realmRoleService.remove(rRole2Name))
-        _ <- EitherT(clientRoleService.remove(clientUuid.get(), cRole1Name))
-        _ <- EitherT(clientRoleService.remove(clientUuid.get(), cRole2Name))
+        _ <- EitherT(realmRoleService.delete(rRole1Name))
+        _ <- EitherT(realmRoleService.delete(rRole2Name))
+        _ <- EitherT(clientRoleService.delete(clientUuid.get(), cRole1Name))
+        _ <- EitherT(clientRoleService.delete(clientUuid.get(), cRole2Name))
         r <- EitherT(clientService.delete(clientUuid.get()))
       } yield r
 

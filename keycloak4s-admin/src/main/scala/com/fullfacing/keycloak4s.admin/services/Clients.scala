@@ -248,13 +248,13 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   }
 
   def addRealmRoles(clientId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(Id)
+    val body = roleIds.map(Role.Id)
     val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm")
     client.post[Unit](path, body)
   }
 
   def removeRealmRoles(clientId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(Id)
+    val body = roleIds.map(Role.Id)
     val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm")
     client.delete[Unit](path, body)
   }
@@ -275,13 +275,13 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   }
 
   def addClientRoles(targetClientId: UUID, sourceClientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
-    val body = roleNames.map(Name)
+    val body = roleNames.map(Role.Name)
     val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId)
     client.post[Unit](path, body)
   }
 
   def removeClientRoles(targetClientId: UUID, sourceClientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
-    val body = roleNames.map(Name)
+    val body = roleNames.map(Role.Name)
     val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId)
     client.delete[Unit](path, body)
   }
