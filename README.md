@@ -172,6 +172,7 @@ To allow the adapter to validate tokens it requires an implicit `TokenValidator`
 import java.io.File
 
 import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.nimbusds.jose.jwk.JWKSet
 
 val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
@@ -192,6 +193,7 @@ Alternatively a TokenValidator with custom JWKS handling can be created. To do s
 
 *Example:<br/>*
 ```scala
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.keycloak4s.auth.akka.http.validation.cache.JwksCache
 
 import scala.concurrent.ExecutionContext
@@ -208,6 +210,41 @@ val keycloakConfig = KeycloakConfig(...) // truncated, see keycloak4s-core segme
 
 implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfig)
 ```
+
+**Policy Enforcement Configuration**<br/>
+TODO
+
+**Plugging in the Adapter**<br/>
+In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP API, before this is done there are two requirements:
+* A policy enforcement configuration for the adapter needs to be created. (See segment above)
+* A `TokenValidator` needs to be created and passed implicitly into scope. (See segment above)
+
+With the validator and configuration ready the adapter can be plugged in as followed:
+1. Mix in the `SecurityDirectives` trait, this contains the `secure` directive which plugs in the adapter.
+2. Invoke secure with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure inside the directive.
+
+*Example:*<br/>
+```scala
+import com.fullfacing.keycloak4s.auth.akka.http.authorisation.{PathAuthorisation, PolicyEnforcement}
+import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirectives
+import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+
+object AkkaHttpRoutes extends SecurityDirectives {
+  val enforcementConfig: PathAuthorisation = PolicyEnforcement.buildPathAuthorisation("enforcement.json")
+  
+  val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
+  implicit val validator: TokenValidator = TokenValidator.Dynamic(keycloakConfig)
+  
+  secure(enforcementConfig) {
+    path("api" / "v2") {
+      // akka-http route structure
+    }
+  }
+}
+```
+
+**Token Payload Extractors**<br/>
 
 ## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
 keycloak4s has customized logging spanning over the trace, debug and error levels using [SLF4J](https://www.slf4j.org/), the logging output can easily be controlled (for example with [Logback](https://logback.qos.ch/)) using the following Logger names:
