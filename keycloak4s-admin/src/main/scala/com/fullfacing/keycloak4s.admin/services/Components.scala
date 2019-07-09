@@ -4,8 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
 import scala.collection.immutable.Seq

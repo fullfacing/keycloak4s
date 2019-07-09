@@ -6,9 +6,8 @@ import java.util.UUID
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models._
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 import com.fullfacing.keycloak4s.core.models.enums.{InstallationProvider, InstallationProviders}
-import com.fullfacing.keycloak4s.core.models.KeycloakError
 
 import scala.collection.immutable.Seq
 
@@ -239,34 +238,71 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   }
 
   // ------------------------------------------------------------------------------------------------------ //
-  // -------------------------------------------- Client Scopes ------------------------------------------- //
+  // ----------------------------------------- Role Scope Mapping ----------------------------------------- //
   // ------------------------------------------------------------------------------------------------------ //
 
-  /** Create a new client scope. Client Scope’s name must be unique! */
-  def createClientScope(clientScope: ClientScope.Create): R[Either[KeycloakError, Unit]] = {
-    val path: Path = Seq(client.realm, "client-scopes")
-    client.post[Unit](path, clientScope)
+  def fetchMappedRoles(clientId: UUID): R[Either[KeycloakError, Mappings]] = {
+    val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings")
+    client.get[Mappings](path)
   }
 
-  def fetchClientScopes(): R[Either[KeycloakError, List[ClientScope]]] = {
-    val path: Path = Seq(client.realm, "client-scopes")
-    client.get[List[ClientScope]](path)
+  def addRealmRoles(clientId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+    val body = roleIds.map(Role.Id)
+    val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm")
+    client.post[Unit](path, body)
   }
 
-  def fetchClientScopeById(scopeId: UUID): R[Either[KeycloakError, ClientScope]] = {
-    val path: Path = Seq(client.realm, "client-scopes", scopeId)
-    client.get[ClientScope](path)
+  def removeRealmRoles(clientId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+    val body = roleIds.map(Role.Id)
+    val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm")
+    client.delete[Unit](path, body)
   }
 
-  def updateClientScope(scopeId: UUID, clientScope: ClientScope.Update): R[Either[KeycloakError, Unit]] = {
-    val path: Path = Seq(client.realm, "client-scopes", scopeId)
-    client.put[Unit](path, clientScope)
+  def fetchMappedRealmRoles(clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm")
+    client.get[List[Role]](path)
   }
 
-  def deleteClientScope(scopeId: UUID): R[Either[KeycloakError, Unit]] = {
-    val path: Path = Seq(client.realm, "client-scopes", scopeId)
-    client.delete[Unit](path)
+  def fetchAvailableRealmRoles(clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm", "available")
+    client.get[List[Role]](path)
   }
+
+  def fetchEffectiveRealmRoles(clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "clients", clientId, "scope-mappings", "realm", "composite")
+    client.get[List[Role]](path)
+  }
+
+  def addClientRoles(targetClientId: UUID, sourceClientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
+    val body = roleNames.map(Role.Name)
+    val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId)
+    client.post[Unit](path, body)
+  }
+
+  def removeClientRoles(targetClientId: UUID, sourceClientId: UUID, roleNames: List[String]): R[Either[KeycloakError, Unit]] = {
+    val body = roleNames.map(Role.Name)
+    val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId)
+    client.delete[Unit](path, body)
+  }
+
+  def fetchMappedClientRoles(targetClientId: UUID, sourceClientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId)
+    client.get[List[Role]](path)
+  }
+
+  def fetchAvailableClientRoles(targetClientId: UUID, sourceClientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId, "available")
+    client.get[List[Role]](path)
+  }
+
+  def fetchEffectiveClientRoles(targetClientId: UUID, sourceClientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "clients", targetClientId, "scope-mappings", "clients", sourceClientId, "composite")
+    client.get[List[Role]](path)
+  }
+
+  // ------------------------------------------------------------------------------------------------------ //
+  // -------------------------------------------- Client Scopes ------------------------------------------- //
+  // ------------------------------------------------------------------------------------------------------ //
 
   /**  Get default client scopes. Only name and ids are returned. */
   def fetchDefaultClientScopes(clientId: UUID): R[Either[KeycloakError, List[ClientScope]]] = {

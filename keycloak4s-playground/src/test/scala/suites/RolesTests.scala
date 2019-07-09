@@ -4,12 +4,12 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import utils.{Errors, IntegrationSpec}
-import com.fullfacing.keycloak4s.core.models.{Client, Group, KeycloakError, ManagementPermission, Role, User}
+import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.eval.Task
 import org.json4s.jackson.Serialization.writePretty
 import org.scalatest.DoNotDiscover
+import utils.{Errors, IntegrationSpec}
 
 @DoNotDiscover
 class RolesTests extends IntegrationSpec {
@@ -394,9 +394,9 @@ class RolesTests extends IntegrationSpec {
   "Delete" should "successfully remove roles from the realm" in {
     val task =
       for {
-        _ <- realmRoleService.remove(rRole1Name)
-        _ <- realmRoleService.remove(rRole2Name)
-        _ <- realmRoleService.remove(rRole3Name)
+        _ <- realmRoleService.delete(rRole1Name)
+        _ <- realmRoleService.delete(rRole2Name)
+        _ <- realmRoleService.delete(rRole3Name)
       } yield Right(())
 
     task.shouldReturnSuccess
@@ -405,9 +405,9 @@ class RolesTests extends IntegrationSpec {
   it should "successfully remove roles from the client" in {
     val task =
       for {
-        _ <- clientRoleService.remove(clientUuid.get(), cRole1Name)
-        _ <- clientRoleService.remove(clientUuid.get(), cRole2Name)
-        r <- clientRoleService.remove(clientUuid.get(), cRole3Name)
+        _ <- clientRoleService.delete(clientUuid.get(), cRole1Name)
+        _ <- clientRoleService.delete(clientUuid.get(), cRole2Name)
+        r <- clientRoleService.delete(clientUuid.get(), cRole3Name)
       } yield r
 
     task.shouldReturnSuccess
