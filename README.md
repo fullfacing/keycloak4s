@@ -5,13 +5,13 @@
 
 A Scala-based middleware API for [Keycloak](https://www.keycloak.org/).
 
-keycloak4s is an opinionated Scala built API that serves as a bridge between any Scala project and a Keycloak server, allowing access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html) as well as providing adapters to validate Keycloak's access tokens and authorize requests via a JSON config file inspired by their [policy enforcement configuration](https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter).
+keycloak4s is an opinionated Scala built API that serves as a bridge between any Scala project and a Keycloak server, allowing access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html) as well as providing adapters to validate Keycloak's bearer tokens and authorize requests via a JSON config file inspired by their [policy enforcement configuration](https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter).
 
 The project is split into the following modules, each as a separate dependency:
 * `keycloak4s-core`: Contains core functionality and shared models across other modules.
 * `keycloak4s-admin`: Allows access to Keycloak's [Admin API][Admin-API]. Utilizes SoftwareMill's [sttp](https://github.com/softwaremill/sttp) and Cats Effect' [Concurrent](https://typelevel.org/cats-effect/typeclasses/concurrent.html) to allow for customization of the HTTP client and concurrency monad to be used, respectively.
 * `keycloak4s-admin-monix`: A more concrete implementation of keycloak-admin using [Monix][Monix]. Contains additional reactive streaming functionality.
-* `keycloak4s-akka-http`: A client adapter capable of validating Keycloak's access tokens and providing authorization for [Akka-HTTP][Akka-Http] requests.
+* `keycloak4s-akka-http`: A client adapter capable of validating Keycloak's bearer tokens and providing authorization for [Akka-HTTP][Akka-Http] requests.
 
 ### Contents
 1. [Installation](#Installation)
@@ -125,17 +125,24 @@ To use the streaming variants of this module simply replace any `fetch` call wit
 ```scala
 val usersService = Keycloak.Users
 
+// return the IDs of all disabled Users
 usersService.fetchS(batchSize = 20)
-        .dropWhile(_.enabled)
-        .map(_.id)
-        .toListL
+  .dropWhile(!_.enabled)
+  .map(_.id)
+  .toListL
 ```
 
 A `fetchL` variant is also available which performs the same batch streaming, but automatically converts the Observable to a List of Task when the stream has completed.
 
 ## Module: keycloak4s-akka-http <a name="keycloak4s-akka-http"></a>
+*Please note: This module is especially opinionated and was designed with our company's needs in mind, however there was still an attempt to keep it as abstract as possible to allow for repurposing. Feedback on its usability is encouraged.*
 
-TODO
+A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT](https://connect2id.com/products/nimbus-jose-jwt)) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
+
+**Token Validation**<br/>
+
+
+The adapter requires an implicit `TokenValidator` in scope to validate access and ID tokens, and to create an instance of the validator requires a JSON Web Key set (JWKS). Provided in the adapter are two different methods of constructing a TokenValidator
 
 ## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
 keycloak4s has customized logging spanning over the trace, debug and error levels using [SLF4J](https://www.slf4j.org/), the logging output can easily be controlled (for example with [Logback](https://logback.qos.ch/)) using the following Logger names:
@@ -149,7 +156,7 @@ keycloak4s has customized logging spanning over the trace, debug and error level
 [Akka-HTTP]: https://doc.akka.io/docs/akka-http/current/introduction.html
 [Admin-API]: https://www.keycloak.org/docs-api/5.0/rest-api/index.html
 
-The `KeycloakError` returned by keycloak4s extends `Throwable`, and have the following subtypes:
+The `KeycloakError` returned by keycloak4s extends `Throwable`, and has the following subtypes:
 * `KeycloakThrowable` - Merely wraps a Throwable
 * `KeycloakException` - Contains a status code, status text, an error message and optionally finer details.
 * `KeycloakSttpException` - Contains the HTTP response details sent back from the sttp client, along with information of the request that was sent.
