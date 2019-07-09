@@ -221,7 +221,7 @@ In order for the adapter to validate and authorize requests it needs to be plugg
 
 With the validator and configuration ready the adapter can be plugged in as followed:
 1. Mix in the `SecurityDirectives` trait, this contains the `secure` directive which plugs in the adapter.
-2. Invoke secure with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure inside the directive.
+2. Invoke `secure` with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure inside the directive.
 
 *Example:*<br/>
 ```scala
@@ -245,6 +245,7 @@ object AkkaHttpRoutes extends SecurityDirectives {
 ```
 
 **Token Payload Extractors**<br/>
+TODO
 
 ## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
 keycloak4s has customized logging spanning over the trace, debug and error levels using [SLF4J](https://www.slf4j.org/), the logging output can easily be controlled (for example with [Logback](https://logback.qos.ch/)) using the following Logger names:
