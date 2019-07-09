@@ -102,18 +102,18 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[List[Role]](path)
   }
 
-  def addRealmRoles(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def addRealmRoles(id: UUID, roles: List[Role.Mapping]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups", id.toString, "role-mappings", "realm")
     client.post[Unit](path, roles)
   }
 
-  def removeRealmRoles(id: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def removeRealmRoles(id: UUID, roles: List[Role.Mapping]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups", id.toString, "role-mappings", "realm")
     client.delete[Unit](path, roles)
   }
 
   // --- Client Level Roles --- //
-  def addClientRoles(clientId: UUID, groupId: UUID, roles: List[Role]): R[Either[KeycloakError, Unit]] = {
+  def addClientRoles(clientId: UUID, groupId: UUID, roles: List[Role.Mapping]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups", groupId.toString, "role-mappings", "clients", clientId.toString)
     client.post[Unit](path, roles)
   }
@@ -123,7 +123,7 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[Seq[Role]](path)
   }
 
-  def removeClientRoles(clientId: UUID, groupId: UUID, roles: Seq[Role]): R[Either[KeycloakError, Unit]] = {
+  def removeClientRoles(clientId: UUID, groupId: UUID, roles: Seq[Role.Mapping]): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "groups", groupId.toString, "role-mappings", "clients", clientId.toString)
     client.delete[Unit](path, roles)
   }

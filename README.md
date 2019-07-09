@@ -7,6 +7,15 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.19.2]
+### Changed
+- Groups service role mapping functions (add and remove) now take Role.Mapping case class.
+- Changed the fields in the Role.Mapping case class to be mandatory.
+
+## [0.19.1]
+### Fixed
+- Fixed logging for requests sent to Keycloak being evaluated eagerly.
+
 ## [0.19.0]
 ### Added
 - Added an And/Or data structure for better configuration of required roles on a path.
