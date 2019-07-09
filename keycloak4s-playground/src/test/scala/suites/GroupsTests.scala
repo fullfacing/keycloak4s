@@ -140,7 +140,7 @@ class GroupsTests extends IntegrationSpec {
     for {
       _   <- EitherT(realmRoleService.create(Role.Create(name = "test_role1", clientRole = false, composite = false)))
       id  <- EitherT(realmRoleService.fetchByName("test_role1")).map(_.id)
-      _   <- EitherT(groupService.addRealmRoles(group2.get(), List(Role(id = id, name = "test_role1", clientRole = false, composite = false))))
+      _   <- EitherT(groupService.addRealmRoles(group2.get(), List(Role.Mapping(id, "test_role1"))))
     } yield storedRoleId.set(id)
   }.value.shouldReturnSuccess
 
@@ -160,7 +160,7 @@ class GroupsTests extends IntegrationSpec {
     val role = Role(name = "test_role1", id = storedRoleId.get(), clientRole = false, composite = false)
 
     for {
-      _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(role)))
+      _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(Role.Mapping(role.id, role.name))))
       _ <- EitherT(realmRoleService.remove("test_role1"))
     } yield ()
   }.value.shouldReturnSuccess
@@ -180,7 +180,7 @@ class GroupsTests extends IntegrationSpec {
     for {
       _   <- EitherT(clientRoleService.create(storedClientId.get(), Role.Create(name = "test_role1", clientRole = false, composite = false)))
       id  <- EitherT(clientRoleService.fetchByName(storedClientId.get(), "test_role1")).map(_.id)
-      _   <- EitherT(groupService.addClientRoles(storedClientId.get(), group2.get(), List(Role(id = id, name = "test_role1", clientRole = false, composite = false))))
+      _   <- EitherT(groupService.addClientRoles(storedClientId.get(), group2.get(), List(Role.Mapping(id, "test_role1"))))
     } yield storedRoleId.set(id)
   }.value.shouldReturnSuccess
 
@@ -200,7 +200,7 @@ class GroupsTests extends IntegrationSpec {
     val role = Role(name = "test_role1", id = storedRoleId.get(), clientRole = false, composite = false)
 
     for {
-      _ <- EitherT(groupService.removeClientRoles(storedClientId.get(), group2.get(), List(role)))
+      _ <- EitherT(groupService.removeClientRoles(storedClientId.get(), group2.get(), List(Role.Mapping(role.id, role.name))))
       _ <- EitherT(clientRoleService.remove(storedClientId.get(), role.name))
     } yield ()
   }.value.shouldReturnSuccess

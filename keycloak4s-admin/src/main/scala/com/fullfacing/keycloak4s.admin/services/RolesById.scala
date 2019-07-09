@@ -36,7 +36,7 @@ class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
   /** Make the role a composite role by associating some child roles. */
   def addCompositeRoles(id: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(r => Role.Mapping(Some(r)))
+    val body = roleIds.map(Id)
     val path: Path = Seq(client.realm, `roles-by-id`, id, "composites")
     client.post[Unit](path, body)
   }
@@ -49,7 +49,7 @@ class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Remove a set of roles from the role’s composite. */
   def removeCompositeRoles(id: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-    val body = roleIds.map(r => Role.Mapping(Some(r)))
+    val body = roleIds.map(Id)
     val path: Path = Seq(client.realm, `roles-by-id`, id, "composites")
     client.delete[Unit](path, body)
   }

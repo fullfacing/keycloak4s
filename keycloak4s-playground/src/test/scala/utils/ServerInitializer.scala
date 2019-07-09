@@ -91,8 +91,8 @@ object ServerInitializer {
   /* Step 6: Map the admin role to the service account user. **/
   private def mapAdminRole(token: String, accountId: UUID, roleId: UUID): Either[String, String] = {
     val role = Role.Mapping(
-      id    = Some(roleId),
-      name  = Some("admin")
+      id    = roleId,
+      name  = "admin"
     )
 
     sttp

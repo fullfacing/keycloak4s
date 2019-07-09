@@ -15,18 +15,10 @@ import org.scalatest.DoNotDiscover
 class RolesTests extends IntegrationSpec {
 
   /* Testing functions and data. **/
-  private def mapToRole(id: UUID, role: Role.Create): Role =
-    Role(
-      id         = id,
-      clientRole = role.clientRole,
-      composite  = role.composite,
-      name       = role.name
-    )
-
   private def mapToRoleMapping(id: UUID, role: Role.Create): Role.Mapping =
     Role.Mapping(
-      id         = Some(id),
-      name       = Some(role.name)
+      id         = id,
+      name       = role.name
     )
 
   private val rRole1Name = "realmRole1"
@@ -354,8 +346,8 @@ class RolesTests extends IntegrationSpec {
   }
 
   "Fetch Groups" should "successfully retrieve all groups that a given realm role" in {
-    val r1 = mapToRole(rRole1.get(), rRole1Create)
-    val r2 = mapToRole(rRole2.get(), rRole2Create)
+    val r1 = mapToRoleMapping(rRole1.get(), rRole1Create)
+    val r2 = mapToRoleMapping(rRole2.get(), rRole2Create)
     val task =
       for {
         _ <- EitherT(groupService.addRealmRoles(group1.get(), List(r1, r2)))
@@ -377,8 +369,8 @@ class RolesTests extends IntegrationSpec {
   }
 
   it should "successfully retrieve all groups that have a client role" in {
-    val r1 = mapToRole(cRole1.get(), cRole1Create)
-    val r2 = mapToRole(cRole2.get(), cRole2Create)
+    val r1 = mapToRoleMapping(cRole1.get(), cRole1Create)
+    val r2 = mapToRoleMapping(cRole2.get(), cRole2Create)
     val task =
       for {
         _ <- EitherT(groupService.addClientRoles(clientUuid.get(), group1.get(), List(r1, r2)))
