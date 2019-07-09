@@ -115,13 +115,13 @@ An alternative of keycloak4s-admin typed to Monix with [Tasks][Task] as the resp
 
 The steps to make calls remains mostly the same as in the keycloak4s-admin, below is an example with the prebuilt sttp backend specifically, refer to the keycloak4s-admin segment for additional information.
 
-*Example (truncated):*
+*Example:*
 ```scala
 import com.fullfacing.keycloak4s.admin.monix.backends.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 
 implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
-implicit val monixClient: KeycloakClient = new KeycloakClient(...) 
+implicit val monixClient: KeycloakClient = new KeycloakClient(...) // truncated, see keycloak4s-core segment for details
 
 val usersService = Keycloak.Users
 
@@ -204,9 +204,9 @@ class CustomJwksCache extends JwksCache {
 class CustomValidator(config: KeycloakConfig)(implicit ec: ExecutionContext = global)
   extends TokenValidator(config) with CustomJwksCache
 
-val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
+val keycloakConfig = KeycloakConfig(...) // truncated, see keycloak4s-core segment for details
 
-val customValidator: TokenValidator = new CustomValidator(keycloakConfig)
+implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfig)
 ```
 
 ## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
