@@ -2,8 +2,7 @@ package com.fullfacing.keycloak4s.admin.services
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.core.models.ServerInfo
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, ServerInfo}
 
 import scala.collection.immutable.Seq
 

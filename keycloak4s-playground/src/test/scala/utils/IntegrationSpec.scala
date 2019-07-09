@@ -1,8 +1,7 @@
 package utils
 
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
-import com.fullfacing.keycloak4s.admin.monix.services._
-import com.fullfacing.keycloak4s.admin.monix.services.ClientScopes
+import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.transport.backends.MonixHttpBackendL
 import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend

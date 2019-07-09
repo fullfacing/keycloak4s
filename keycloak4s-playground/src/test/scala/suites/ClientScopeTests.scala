@@ -2,8 +2,9 @@ package suites
 
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
-import cats.implicits._
+
 import cats.data.{EitherT, Nested}
+import cats.implicits._
 import com.fullfacing.keycloak4s.core.models._
 import monix.eval.Task
 import org.scalatest.DoNotDiscover

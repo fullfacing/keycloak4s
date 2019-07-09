@@ -4,10 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.core.models.{ManagementPermission, Role}
-import com.fullfacing.keycloak4s.core.models.KeycloakError
-
-import scala.collection.immutable.Seq
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, ManagementPermission, Role}
 
 class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
