@@ -1,5 +1,6 @@
 package utils
 
+import java.io.File
 import java.time.Instant
 import java.util.{Date, UUID}
 
@@ -20,6 +21,9 @@ object TestData {
   val publicKey: RSAKey = rsaJwk.toPublicJWK
 
   val obj: JSONObject = JSONObjectUtils.parse(s"""{"keys": [${publicKey.toJSONObject}]}""")
+
+  val file = new File("/keycloak4s/jwks.json")
+  val jwks = JWKSet.load(file)
 
   val jwkSet: JWKSet = JWKSet.parse(obj)
 

@@ -15,10 +15,11 @@ The project is split into the following modules, each as a separate dependency:
 
 ### Contents
 1. [Installation](#Installation)
-2. [Module: keycloak4s-admin](#keycloak4s-admin)
-3. [Module: keycloak4s-admin-monix](#keycloak4s-admin-monix)
-4. [Module: keycloak4s-akka-http](#keycloak4s-akka-http)
-5. [Logging and Error Handling](#LoggingAndErrorHandling)
+2. [Module: keycloak4s-core](#keycloak4s-core)
+3. [Module: keycloak4s-admin](#keycloak4s-admin)
+4. [Module: keycloak4s-admin-monix](#keycloak4s-admin-monix)
+5. [Module: keycloak4s-akka-http](#keycloak4s-akka-http)
+6. [Logging and Error Handling](#LoggingAndErrorHandling)
 
 ## Installation
 
@@ -30,11 +31,13 @@ Each module can be pulled into a project separately via the following SBT depend
 
 (The core module is already included in all other modules and is not required to be pulled in under normal circumstances.)
 
-## Module: keycloak4s-admin <a name="keycloak4s-admin"></a>
-In order to make calls to Keycloak's [Admin API][Admin-API] a client needs to be created with the correct server details and credentials to connect to the Keycloak server, followed by a service handler that can invoke the calls. The process can be broken down into the following steps:
+## Module: keycloak4s-core <a name="keycloak4s-core"></a>
+The core module contains functionality (such as logging and error handling) and models shared between modules.
 
-**1 - Create a KeycloakConfig**<br/>
-The KeycloakConfig contains the server details (URL scheme, host and port) to reach the Keycloak server, the credentials (realm name, client ID and client secret) for a [service account](https://www.keycloak.org/docs/latest/server_admin/index.html#_service_accounts) enabled admin client, and the name of the realm that will be accessed.
+Of note is the KeycloakConfig model that contains the details of a Keycloak server, it is oft required. It consists of the following:
+* The URL scheme, host and port of the Keycloak server.
+* The name, client ID and client secret of the Keycloak realm providing authorization.
+* The name of the Keycloak realm to be targeted.
 
 *Example:*
 ```scala
@@ -55,8 +58,14 @@ val keycloakConfig = KeycloakConfig(
 )
 ```
 
+## Module: keycloak4s-admin <a name="keycloak4s-admin"></a>
+The module uses the client credential flow behind the scenes to simplify access to Keycloak's [Admin API][Admin-API]. In order to make calls to it a client needs to be created with the correct server details and credentials to connect to the Keycloak server, followed by a service handler that can invoke the calls. The process can be broken down into the following steps:
+
+**1 - Create a KeycloakConfig**<br/>
+Refer to the keycloak4s-core segment for details on KeycloakConfig. Note that the authorization realm must be a [service account](https://www.keycloak.org/docs/latest/server_admin/index.html#_service_accounts) enabled admin client.
+
 **2 - Create a KeycloakClient**<br/>
-The KeycloakClient handles the HTTP calls to the KeycloakServer, it requires a KeycloakConfig and a sttp backend (the types given to the KeycloakClient must match the sttp backend's types). Alternatively the Akka/Monix alternative module can be used for a concrete implementation, see the keycloak4s-admin-monix segment for more details.
+The KeycloakClient handles the HTTP calls to the KeycloakServer, it requires a KeycloakConfig and a sttp backend (the KeycloakClient and the sttp backend must match parametric types). Alternatively the Akka/Monix alternative module can be used for a concrete implementation, see the keycloak4s-admin-monix segment for more details.
 
 *Example:*
 ```scala
@@ -140,9 +149,65 @@ A `fetchL` variant is also available which performs the same batch streaming, bu
 A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT](https://connect2id.com/products/nimbus-jose-jwt)) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
 
 **Token Validation**<br/>
+With the adapter plugged in all requests are expected to contain an authorization header with a bearer token, additionally an ID token can also be passed along with the header `Id-Token`.
 
+The tokens are first parsed and then validated for the following:
+* The token cannot be expired.  
+(`exp` field is checked, and must be present)
+* The token cannot be used before it's not-before date.  
+(`nbf` field is checked, however validation passes if the field is absent)
+* The token's issuer must match the Keycloak server's URL.  
+(`iss` field is checked, and must be present)
+* The token's issued must be in the past.  
+(`iat` field is checked, and must be present)
+* The token's signature must be valid.  
+(verification of the signature requires a JSON Web Key with the same ID as the token's kid header)
 
-The adapter requires an implicit `TokenValidator` in scope to validate access and ID tokens, and to create an instance of the validator requires a JSON Web Key set (JWKS). Provided in the adapter are two different methods of constructing a TokenValidator
+To allow the adapter to validate tokens it requires an implicit `TokenValidator` in scope, and to create an instance of the validator requires a JSON Web Key set (JWKS) and a KeycloakConfig. Provided in the adapter are two different methods of constructing a TokenValidator:
+* Statically - The JWKS is provided in the constructor. This is the simplest way to construct a TokenValidator and does not require a connection to Keycloak. However the validator's JWKS cannot be modified.
+* Dynamically - The JWKS is automatically pulled from the Keycloak server, then cached. This requires a working connection to the Keycloak server, however it also allows for automatic recaching of the JWKS (once per request) in case the set changes. The server details are taken from the KeycloakConfig.
+
+*Example:*<br/>
+```scala
+import java.io.File
+
+import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.nimbusds.jose.jwk.JWKSet
+
+val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
+
+// creating a static TokenValidator
+
+val file = new File("/keycloak4s/jwks.json")
+val jwks = JWKSet.load(file)
+
+implicit val staticValidator: TokenValidator = TokenValidator.Static(jwks, keycloakConfig)
+
+// creating a dynamic TokenValidator
+
+implicit val dynamicValidator: TokenValidator = TokenValidator.Dynamic(keycloakConfig)
+```
+
+Alternatively a TokenValidator with custom JWKS handling can be created. To do so requires writing a concrete implementation of the `JwksCache` trait, which contains the functionality of how the JWKS is handled. The concrete trait then simply needs to be mixed into the abstract TokenValidator class.
+
+*Example:<br/>*
+```scala
+import com.fullfacing.keycloak4s.auth.akka.http.validation.cache.JwksCache
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.global
+
+class CustomJwksCache extends JwksCache {
+  // concrete implementations of the JwksCache abstract functions
+}
+
+class CustomValidator(config: KeycloakConfig)(implicit ec: ExecutionContext = global)
+  extends TokenValidator(config) with CustomJwksCache
+
+val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
+
+val customValidator: TokenValidator = new CustomValidator(keycloakConfig)
+```
 
 ## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
 keycloak4s has customized logging spanning over the trace, debug and error levels using [SLF4J](https://www.slf4j.org/), the logging output can easily be controlled (for example with [Logback](https://logback.qos.ch/)) using the following Logger names:
