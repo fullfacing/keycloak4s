@@ -10,7 +10,7 @@ credentials += Credentials(Path.userHome / ".sbt" / "1.0" / ".credentials")
 publishMavenStyle := true
 
 // MIT Licence
-licenses  := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
+licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
 
 // Github Project Information
 sonatypeProjectHosting := Some(GitHubHosting("fullfacing", "keycloak4s", "curious@fullfacing.com"))
