@@ -7,6 +7,14 @@ Developed for Keycloak v6.0.1
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.19.3]
+### Added
+- Added missing Clients service calls with the path /{realm}/clients/{id}/scope-mappings.
+### Changed
+- Separated all client-scope calls from the Clients service into a new ClientScopes service.
+### Removed
+- Removed the ScopeMappings service and moved the functions out into the Clients and ClientScopes services as necessary.
+
 ## [0.19.2]
 ### Changed
 - Groups service role mapping functions (add and remove) now take Role.Mapping case class.
