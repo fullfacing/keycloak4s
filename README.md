@@ -134,7 +134,7 @@ usersService.fetchS(batchSize = 20)
 A `fetchL` variant is also available which performs the same batch streaming, but automatically converts the Observable to a List of Task when the stream has completed.
 
 ## Module: keycloak4s-akka-http <a name="keycloak4s-akka-http"></a>
-*Please note: This module is especially opinionated and was designed with our company's needs in mind, however there was still an attempt to keep it as abstract as possible to allow for repurposing. Feedback on its usability is encouraged.*
+*Please note: This module is especially opinionated and was designed with our company's needs in mind, however there was still an effort to keep it as abstract as possible to allow for repurposing. Feedback on its usability is encouraged.*
 
 A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT][Nimbus]) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
 
