@@ -96,7 +96,7 @@ class AuthDirectiveTests extends FlatSpec with Matchers with ScalatestRouteTest 
     }
   }
 
-  it should "reject a request where the user doesn't not have the required roles" in {
+  it should "reject a request where the user does not have the required roles" in {
     val token = validToken(List("incorrect role")).serialize()
     val request = Request(POST, "/v1/segment/8fc41595-982f-4b00-a094-c71515cd1778/action", token)
 

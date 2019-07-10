@@ -24,18 +24,6 @@ object PolicyBuilders {
   }
 
   /**
-   * Builds a NodeAuthorization object from a JSON configuration file using a node structure.
-   * The JSON file must be located in the resources directory.
-   *
-   * @param filename The file name and extension of the JSON configuration inside the Resources directory.
-   *                 Example: config.json
-   */
-  def buildNodeAuthorization(filename: String): NodeAuthorization = {
-    val source = attemptBuild(filename)
-    NodeAuthorization(source.mkString.stripMargin)
-  }
-
-  /**
    * Builds a PathAuthorization object from a JSON configuration file using a path structure.
    * The JSON file must be located in the resources directory.
    *
