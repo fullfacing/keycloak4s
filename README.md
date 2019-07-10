@@ -3,7 +3,8 @@
 [![codecov](https://codecov.io/gh/fullfacing/keycloak4s/branch/master/graph/badge.svg?token=WKbJaagGhz)](https://codecov.io/gh/fullfacing/keycloak4s)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.fullfacing/keycloak4s-core_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/fullfacing/keycloak4s-core_2.12/)
 
-A Scala-based middleware API for [Keycloak](https://www.keycloak.org/).
+**A Scala-based middleware API for [Keycloak](https://www.keycloak.org/)**  
+*Based on version 6.0.1*
 
 keycloak4s is an opinionated Scala built API that serves as a bridge between any Scala project and a Keycloak server, allowing access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html) as well as providing adapters to validate Keycloak's bearer tokens and authorize requests via a JSON config file inspired by their [policy enforcement configuration](https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter).
 
@@ -219,13 +220,13 @@ object AkkaHttpRoutes extends SecurityDirectives {
 **Token Payload Extractors**<br/> <a name="payload-extractors"></a>
 After validation the `secure` directive provides the payloads of the bearer tokens for further information extraction or processing. The payloads are in a JSON structure native to [Nimbus JOSE + JWT][Nimbus], however to simplify extraction this module includes implicits with safe extraction functionality.
 
-To gain access to the extractors the implicits need to be in scope, after which these generic extractors can be used on any Nimbus Payload object.
+To gain access to the extractors the implicits need to be in scope, after which a set of generic extractors can be used on any Nimbus Payload object.
 
 *Example:*<br/>
 ```scala
 import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
 
-val payload: Payload = ... //truncated
+val payload: Payload = ... // truncated
 
 // extracts the value for a given key as a String
 val tokenType: Option[String] = payload.extract("typ")
@@ -240,7 +241,7 @@ val audiences: List[String] = payload.extractList("aud")
 val resourceAccess: List[UUID] = payload.extractAsListOf[UUID]("allowed_ids")
 ```
 
-By default the parametric extractors use the internal [json4s](http://json4s.org/) serialization `Formats`, but they allow for passing a custom `Formats` if required.
+By default the parametric extractors use the internal [json4s](http://json4s.org/) serialization `Formats`, but they will pass through a custom Formats either implicitly (if implicitly in scope) or when passed through explicitly.
 
 Alongside the generic extractors are additional extractors for commonly required values, such as `extractScopes`, `extractEmail`, etc.
 

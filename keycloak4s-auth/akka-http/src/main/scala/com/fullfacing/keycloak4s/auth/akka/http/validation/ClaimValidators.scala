@@ -10,15 +10,21 @@ import com.nimbusds.jwt.JWTClaimsSet
 
 trait ClaimValidators {
 
-  /* Validates that a token has not expired. **/
+  /* Validates that a token has an expiration date and has not yet expired. **/
   protected def validateExp(claims: JWTClaimsSet, now: Date): ValidatedNel[KeycloakException, Unit] = {
-    val exp   = claims.getExpirationTime
-    val cond  = now.compareTo(exp) < 0
+    val exp   = Option(claims.getExpirationTime)
+    val cond  = exp.map(e => now.compareTo(e) < 0)
 
-    if (cond) valid(()) else invalidNel(Exceptions.EXPIRED)
+    lazy val missing    = invalidNel[KeycloakException, Unit](Exceptions.EXP_MISSING)
+    lazy val incorrect  = invalidNel[KeycloakException, Unit](Exceptions.EXPIRED)
+
+    cond.fold(missing) {
+      case true   => valid(())
+      case false  => incorrect
+    }
   }
 
-  /* Validates that a token is not being used before its not-before time (if defined). **/
+  /* Validates that a token is not being used before its not-before date (if defined). **/
   protected def validateNbf(claims: JWTClaimsSet, now: Date): ValidatedNel[KeycloakException, Unit] = {
     val nbf   = Option(claims.getNotBeforeTime)
     val cond  = nbf.fold(true)(n => n == new Date(0) || now.compareTo(n) > 0)
@@ -26,7 +32,7 @@ trait ClaimValidators {
     if (cond) valid(()) else invalidNel(Exceptions.NOT_YET_VALID)
   }
 
-  /* Validates that a token's 'issued at' time exists and is not in the future. **/
+  /* Validates that a token's 'issued at' date exists and is not in the future. **/
   protected def validateIat(claims: JWTClaimsSet, now: Date): ValidatedNel[KeycloakException, Unit] = {
     val iat   = Option(claims.getIssueTime)
     val cond  = iat.map(now.compareTo(_) > 0)
