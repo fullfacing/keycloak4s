@@ -194,8 +194,8 @@ TODO (Good luck Stuart)
 
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP routes, for which there are two requirements:
-* A policy enforcement configuration for the adapter needs to be created. (Refer to [Policy Enforcement Configuration][#policy-enforcement])
-* A `TokenValidator` needs to be created and passed implicitly into scope. (Refer to [Token Validation][#token-validation])
+* A policy enforcement configuration for the adapter needs to be created. (Refer to [Policy Enforcement Configuration](#policy-enforcement))
+* A `TokenValidator` needs to be created and passed implicitly into scope. (Refer to [Token Validation](#token-validation))
 
 With the validator and configuration at the ready the adapter can be plugged in:
 1. Mix in the `SecurityDirectives` trait into the class containing the routes, this provides the `secure` directive which plugs in the adapter.
