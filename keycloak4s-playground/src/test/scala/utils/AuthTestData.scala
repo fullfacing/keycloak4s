@@ -1,9 +1,22 @@
 package utils
 
 import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule}
+import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.keycloak4s.core.models.enums.Methods
 
 object AuthTestData {
+
+  val scheme  = "http"
+  val host    = "localhost"
+  val port    = 8080
+  val realm   = "test"
+
+  val authConfig     = KeycloakConfig.Auth("", "", "")
+  val keycloakConfig = KeycloakConfig(scheme, host, port, realm, authConfig)
+
+  implicit val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, keycloakConfig)
+  val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"
 
   object config2 {
 

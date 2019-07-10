@@ -63,22 +63,25 @@ final case class PathAuthorization(service: String,
   def authorizeRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
     val matchedPaths = findMatchingPaths(extractSegmentsFromPath(path), paths)
 
-    val methodAllowed = matchedPaths.exists { p =>
+    lazy val methodAllowed = matchedPaths.exists { p =>
 
       lazy val hasWildCardRole = p.methodRoles
         .find(_.method == Methods.All)
         .exists(_.evaluateUserAccess(userRoles = userRoles))
 
-      val hasMethodRole = p.methodRoles.find(_.method.value == method.value) match {
-        case None    => noMatchingPolicy()
-        case Some(r) => r.evaluateUserAccess(userRoles = userRoles)
-      }
+      val hasMethodRole = p.methodRoles.find(_.method.value == method.value)
+        .exists(_.evaluateUserAccess(userRoles = userRoles))
 
       hasMethodRole || hasWildCardRole
     }
 
-    if (!methodAllowed) Logging.authorizationPathDenied(cId, method, path)
-    methodAllowed
+    val result = matchedPaths match {
+      case Nil => noMatchingPolicy()
+      case _   => methodAllowed
+    }
+
+    if (!result) Logging.authorizationPathDenied(cId, method, path)
+    result
   }
 }
 
@@ -99,7 +102,7 @@ object PathAuthorization {
 
     val pathRoles = create.paths.map { pathConfig =>
       PathRule(
-        path = pathConfig.path.replace("{{", "").replace("}}", ""),
+        path        = pathConfig.path.replace("{{", "").replace("}}", ""),
         methodRoles = merge(
           findAuthValuesInConfig(pathConfig, create.segments),
           pathConfig.methodRoles.map(PathMethodRoles.apply)

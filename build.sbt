@@ -111,6 +111,7 @@ val sttpMonix: Seq[ModuleID] = Seq(
 )
 
 val akkaTestKit: Seq[ModuleID] = Seq(
+  "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.19",
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion
 )
 

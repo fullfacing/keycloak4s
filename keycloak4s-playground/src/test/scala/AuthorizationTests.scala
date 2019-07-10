@@ -4,26 +4,13 @@ import java.util.concurrent.atomic.AtomicReference
 import akka.http.scaladsl.model.HttpMethods
 import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.auth.akka.http.authorization.{PathAuthorization, PolicyBuilders}
-import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.keycloak4s.core.models.enums.PolicyEnforcementModes
 import org.scalatest.{FlatSpec, Matchers}
-import utils.{AuthTestData, TestData}
+import utils.AuthTestData
 
 class AuthorizationTests extends FlatSpec with Matchers {
 
   implicit val cId: UUID = UUID.randomUUID()
-
-  val scheme  = "http"
-  val host    = "localhost"
-  val port    = 8080
-  val realm   = "test"
-
-  val authConfig     = KeycloakConfig.Auth("", "", "")
-  val keycloakConfig = KeycloakConfig(scheme, host, port, realm, authConfig)
-
-  implicit val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, keycloakConfig)
-  val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"
 
   val config: AtomicReference[PathAuthorization] = new AtomicReference[PathAuthorization]()
   val config2: AtomicReference[PathAuthorization] = new AtomicReference[PathAuthorization]()
@@ -41,10 +28,6 @@ class AuthorizationTests extends FlatSpec with Matchers {
 
   it should "successfully retrieve config2.json and convert it into a PathAuthorization object" in {
     val auth = PolicyBuilders.buildPathAuthorization("config2.json")
-    import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-    import org.json4s.jackson.Serialization.writePretty
-    println(writePretty(auth.paths))
-    println(writePretty(AuthTestData.config2.paths))
 
     auth.service shouldBe "api-test"
     auth.enforcementMode shouldBe PolicyEnforcementModes.Enforcing

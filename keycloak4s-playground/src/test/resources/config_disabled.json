@@ -1,4 +1,4 @@
 {
   "service" : "api-test",
-  "enforcementMode" : "disabled"
+  "enforcementMode" : "DISABLED"
 }
