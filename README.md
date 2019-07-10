@@ -19,7 +19,12 @@ The project is split into the following modules, each as a separate dependency:
 3. [Module: keycloak4s-admin](#keycloak4s-admin)
 4. [Module: keycloak4s-admin-monix](#keycloak4s-admin-monix)
 5. [Module: keycloak4s-akka-http](#keycloak4s-akka-http)
-6. [Logging and Error Handling](#LoggingAndErrorHandling)
+    1. [Token Validation](#token-validation)
+    2. [Policy Enforcement Configuration](#policy-enforcement)
+    3. [Plugging in the Adapter](#adapter-plugin)
+    4. [Payload Extraction](#payload-extractors)
+6. [Logging](#Logging)
+7. [Error Messages](#Errors)
 
 ## Installation
 
@@ -100,7 +105,7 @@ The majority of the functions in a service handler directly corresponds to a adm
 ## Module: keycloak4s-admin-monix <a name="keycloak4s-admin-monix"></a>
 An alternative of keycloak4s-admin typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type, removing the need to set up the types for KeycloakClient or the service handlers. Additionally this module contains reactive streaming variants of the fetch calls allowing for batch retrieval and processing, and a Monix-wrapped Akka-HTTP based sttp backend ready for use. 
 
-The steps to make calls remains mostly the same as in the keycloak4s-admin, below is an example with the prebuilt sttp backend specifically, refer to the keycloak4s-admin segment for additional information.
+The steps to make calls remains mostly the same as in the keycloak4s-admin, below is an example with the prebuilt sttp backend specifically, refer to [Module: keycloak4s-admin](#keycloak4s-admin) for additional information.
 
 *Example:*
 ```scala
@@ -132,7 +137,7 @@ A `fetchL` variant is also available which performs the same batch streaming, bu
 
 A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT][Nimbus]) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
 
-**Token Validation**<br/>
+**Token Validation**<br/> <a name="token-validation"></a>
 With the adapter plugged in all requests are expected to contain an authorization header with a bearer token, additionally an ID token can also be passed along with the header `Id-Token`.
 
 The tokens are first parsed and then validated for the following:
@@ -183,10 +188,10 @@ val keycloakConfig = KeycloakConfig(...) // truncated, see keycloak4s-core segme
 implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfig)
 ```
 
-**Policy Enforcement Configuration**<br/>
+**Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
 TODO (Good luck Stuart)
 
-**Plugging in the Adapter**<br/>
+**Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP API, before this is done there are two requirements:
 * A policy enforcement configuration for the adapter needs to be created. (See segment above)
 * A `TokenValidator` needs to be created and passed implicitly into scope. (See segment above)
@@ -211,7 +216,7 @@ object AkkaHttpRoutes extends SecurityDirectives {
 }
 ```
 
-**Token Payload Extractors**<br/>
+**Token Payload Extractors**<br/> <a name="payload-extractors"></a>
 After validation the `secure` directive provides the payloads of the bearer tokens for further information extraction or processing. The payloads are in a JSON structure native to [Nimbus JOSE + JWT][Nimbus], however to simplify extraction this module includes implicits with safe extraction functionality.
 
 To gain access to the extractors the implicits need to be in scope, after which these generic extractors can be used on any Nimbus Payload object.
@@ -239,13 +244,13 @@ By default the parametric extractors use the internal [json4s](http://json4s.org
 
 Alongside the generic extractors are additional extractors for commonly required values, such as `extractScopes`, `extractEmail`, etc.
 
-## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
+## Logging <a name="Logging"></a>
 keycloak4s has customized logging spanning over `trace`, `debug` and `error` levels using [SLF4J](https://www.slf4j.org/), for restricting logging output the following Logger names should be referenced:
 * Top level: `keycloak4s`
 * keycloak4s-admin module: `keycloak4s.admin`
 * keycloak4s-akka-http module: `keycloak4s.auth`
 
-Internal correlation UUIDs are passed between function calls of the same request to assist in tracing logs and debugging. Normally a correlation ID is generated for each request, however a UUID can be passed along for a request if need be. To do so requires passing the UUID into the `secure` directive (refer to the keycloak4s-akka-http documentation) along with the policy enforcement configuration as a Tuple.
+Internal correlation UUIDs are passed between function calls of the same request to assist in tracing logs and debugging. Normally a correlation ID is generated for each request, however a UUID can be passed along for a request if need be. To do so requires passing the UUID into the `secure` directive (refer to [Plugging in the Adapter](#adapter-plugin)) along with the policy enforcement configuration as a Tuple.
 
 *Example:*<br/>
 ```scala
@@ -267,10 +272,13 @@ contextFromPostman { cId =>
 }
 ```
 
-The `KeycloakError` returned by keycloak4s extends `Throwable`, and has the following subtypes:
-* `KeycloakThrowable` - Merely wraps a Throwable
+## Error Messages <a name="Errors"></a>
+When an exception is captured instead of thrown inside keycloak4s it is converted into a `KeycloakError` subtype, depending on the cause or location of the error. `KeycloakError` extends `Throwable` and can thus still be thrown or processed as one.
+
+The subtypes of `KeycloakError` are as follows:
+* `KeycloakThrowable` - Simply a wrapper for a Throwable.
 * `KeycloakException` - Contains a status code, status text, an error message and optionally finer details, useful for creating HTTP responses.
-* `KeycloakSttpException` - Contains the HTTP response details sent back from the sttp client, along with information of the corresponding request.
+* `KeycloakSttpException` - Contains the HTTP response details sent back from the sttp client, along with information of the corresponding request. Useful for debugging intergration issues between keycloak4s and the Keycloak server, faulty requests sent from keycloak4s or errors thrown from within the Keycloak server.
 
 [Monix]: https://monix.io/
 [Task]: https://monix.io/docs/3x/eval/task.html
