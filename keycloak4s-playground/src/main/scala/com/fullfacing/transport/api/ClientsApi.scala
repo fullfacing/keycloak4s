@@ -17,8 +17,11 @@ object ClientsApi extends SecurityDirectives {
         SiteRoutes.api
     }
 
-
-  def context: Directive1[UUID] = {
-    optionalHeaderValueByName("Postman-Token").flatMap(cId => provide(cId.map(UUID.fromString).getOrElse(UUID.randomUUID())))
+  def contextFromPostman: Directive1[UUID] = {
+    optionalHeaderValueByName("Postman-Token").flatMap { cId =>
+      provide {
+        cId.fold(UUID.randomUUID())(UUID.fromString)
+      }
+    }
   }
 }

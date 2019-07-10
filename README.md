@@ -41,8 +41,6 @@ Of note is the KeycloakConfig model that contains the details of a Keycloak serv
 
 *Example:*
 ```scala
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
-
 val authConfig = KeycloakConfig.Auth(
     realm         = "master",
     clientId      = "admin-cli",
@@ -69,12 +67,6 @@ The KeycloakClient handles the HTTP calls to the KeycloakServer, it requires a K
 
 *Example:*
 ```scala
-import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.softwaremill.sttp.SttpBackend
-import com.softwaremill.sttp.asynchttpclient.AsyncHttpClientBackend
-import monix.eval.Task
-import monix.reactive.Observable
-
 implicit val backend: SttpBackend[Task, Observable[ByteBuffer]] = AsyncHttpClientBackend()
 implicit val keycloakClient: KeycloakClient[Task, Observable[ByteBuffer]] = new KeycloakClient[Task, Observable[ByteBuffer]](config)
 ```
@@ -84,8 +76,6 @@ A service handler in this context contains the admin calls relevant to a specifi
 
 *Example:*
 ```scala
-import com.fullfacing.keycloak4s.admin.client.Keycloak
-
 val usersService = Keycloak.Users[Task, Observable[ByteBuffer, Any]]
 val rolesService = Keycloak.Roles[Task, Observable[ByteBuffer, Any]]
 ```
@@ -95,9 +85,6 @@ The relevant admin API calls can be invoked from a service handler, which will a
 
 *Example:*
 ```scala
-import cats.data.EitherT
-import com.fullfacing.keycloak4s.core.models.{Group, User}
-
 val newUser = User.Create(username = "ff_keycloak_user_01", enabled = true)
 val newGroup = Group.Create(name = "ff_keycloak_group_01")
 
@@ -117,9 +104,6 @@ The steps to make calls remains mostly the same as in the keycloak4s-admin, belo
 
 *Example:*
 ```scala
-import com.fullfacing.keycloak4s.admin.monix.backends.AkkaMonixHttpBackend
-import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
-
 implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
 implicit val monixClient: KeycloakClient = new KeycloakClient(...) // truncated, see keycloak4s-core segment for details
 
@@ -146,7 +130,7 @@ A `fetchL` variant is also available which performs the same batch streaming, bu
 ## Module: keycloak4s-akka-http <a name="keycloak4s-akka-http"></a>
 *Please note: This module is especially opinionated and was designed with our company's needs in mind, however there was still an attempt to keep it as abstract as possible to allow for repurposing. Feedback on its usability is encouraged.*
 
-A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT](https://connect2id.com/products/nimbus-jose-jwt)) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
+A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT][Nimbus]) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
 
 **Token Validation**<br/>
 With the adapter plugged in all requests are expected to contain an authorization header with a bearer token, additionally an ID token can also be passed along with the header `Id-Token`.
@@ -169,12 +153,6 @@ To allow the adapter to validate tokens it requires an implicit `TokenValidator`
 
 *Example:*<br/>
 ```scala
-import java.io.File
-
-import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
-import com.nimbusds.jose.jwk.JWKSet
-
 val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
 
 // creating a static TokenValidator
@@ -193,12 +171,6 @@ Alternatively a TokenValidator with custom JWKS handling can be created. To do s
 
 *Example:<br/>*
 ```scala
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
-import com.fullfacing.keycloak4s.auth.akka.http.validation.cache.JwksCache
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.ExecutionContext.global
-
 class CustomJwksCache extends JwksCache {
   // concrete implementations of the JwksCache abstract functions
 }
@@ -212,7 +184,7 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 ```
 
 **Policy Enforcement Configuration**<br/>
-TODO
+TODO (Good luck Stuart)
 
 **Plugging in the Adapter**<br/>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP API, before this is done there are two requirements:
@@ -225,18 +197,13 @@ With the validator and configuration ready the adapter can be plugged in as foll
 
 *Example:*<br/>
 ```scala
-import com.fullfacing.keycloak4s.auth.akka.http.authorisation.{PathAuthorisation, PolicyEnforcement}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirectives
-import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
-
 object AkkaHttpRoutes extends SecurityDirectives {
   val enforcementConfig: PathAuthorisation = PolicyEnforcement.buildPathAuthorisation("enforcement.json")
   
   val keycloakConfig = KeycloakConfig(...) // truncated, see core segment for details
   implicit val validator: TokenValidator = TokenValidator.Dynamic(keycloakConfig)
   
-  secure(enforcementConfig) {
+  secure(enforcementConfig) { payloads =>
     path("api" / "v2") {
       // akka-http route structure
     }
@@ -245,21 +212,69 @@ object AkkaHttpRoutes extends SecurityDirectives {
 ```
 
 **Token Payload Extractors**<br/>
-TODO
+After validation the `secure` directive provides the payloads of the bearer tokens for further information extraction or processing. The payloads are in a JSON structure native to [Nimbus JOSE + JWT][Nimbus], however to simplify extraction this module includes implicits with safe extraction functionality.
+
+To gain access to the extractors the implicits need to be in scope, after which these generic extractors can be used on any Nimbus Payload object.
+
+*Example:*<br/>
+```scala
+import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
+
+val payload: Payload = ... //truncated
+
+// extracts the value for a given key as a String
+val tokenType: Option[String] = payload.extract("typ")
+
+// extracts the value for a given key as the given type
+val sessionState: Option[UUID] = payload.extractAs[UUID]("session_state")
+
+// extracts the value for a given key as a List of Strings
+val audiences: List[String] = payload.extractList("aud")
+
+// extracts the value for a given key as a List of the given type
+val resourceAccess: List[UUID] = payload.extractAsListOf[UUID]("allowed_ids")
+```
+
+By default the parametric extractors use the internal [json4s](http://json4s.org/) serialization `Formats`, but they allow for passing a custom `Formats` if required.
+
+Alongside the generic extractors are additional extractors for commonly required values, such as `extractScopes`, `extractEmail`, etc.
 
 ## Logging and Error Handling <a name="LoggingAndErrorHandling"></a>
-keycloak4s has customized logging spanning over the trace, debug and error levels using [SLF4J](https://www.slf4j.org/), the logging output can easily be controlled (for example with [Logback](https://logback.qos.ch/)) using the following Logger names:
+keycloak4s has customized logging spanning over `trace`, `debug` and `error` levels using [SLF4J](https://www.slf4j.org/), for restricting logging output the following Logger names should be referenced:
 * Top level: `keycloak4s`
 * keycloak4s-admin module: `keycloak4s.admin`
 * keycloak4s-akka-http module: `keycloak4s.auth`
+
+Internal correlation UUIDs are passed between function calls of the same request to assist in tracing logs and debugging. Normally a correlation ID is generated for each request, however a UUID can be passed along for a request if need be. To do so requires passing the UUID into the `secure` directive (refer to the keycloak4s-akka-http documentation) along with the policy enforcement configuration as a Tuple.
+
+*Example:*<br/>
+```scala
+// an example function to extract a UUID from a request sent through Postman
+def contextFromPostman: Directive1[UUID] = {
+  optionalHeaderValueByName("Postman-Token").flatMap { cId =>
+    provide {
+      cId.fold(UUID.randomUUID())(UUID.fromString)
+    }
+  }
+}
+
+contextFromPostman { cId =>
+  secure((enforcementConfig, cId)) { payloads =>
+    path("api" / "v2") {
+      // akka-http route structure
+    }
+  }
+}
+```
+
+The `KeycloakError` returned by keycloak4s extends `Throwable`, and has the following subtypes:
+* `KeycloakThrowable` - Merely wraps a Throwable
+* `KeycloakException` - Contains a status code, status text, an error message and optionally finer details, useful for creating HTTP responses.
+* `KeycloakSttpException` - Contains the HTTP response details sent back from the sttp client, along with information of the corresponding request.
 
 [Monix]: https://monix.io/
 [Task]: https://monix.io/docs/3x/eval/task.html
 [Observable]: https://monix.io/docs/3x/reactive/observable.html
 [Akka-HTTP]: https://doc.akka.io/docs/akka-http/current/introduction.html
 [Admin-API]: https://www.keycloak.org/docs-api/5.0/rest-api/index.html
-
-The `KeycloakError` returned by keycloak4s extends `Throwable`, and has the following subtypes:
-* `KeycloakThrowable` - Merely wraps a Throwable
-* `KeycloakException` - Contains a status code, status text, an error message and optionally finer details.
-* `KeycloakSttpException` - Contains the HTTP response details sent back from the sttp client, along with information of the request that was sent.
+[Nimbus]: https://connect2id.com/products/nimbus-jose-jwt
