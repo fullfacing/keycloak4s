@@ -35,7 +35,7 @@ Each module can be pulled into a project separately via the following SBT depend
 * keycloak4s-admin-monix: `"com.fullfacing" %% "keycloak4s-monix" % "1.0"`
 * keycloak4s-akka-http:   `"com.fullfacing" %% "keycloak4s-akka-http" % "1.0"`
 
-(The core module is already included in all other modules and is not required to be pulled in under normal circumstances.)
+The core module is a dependency for all other modules and therefore is automatically pulled in when using any other module.
 
 ## Module: keycloak4s-core <a name="keycloak4s-core"></a>
 The core module contains functionality (such as logging and error handling) and models shared between modules.
@@ -193,12 +193,12 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 TODO (Good luck Stuart)
 
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
-In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP API, before this is done there are two requirements:
-* A policy enforcement configuration for the adapter needs to be created. (See segment above)
-* A `TokenValidator` needs to be created and passed implicitly into scope. (See segment above)
+In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP routes, for which there are two requirements:
+* A policy enforcement configuration for the adapter needs to be created. (Refer to [Policy Enforcement Configuration][#policy-enforcement])
+* A `TokenValidator` needs to be created and passed implicitly into scope. (Refer to [Token Validation][#token-validation])
 
-With the validator and configuration ready the adapter can be plugged in as followed:
-1. Mix in the `SecurityDirectives` trait, this contains the `secure` directive which plugs in the adapter.
+With the validator and configuration at the ready the adapter can be plugged in:
+1. Mix in the `SecurityDirectives` trait into the class containing the routes, this provides the `secure` directive which plugs in the adapter.
 2. Invoke `secure` with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure inside the directive.
 
 *Example:*<br/>
