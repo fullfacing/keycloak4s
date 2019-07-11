@@ -39,7 +39,7 @@ Each module can be pulled into a project separately via the following SBT depend
 ## Module: keycloak4s-core <a name="keycloak4s-core"></a>
 The core module contains functionality (such as logging and error handling) and models shared between modules.
 
-Of note is the KeycloakConfig model that contains the details of a Keycloak server, it is oft required. It consists of the following:
+Of note is the KeycloakConfig model that contains the details of a Keycloak server, it is often required. It consists of the following:
 * The URL scheme, host and port of the Keycloak server.
 * The name, client ID and client secret of the Keycloak realm providing authorization.
 * The name of the Keycloak realm to be targeted.
@@ -100,7 +100,7 @@ for {
 } yield (u, g)
 ```
 
-The majority of the functions in a service handler directly corresponds to a admin API route, however a few are composite functions created for convenience, such as the `createAndRetrieve` function seen in the above example which chains a create call and a fetch call.
+The majority of the functions in a service handler directly corresponds to an admin API route, however a few are composite functions created for convenience, such as the `createAndRetrieve` function seen in the above example which chains a create call and a fetch call.
 
 ## Module: keycloak4s-admin-monix <a name="keycloak4s-admin-monix"></a>
 An alternative of keycloak4s-admin typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type, removing the need to set up the types for KeycloakClient or the service handlers. Additionally this module contains reactive streaming variants of the fetch calls allowing for batch retrieval and processing, and a Monix-wrapped Akka-HTTP based sttp backend ready for use. 
@@ -189,7 +189,137 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 ```
 
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
-TODO (Good luck Stuart)
+
+Authorization 
+
+Example access token payload with user's roles configured correctly for authorization with our adapters:
+```json
+{
+  "resource_access": {
+    "api-test": {
+      "roles": [
+        "admin"
+      ]
+    },
+    "api-two": {
+      "roles": [
+        "read", "write"
+      ]
+     }
+  },
+  "iss": "https://keycloakserver/auth",
+  "exp": 1562755799,
+  "iat": 1562755739
+}
+```
+
+Policy Configuration Example:
+```json
+{
+  "service" : "api-test",
+  "enforcementMode" : "ENFORCING",
+  "paths" : [
+    {
+      "path" : "/v1/{{resource1}}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/another-resource"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/another-resource/{id}/action",
+      "methodRoles": [
+        {
+          "method" : "*",
+          "roles" : "action-admin"
+        },
+        {
+          "method" : "HEAD",
+          "roles" : [ "action-head", "action-admin" ]
+        }
+      ]
+    },
+    {
+      "path" : "/v1/*",
+      "methodRoles" : [
+        {
+          "method" : "*",
+          "roles" : "admin"
+        }
+      ]
+    }
+  ],
+  "segments" : [
+    {
+      "segment" : "resource1",
+      "auth" : [
+        {
+          "method" : "GET",
+          "roles" : { 
+            "or": [ 
+              "read", 
+              "write", 
+              { 
+                "and" :  [ 
+                  "resource1", "some_other_role" 
+                ]
+              } 
+            ]
+           }
+        },
+        {
+          "method" : "POST",
+          "roles" : [ "write", "delete" ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+* `service` -       Example: "api-reporting"
+                    The name of the secured client/service. This will be the same as the the representative client created in the Keycloak server.
+                    This field is used to find the user's permissions for service in the access token. 
+            
+* `enforcementMode` - Enum that determines how requests with no matching policy rule are handled. The three options are:       
+   * "ENFORCING"  - Requests with no matching policy rule are denied.
+   * "PERMISSIVE" - Requests with no matching policy rule are accepted. Requests that match a policy rule are still evaluated normally to determine access.
+   * "DISABLED"   - No authorization evaluation takes place. A valid token still needs be present in a request.
+            
+* `paths` - A list of policy/path rules that determine what permissions are required by a user making a request to this path.
+    * `path` - Example: "/v2/resource/segment/action". The section of the path entered here depends on where the `secure` directive is placed
+    in your akka-http routes. The request path within the `secure` directive will be matched against the configured path in this field.
+    A "wildcard" path can be configured using a "\*" segment. Eg. A path configured simply as "/\*" will mean this rule will apply to any
+    request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".
+    * `methodRoles` - A list of HTTP methods and the permissions required for a request to this path using each specified method.
+        * `method` - The HTTP method this applies to. This field set to "*" will make the rule apply to any HTTP method.
+        * `roles` - Here the required permissions to access this path, using this method, are defined.
+           - If just a single role is a required this field can be populated with a simple string: e.g. "admin"
+           - A list of strings will resolve to defaults to Or evaluation: e.g. [ "admin", "read", "write" ] effectively means the user requires any one of the listed permissions.
+           - For more complicated permission logic, with logic for optional and required roles, a custom data construct was created:
+            
+```json
+{
+  "and" : [
+    {
+      "or" : [ "resource-read", "resource-write", "resource-delete" ]
+    },
+    {
+      "or" : [ "resource2-read", "resource2-write", "resource2-delete" ]
+    },
+    {
+      "or" : [ "segment-read", "segment-write", "segment-delete" ]
+    }
+  ]
+}
+```
+
+* `segments` - This field can be used to setup rules for segments that repeat in your configured paths. To reference a saved segment in your configured paths,
+use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This removes the need to retype the method roles for each configured path this segment is used in.
+    
+    
 
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP API, before this is done there are two requirements:
