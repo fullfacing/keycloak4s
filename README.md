@@ -3,7 +3,8 @@
 [![codecov](https://codecov.io/gh/fullfacing/keycloak4s/branch/master/graph/badge.svg?token=WKbJaagGhz)](https://codecov.io/gh/fullfacing/keycloak4s)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.fullfacing/keycloak4s-core_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/fullfacing/keycloak4s-core_2.12/)
 
-A Scala-based middleware API for [Keycloak](https://www.keycloak.org/).
+**A Scala-based middleware API for [Keycloak](https://www.keycloak.org/)**  
+*Based on version 6.0.1*
 
 keycloak4s is an opinionated Scala built API that serves as a bridge between any Scala project and a Keycloak server, allowing access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html) as well as providing adapters to validate Keycloak's bearer tokens and authorize requests via a JSON config file inspired by their [policy enforcement configuration](https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter).
 
@@ -34,7 +35,7 @@ Each module can be pulled into a project separately via the following SBT depend
 * keycloak4s-admin-monix: `"com.fullfacing" %% "keycloak4s-monix" % "1.0"`
 * keycloak4s-akka-http:   `"com.fullfacing" %% "keycloak4s-akka-http" % "1.0"`
 
-(The core module is already included in all other modules and is not required to be pulled in under normal circumstances.)
+The core module is a dependency for all other modules and therefore is automatically pulled in when using any other module.
 
 ## Module: keycloak4s-core <a name="keycloak4s-core"></a>
 The core module contains functionality (such as logging and error handling) and models shared between modules.
@@ -133,7 +134,7 @@ usersService.fetchS(batchSize = 20)
 A `fetchL` variant is also available which performs the same batch streaming, but automatically converts the Observable to a List of Task when the stream has completed.
 
 ## Module: keycloak4s-akka-http <a name="keycloak4s-akka-http"></a>
-*Please note: This module is especially opinionated and was designed with our company's needs in mind, however there was still an attempt to keep it as abstract as possible to allow for repurposing. Feedback on its usability is encouraged.*
+*Please note: This module is especially opinionated and was designed with our company's needs in mind, however there was still an effort to keep it as abstract as possible to allow for repurposing. Feedback on its usability is encouraged.*
 
 A client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through use of [Nimbus JOSE + JWT][Nimbus]) and provides a high-level RBAC implementation to authorize requests via Akka-HTTP's directives and a JSON policy enforcement configuration.
 
@@ -322,12 +323,12 @@ use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This removes the nee
     
 
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
-In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP API, before this is done there are two requirements:
-* A policy enforcement configuration for the adapter needs to be created. (See segment above)
-* A `TokenValidator` needs to be created and passed implicitly into scope. (See segment above)
+In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP routes, for which there are two requirements:
+* A policy enforcement configuration for the adapter needs to be created. (Refer to [Policy Enforcement Configuration](#policy-enforcement))
+* A `TokenValidator` needs to be created and passed implicitly into scope. (Refer to [Token Validation](#token-validation))
 
-With the validator and configuration ready the adapter can be plugged in as followed:
-1. Mix in the `SecurityDirectives` trait, this contains the `secure` directive which plugs in the adapter.
+With the validator and configuration at the ready the adapter can be plugged in:
+1. Mix in the `SecurityDirectives` trait into the class containing the routes, this provides the `secure` directive which plugs in the adapter.
 2. Invoke `secure` with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure inside the directive.
 
 *Example:*<br/>
@@ -349,13 +350,13 @@ object AkkaHttpRoutes extends SecurityDirectives {
 **Token Payload Extractors**<br/> <a name="payload-extractors"></a>
 After validation the `secure` directive provides the payloads of the bearer tokens for further information extraction or processing. The payloads are in a JSON structure native to [Nimbus JOSE + JWT][Nimbus], however to simplify extraction this module includes implicits with safe extraction functionality.
 
-To gain access to the extractors the implicits need to be in scope, after which these generic extractors can be used on any Nimbus Payload object.
+To gain access to the extractors the implicits need to be in scope, after which a set of generic extractors can be used on any Nimbus Payload object.
 
 *Example:*<br/>
 ```scala
 import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
 
-val payload: Payload = ... //truncated
+val payload: Payload = ... // truncated
 
 // extracts the value for a given key as a String
 val tokenType: Option[String] = payload.extract("typ")
@@ -370,7 +371,7 @@ val audiences: List[String] = payload.extractList("aud")
 val resourceAccess: List[UUID] = payload.extractAsListOf[UUID]("allowed_ids")
 ```
 
-By default the parametric extractors use the internal [json4s](http://json4s.org/) serialization `Formats`, but they allow for passing a custom `Formats` if required.
+By default the parametric extractors use the internal [json4s](http://json4s.org/) serialization `Formats`, but they will pass through a custom Formats either implicitly (if implicitly in scope) or when passed through explicitly.
 
 Alongside the generic extractors are additional extractors for commonly required values, such as `extractScopes`, `extractEmail`, etc.
 
