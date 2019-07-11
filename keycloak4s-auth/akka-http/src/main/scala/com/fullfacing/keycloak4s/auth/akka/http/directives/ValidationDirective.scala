@@ -18,7 +18,7 @@ trait ValidationDirective {
   /**
    * Token Validation directive to secure all inner directives.
    * Extracts the token and has it validated by the implicit instance of the TokenValidator.
-   * The resource_access field is extracted from the token and provided for authorisation on
+   * The resource_access field is extracted from the token and provided for authorization on
    * on inner directives.
    *
    * @return  Directive with verified user's permissions

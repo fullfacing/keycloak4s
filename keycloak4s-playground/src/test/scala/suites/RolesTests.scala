@@ -4,29 +4,21 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import utils.{Errors, IntegrationSpec}
-import com.fullfacing.keycloak4s.core.models.{Client, Group, KeycloakError, ManagementPermission, Role, User}
+import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.eval.Task
 import org.json4s.jackson.Serialization.writePretty
 import org.scalatest.DoNotDiscover
+import utils.{Errors, IntegrationSpec}
 
 @DoNotDiscover
 class RolesTests extends IntegrationSpec {
 
   /* Testing functions and data. **/
-  private def mapToRole(id: UUID, role: Role.Create): Role =
-    Role(
-      id         = id,
-      clientRole = role.clientRole,
-      composite  = role.composite,
-      name       = role.name
-    )
-
   private def mapToRoleMapping(id: UUID, role: Role.Create): Role.Mapping =
     Role.Mapping(
-      id         = Some(id),
-      name       = Some(role.name)
+      id         = id,
+      name       = role.name
     )
 
   private val rRole1Name = "realmRole1"
@@ -354,8 +346,8 @@ class RolesTests extends IntegrationSpec {
   }
 
   "Fetch Groups" should "successfully retrieve all groups that a given realm role" in {
-    val r1 = mapToRole(rRole1.get(), rRole1Create)
-    val r2 = mapToRole(rRole2.get(), rRole2Create)
+    val r1 = mapToRoleMapping(rRole1.get(), rRole1Create)
+    val r2 = mapToRoleMapping(rRole2.get(), rRole2Create)
     val task =
       for {
         _ <- EitherT(groupService.addRealmRoles(group1.get(), List(r1, r2)))
@@ -377,8 +369,8 @@ class RolesTests extends IntegrationSpec {
   }
 
   it should "successfully retrieve all groups that have a client role" in {
-    val r1 = mapToRole(cRole1.get(), cRole1Create)
-    val r2 = mapToRole(cRole2.get(), cRole2Create)
+    val r1 = mapToRoleMapping(cRole1.get(), cRole1Create)
+    val r2 = mapToRoleMapping(cRole2.get(), cRole2Create)
     val task =
       for {
         _ <- EitherT(groupService.addClientRoles(clientUuid.get(), group1.get(), List(r1, r2)))
@@ -402,9 +394,9 @@ class RolesTests extends IntegrationSpec {
   "Delete" should "successfully remove roles from the realm" in {
     val task =
       for {
-        _ <- realmRoleService.remove(rRole1Name)
-        _ <- realmRoleService.remove(rRole2Name)
-        _ <- realmRoleService.remove(rRole3Name)
+        _ <- realmRoleService.delete(rRole1Name)
+        _ <- realmRoleService.delete(rRole2Name)
+        _ <- realmRoleService.delete(rRole3Name)
       } yield Right(())
 
     task.shouldReturnSuccess
@@ -413,9 +405,9 @@ class RolesTests extends IntegrationSpec {
   it should "successfully remove roles from the client" in {
     val task =
       for {
-        _ <- clientRoleService.remove(clientUuid.get(), cRole1Name)
-        _ <- clientRoleService.remove(clientUuid.get(), cRole2Name)
-        r <- clientRoleService.remove(clientUuid.get(), cRole3Name)
+        _ <- clientRoleService.delete(clientUuid.get(), cRole1Name)
+        _ <- clientRoleService.delete(clientUuid.get(), cRole2Name)
+        r <- clientRoleService.delete(clientUuid.get(), cRole3Name)
       } yield r
 
     task.shouldReturnSuccess

@@ -264,7 +264,7 @@ class UsersTests extends IntegrationSpec {
     for {
       _     <- EitherT(realmRoleService.create(Role.Create(name = "test_role", clientRole = false, composite = false)))
       id    <- EitherT(realmRoleService.fetchByName("test_role")).map(_.id)
-      _     <- EitherT(userService.addRealmRoles(user.id, List(Role.Mapping(Some(id), Some("test_role")))))
+      _     <- EitherT(userService.addRealmRoles(user.id, List(Role.Mapping(id, "test_role"))))
       roles <- EitherT(userService.fetchRealmRoles(user.id))
     } yield {
       roles.map(_.name) should contain ("test_role")
@@ -274,11 +274,11 @@ class UsersTests extends IntegrationSpec {
 
   "removeRealmRoles" should "unmap a Realm Role from a User" in {
     val user = storedAdminUser.get()
-    val role = Role.Mapping(name = "test_role".some, id = storedRoleId.get.some)
+    val role = Role.Mapping(name = "test_role", id = storedRoleId.get)
 
     for {
       _     <- EitherT(userService.removeRealmRoles(user.id, List(role)))
-      _     <- EitherT(realmRoleService.remove("test_role"))
+      _     <- EitherT(realmRoleService.delete("test_role"))
       roles <- EitherT(userService.fetchRealmRoles(user.id))
     } yield roles.map(_.name) shouldNot contain ("test_role")
   }.value.shouldReturnSuccess
@@ -329,19 +329,19 @@ class UsersTests extends IntegrationSpec {
     val user = storedAdminUser.get()
 
     for {
-      _     <- EitherT(userService.addClientRoles(storedClientId.get(), user.id, List(Role.Mapping(Some(storedRoleId.get()), Some("test_role")))))
+      _     <- EitherT(userService.addClientRoles(storedClientId.get(), user.id, List(Role.Mapping(storedRoleId.get(), "test_role"))))
       roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
     } yield roles shouldBe empty
   }.value.shouldReturnSuccess
 
   "removeClientRoles" should "unmap a Client Role from a User" in {
     val user = storedAdminUser.get()
-    val role = Role.Mapping(name = "test_role".some, id = storedRoleId.get.some)
+    val role = Role.Mapping(name = "test_role", id = storedRoleId.get)
 
     for {
       _     <- EitherT(userService.removeClientRoles(storedClientId.get(), user.id, List(role)))
       roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
-      _     <- EitherT(clientRoleService.remove(storedClientId.get(), "test_role"))
+      _     <- EitherT(clientRoleService.delete(storedClientId.get(), "test_role"))
     } yield roles shouldNot be (empty)
   }.value.shouldReturnSuccess
 

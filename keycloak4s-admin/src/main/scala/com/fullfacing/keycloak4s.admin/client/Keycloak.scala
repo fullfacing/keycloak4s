@@ -11,7 +11,6 @@ object Keycloak {
   def Components[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new Components[R, S]
 
   def RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new RealmsAdmin[R, S]
-  def ScopeMappings[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new ScopeMappings[R, S]
   def ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new ProtocolMappers[R, S]
   def AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new AttackDetection[R, S]
   def IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) = new IdentityProviders[R, S]

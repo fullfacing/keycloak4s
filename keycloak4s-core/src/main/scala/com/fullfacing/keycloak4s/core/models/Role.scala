@@ -26,6 +26,9 @@ object Role {
                           description: Option[String] = None,
                           name: String)
 
-  final case class Mapping(id: Option[UUID] = None,
-                           name: Option[String] = None)
+  final case class Mapping(id: UUID,
+                           name: String)
+
+  private[keycloak4s] final case class Id(id: UUID)
+  private[keycloak4s] final case class Name(name: String)
 }

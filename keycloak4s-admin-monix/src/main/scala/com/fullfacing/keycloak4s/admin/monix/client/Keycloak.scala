@@ -5,6 +5,7 @@ import com.fullfacing.keycloak4s.admin.monix.services._
 object Keycloak {
   def AttackDetection(implicit client: KeycloakClient)          = new AttackDetection
   def AuthenticationManagement(implicit client: KeycloakClient) = new AuthenticationManagement
+  def ClientScopes(implicit client: KeycloakClient)             = new ClientScopes
   def Clients(implicit client: KeycloakClient)                  = new Clients
   def Components(implicit client: KeycloakClient)               = new Components
   def Groups(implicit client: KeycloakClient)                   = new Groups
@@ -15,7 +16,6 @@ object Keycloak {
   def Roles(implicit client: KeycloakClient)                    = new Roles
   def RolesById(implicit client: KeycloakClient)                = new RolesById
   def Root(implicit client: KeycloakClient)                     = new Root
-  def ScopeMappings(implicit client: KeycloakClient)            = new ScopeMappings
   def Users(implicit client: KeycloakClient)                    = new Users
   def UserStorageProviders(implicit client: KeycloakClient)     = new UserStorageProviders
   

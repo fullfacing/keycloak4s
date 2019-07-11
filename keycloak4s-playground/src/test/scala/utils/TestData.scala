@@ -29,6 +29,7 @@ object TestData {
                   withIat: Option[Instant] = None,
                   withNbf: Option[Instant] = None,
                   withIss: Option[String] = None,
+                  withResourceAccess: Option[String] = None,
                   keyIdOverride: Option[String] = None,
                   signerOverride: Option[JWSSigner] = None): SignedJWT = {
 
@@ -48,7 +49,11 @@ object TestData {
       builder.issuer(iss)
     }
 
-    val claimsSet = addNbf.andThen(addIat).andThen(addIss)(claimsSetBuilder).build()
+    val addClaims: JWTClaimsSet.Builder => JWTClaimsSet.Builder = builder => withResourceAccess.fold(builder) { permissions =>
+      builder.claim("resource_access", JSONObjectUtils.parse(permissions))
+    }
+
+    val claimsSet = addNbf.andThen(addIat).andThen(addIss).andThen(addClaims)(claimsSetBuilder).build()
 
     val header: JWSHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
       .keyID(keyIdOverride.getOrElse(rsaJwk.getKeyID))

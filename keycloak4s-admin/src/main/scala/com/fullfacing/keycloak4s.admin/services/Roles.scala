@@ -4,9 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
-import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.core.models.KeycloakError
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
@@ -46,7 +44,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       client.put[Unit](path, role)
     }
 
-    def remove(clientId: UUID, name: String): R[Either[KeycloakError, Unit]] = {
+    def delete(clientId: UUID, name: String): R[Either[KeycloakError, Unit]] = {
       val path: Path = Seq(client.realm, clients_path, clientId, roles_path, name)
       client.delete[Unit](path)
     }
@@ -65,7 +63,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
     // --- Composites --- //
     def addCompositeRoles(clientId: UUID, name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val body = roleIds.map(Role.Id)
       val path: Path = Seq(client.realm, clients_path, clientId, roles_path, name, "composites")
       client.post[Unit](path, body)
     }
@@ -76,7 +74,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     }
 
     def removeCompositeRoles(clientId: UUID, name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val body = roleIds.map(Role.Id)
       val path: Path = Seq(client.realm, clients_path, clientId, roles_path, name, "composites")
       client.delete[Unit](path, body)
     }
@@ -134,7 +132,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
       client.put[Unit](path, role)
     }
 
-    def remove(name: String): R[Either[KeycloakError, Unit]] = {
+    def delete(name: String): R[Either[KeycloakError, Unit]] = {
       val path: Path = Seq(client.realm, roles_path, name)
       client.delete[Unit](path)
     }
@@ -153,13 +151,13 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
     // --- Composites --- //
     def addCompositeRoles(name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val body = roleIds.map(Role.Id)
       val path: Path = Seq(client.realm, roles_path, name, "composites")
       client.post[Unit](path, body)
     }
 
     def removeCompositeRoles(name: String, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
-      val body = roleIds.map(r => Role.Mapping(Some(r)))
+      val body = roleIds.map(Role.Id)
       val path: Path = Seq(client.realm, roles_path, name, "composites")
       client.delete[Unit](path, body)
     }

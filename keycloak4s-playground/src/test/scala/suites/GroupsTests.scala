@@ -112,9 +112,10 @@ class GroupsTests extends IntegrationSpec {
     val task =
       (for {
         group <- EitherT(groupService.fetchById(group1.get()))
-        _     <- EitherT(groupService.update(group1.get(), Group("Group 4", group.path, id = group1.get())))
+        _     <- EitherT(groupService.update(group1.get(), Group.Update(Some("Group 4"))))
         ug    <- EitherT(groupService.fetchById(group1.get()))
     } yield {
+        group.name should not be ug.name
         ug.name should equal("Group 4")
       }).value
     task.shouldReturnSuccess
@@ -140,7 +141,7 @@ class GroupsTests extends IntegrationSpec {
     for {
       _   <- EitherT(realmRoleService.create(Role.Create(name = "test_role1", clientRole = false, composite = false)))
       id  <- EitherT(realmRoleService.fetchByName("test_role1")).map(_.id)
-      _   <- EitherT(groupService.addRealmRoles(group2.get(), List(Role(id = id, name = "test_role1", clientRole = false, composite = false))))
+      _   <- EitherT(groupService.addRealmRoles(group2.get(), List(Role.Mapping(id, "test_role1"))))
     } yield storedRoleId.set(id)
   }.value.shouldReturnSuccess
 
@@ -160,8 +161,8 @@ class GroupsTests extends IntegrationSpec {
     val role = Role(name = "test_role1", id = storedRoleId.get(), clientRole = false, composite = false)
 
     for {
-      _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(role)))
-      _ <- EitherT(realmRoleService.remove("test_role1"))
+      _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(Role.Mapping(role.id, role.name))))
+      _ <- EitherT(realmRoleService.delete("test_role1"))
     } yield ()
   }.value.shouldReturnSuccess
 
@@ -180,7 +181,7 @@ class GroupsTests extends IntegrationSpec {
     for {
       _   <- EitherT(clientRoleService.create(storedClientId.get(), Role.Create(name = "test_role1", clientRole = false, composite = false)))
       id  <- EitherT(clientRoleService.fetchByName(storedClientId.get(), "test_role1")).map(_.id)
-      _   <- EitherT(groupService.addClientRoles(storedClientId.get(), group2.get(), List(Role(id = id, name = "test_role1", clientRole = false, composite = false))))
+      _   <- EitherT(groupService.addClientRoles(storedClientId.get(), group2.get(), List(Role.Mapping(id, "test_role1"))))
     } yield storedRoleId.set(id)
   }.value.shouldReturnSuccess
 
@@ -200,8 +201,8 @@ class GroupsTests extends IntegrationSpec {
     val role = Role(name = "test_role1", id = storedRoleId.get(), clientRole = false, composite = false)
 
     for {
-      _ <- EitherT(groupService.removeClientRoles(storedClientId.get(), group2.get(), List(role)))
-      _ <- EitherT(clientRoleService.remove(storedClientId.get(), role.name))
+      _ <- EitherT(groupService.removeClientRoles(storedClientId.get(), group2.get(), List(Role.Mapping(role.id, role.name))))
+      _ <- EitherT(clientRoleService.delete(storedClientId.get(), role.name))
     } yield ()
   }.value.shouldReturnSuccess
 
