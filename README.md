@@ -196,9 +196,9 @@ keycloak4s' request authorization is performed by evaluating a request against a
 The configuration JSON file must be placed in a project's `resources` folder. This allows for the construction of the policy enforcement object simply by specifying the file name:
 `val policyConfig = PolicyBuilders.buildPathAuthorization("config_name.json")`. 
 
-In an example use case the clients of a Keycloak realm each represent a specific API. Client-level roles are then created for each client as an available permissions for the API. The roles can then be assigned to users to grant permissions as required.
+In our intended use case the clients of a Keycloak realm each represent a specific API. Client-level roles are then created for each client as available permissions for the API. The roles can then be assigned to users to grant permissions as required.
 
-Example of access token payload with a user authorized with admin access to one API, and read/write access for a particular resource on another:
+Example of an access token payload for a user authorized with admin access to one API, and read/write access for a particular resource on another:
 ```json
 {
   "resource_access": {
@@ -276,22 +276,21 @@ Example of the Policy Configuration JSON Structure:
 ```
 
 * `service` - Example: "api-reporting".
-              The name of the API that is represented in Keycloak as a client.
-              This field is used to find the user's permissions for the service in the access token. 
+              The name of the API that is represented in Keycloak as a client, used to check the user's access token for permissions for the service. 
             
-* `enforcementMode` - An enumerator value that determines how requests with no matching policy rule are handled. The three options are:       
+* `enforcementMode` - An enum that determines how requests with no matching policy rule are handled. The three options are:       
    * "ENFORCING"  - Requests with no matching policy rule are denied.
    * "PERMISSIVE" - Requests with no matching policy rule are accepted. Requests that match a policy rule are evaluated to determine access.
-   * "DISABLED"   - No authorization evaluation takes place, however tokens are still validated.
+   * "DISABLED"   - No authorization evaluation takes place. A valid access token is still required.
             
-* `paths` - A list of policy rules for paths that determine what permissions are required for requests to any of the included paths.
+* `paths` - A list of policy rules for paths that determine which permissions are required for requests to any of the included paths.
 
     * `path` - Example: "/v2/resource/segment/action".
-               The path here is reliant on where the `secure` directive is plugged in your Akka-HTTP routes. The request path within the `secure` directive will be matched against the configured path defined here.
+               The path here is reliant on where the `secure` directive is plugged into your Akka-HTTP routes. The request path within the `secure` directive will be matched against the configured path defined here.
     
      >Special segments:<br> 
-     A "wildcard" path/segment can be configured using a "\*" segment. Eg. A path configured simply as "/\*" means this rule will apply to any request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".<br>
-     A segment "{id}" is used to denote a valid UUID path. E.g. "/v1/resource/{id}". Example of a request matching this rule: "/v1/resource/689c4936-5274-4543-85d7-296cc456100b"
+     A "wildcard" path/segment can be configured using a "\*" segment. E.g. A path configured simply as "/\*" means this rule will apply to any request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".<br>
+     "{id}" is used to denote a valid UUID path segment, e.g. "/v1/resource/{id}". A possible request matching this rule would be: "/v1/resource/689c4936-5274-4543-85d7-296cc456100b"
     
     * `methodRoles` - A list of HTTP methods and the permissions required for each method.
     
@@ -300,7 +299,7 @@ Example of the Policy Configuration JSON Structure:
         * `roles` - The permissions for a method.
            - A single string will resolve to a single role: e.g. "admin"
            - A list of strings will by default resolve to Or evaluation: e.g. [ "admin", "read", "write" ], this effectively means the user requires only one of any of the listed permissions.
-           - For more complex permission logic (e.g. for a mix of optional and required roles) the RequiredRoles data construct was created:
+           - For more complex permission logic (e.g. a mix of optional and required roles) the RequiredRoles data construct was created:
            
 *Scala Representation:*           
 ```scala
@@ -358,7 +357,7 @@ final case class Or(or: List[Either[RequiredRoles, String]])  extends RequiredRo
 }
 ```
 
-Note: In the event that an incoming request has multiple unique rules that can apply to it (E.g a rule with a wildcard segment/method and a concrete rule), the request will be evaluated using both rules and will be accepted if either succeeds.
+Note: In the event that an incoming request has multiple unique rules that can apply to it (E.g a rule with both a wildcard segment/method and a concrete rule), the request will be evaluated using both rules and will be accepted if either succeeds.
  
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP routes, for which there are two requirements:
