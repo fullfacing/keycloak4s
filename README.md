@@ -6,7 +6,7 @@
 **A Scala-based middleware API for [Keycloak](https://www.keycloak.org/)**  
 *Based on version 6.0.1*
 
-keycloak4s is an opinionated Scala built API that serves as a bridge between any Scala project and a Keycloak server, allowing access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html) as well as providing adapters to validate Keycloak's bearer tokens and authorize requests via a JSON config file inspired by their [policy enforcement configuration](https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter).
+keycloak4s is an opinionated Scala built API that serves as a bridge between any Scala project and a Keycloak server, allowing access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html) as well as providing adapters to validate Keycloak's bearer tokens and authorize requests via a JSON config file inspired by their [policy enforcement configuration][Policy-Configuration].
 
 The project is split into the following modules, each as a separate dependency:
 * `keycloak4s-core`: Contains core functionality and shared models across other modules.
@@ -191,7 +191,7 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
 
-keycloak4s' request authorization is performed by evaluating a request against a set of policy enforcement rules provided by the client. The rules for the service are configured using a policy configuration object that represents a JSON structure. Incoming requests are compared to these rules to determine which permissions a bearer token is required to contain in order to be authorized.
+keycloak4s' request authorization is performed by evaluating a request against a set of policy enforcement rules. The rules for the service are represented by a policy configuration object parsed from a JSON structure inspired by Keycloak's [policy enforcement JSON configuration][Policy-Configuration]. Incoming requests are compared to these rules to determine which permissions a bearer token is required to contain in order to be authorized.
 
 The configuration JSON file must be placed in a project's `resources` folder. This allows for the construction of the policy enforcement object simply by specifying the file name:
 `val policyConfig = PolicyBuilders.buildPathAuthorization("config_name.json")`. 
@@ -455,3 +455,4 @@ The subtypes of `KeycloakError` are as follows:
 [Akka-HTTP]: https://doc.akka.io/docs/akka-http/current/introduction.html
 [Admin-API]: https://www.keycloak.org/docs-api/5.0/rest-api/index.html
 [Nimbus]: https://connect2id.com/products/nimbus-jose-jwt
+[Policy-Configuration]: https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter)
