@@ -191,41 +191,38 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
 
-Keycloak4s provides an akka-http authorization adapter that can be used to secure a server/api by validating and authorizing incoming requests. The rules/policies for the server
-are configured using a json policy configuration object.
-Incoming requests are compared to the configured rules to determine what permissions are required in the user's bearer token to be authorized.
+keycloak4s' request authorization is performed by evaluating a request against a set of policy enforcement rules provided by the client. The rules for the service are configured using a policy configuration object that represents a JSON structure. Incoming requests are compared to these rules to determine which permissions a bearer token is required to contain in order to be authorized.
 
-The configuration json file should be placed in the `resource` folder. This allows one to used the provided function to deserialize and use the config:
-`PolicyBuilders.buildPathAuthorization("config_name.json")`. 
+The configuration JSON file must be placed in a project's `resources` folder. This allows for the construction of the policy enforcement object simply by specifying the file name:
+`val policyConfig = PolicyBuilders.buildPathAuthorization("config_name.json")`. 
 
-In our use case, Keycloak clients represent a specific api/microservice. Client roles are then created for each client as the available permissions for each service.
-The roles can then be assigned to users as necessary to grant permissions.
+In an example use case the clients of a Keycloak realm each represent a specific API. Client-level roles are then created for each client as an available permissions for the API. The roles can then be assigned to users to grant permissions as required.
 
-Example access token payload with a user's roles configured correctly for authorization with keycloak4s adapters:
+Example of access token payload with a user authorized with admin access to one API, and read/write access for a particular resource on another:
 ```json
 {
   "resource_access": {
-    "api-test": {
+    "api-one": {
       "roles": [
         "admin"
       ]
     },
     "api-two": {
       "roles": [
-        "read", "write"
+        "read-resource1", "write-resource1"
       ]
-     }
+    }
   },
-  "iss": "https://keycloakserver/auth",
+  "iss": "https://com.fullfacing:8080/auth",
   "exp": 1562755799,
   "iat": 1562755739
 }
 ```
 
-Policy Configuration Example:
+Example of the Policy Configuration JSON Structure:
 ```json
 {
-  "service" : "api-test",
+  "service" : "api-one",
   "enforcementMode" : "ENFORCING",
   "paths" : [
     {
@@ -279,69 +276,68 @@ Policy Configuration Example:
 ```
 
 * `service` - Example: "api-reporting".
-              The name of the secured client/service. This will be the same as the the representative client created in the Keycloak server.
+              The name of the API that is represented in Keycloak as a client.
               This field is used to find the user's permissions for the service in the access token. 
             
-* `enforcementMode` - Enum that determines how requests with no matching policy rule are handled. The three options are:       
+* `enforcementMode` - An enumerator value that determines how requests with no matching policy rule are handled. The three options are:       
    * "ENFORCING"  - Requests with no matching policy rule are denied.
-   * "PERMISSIVE" - Requests with no matching policy rule are accepted. Requests that match a policy rule are still evaluated normally to determine access.
-   * "DISABLED"   - No authorization evaluation takes place. A valid token still needs be present in a request.
+   * "PERMISSIVE" - Requests with no matching policy rule are accepted. Requests that match a policy rule are evaluated to determine access.
+   * "DISABLED"   - No authorization evaluation takes place, however tokens are still validated.
             
-* `paths` - A list of policy/path rules that determine what permissions are required by a user making a request to this path.
+* `paths` - A list of policy rules for paths that determine what permissions are required for requests to any of the included paths.
 
-    * `path` - Example: "/v2/resource/segment/action". The section of the path entered here depends on where the `secure` directive is placed
-    in your akka-http routes. The request path within the `secure` directive will be matched against the configured path in this field.
+    * `path` - Example: "/v2/resource/segment/action".
+               The path here is reliant on where the `secure` directive is plugged in your Akka-HTTP routes. The request path within the `secure` directive will be matched against the configured path defined here.
     
      >Special segments:<br> 
-     A "wildcard" path/segment can be configured using a "\*" segment. Eg. A path configured simply as "/\*" will mean this rule will apply to any
-       request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".<br>
-      A segment "{id}" is used to denote a valid UUID path parameter. E.g. A GetById path "/v1/resource/{id}". Example of a request matching this rule:
-      "/v1/resource/689c4936-5274-4543-85d7-296cc456100b"
+     A "wildcard" path/segment can be configured using a "\*" segment. Eg. A path configured simply as "/\*" means this rule will apply to any request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".<br>
+     A segment "{id}" is used to denote a valid UUID path. E.g. "/v1/resource/{id}". Example of a request matching this rule: "/v1/resource/689c4936-5274-4543-85d7-296cc456100b"
     
-    * `methodRoles` - A list of HTTP methods and the permissions required for a request to this path using each specified method.
+    * `methodRoles` - A list of HTTP methods and the permissions required for each method.
     
         * `method` - The HTTP method to which this rule applies. Set this field to "*" in order to make the rule apply to any HTTP method.
         
-        * `roles` - Here the required permissions to access this path, using this method, are defined.
-           - If just a single role is a required this field can be populated with a simple string: e.g. "admin"
-           - A list of strings will by default resolve to Or evaluation: e.g. [ "admin", "read", "write" ], this effectively means the user requires any one of the listed permissions.
-           - For more complicated permission logic, with logic for optional and required roles, a custom data construct was created:
+        * `roles` - The permissions for a method.
+           - A single string will resolve to a single role: e.g. "admin"
+           - A list of strings will by default resolve to Or evaluation: e.g. [ "admin", "read", "write" ], this effectively means the user requires only one of any of the listed permissions.
+           - For more complex permission logic (e.g. for a mix of optional and required roles) the RequiredRoles data construct was created:
            
+*Scala Representation:*           
 ```scala
 sealed trait RequiredRoles
 
 final case class And(and: List[Either[RequiredRoles, String]]) extends RequiredRoles
 final case class Or(or: List[Either[RequiredRoles, String]])  extends RequiredRoles
 ```          
-            
+
+*JSON Representation:*              
 ```json
 {
   "roles" : {
     "and" : [
       {
-       "or" : [ "resource-read", "resource-write", "resource-delete" ]
+        "or" : [ "resource-read", "resource-write", "resource-delete" ]
       },
       {
         "or" : [ "resource2-read", "resource2-write", "resource2-delete" ]
-     },
-     {
-       "or" : [ "segment-read", "segment-write", "segment-delete" ]
-     }
+      },
+      {
+        "or" : [ "segment-read", "segment-write", "segment-delete" ]
+      }
     ]
   }
 }
 ```
 
-* `segments` - This field can be used to setup rules for segments that repeat in your configured paths. To reference a saved segment in your configured paths,
-use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This removes the need to retype the method roles for each configured path in which this segment is used.
+* `segments` - An optional field to setup rules for segments that repeat in the configured paths. To reference a created segment use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This reduces retyping of method roles for each configured path in which this segment is used.
 
-    * `segment` - The segment string that will appear in the path. Only normal segments can be used here (no wildcard/ {id} segments).
+    * `segment` - The segment string that will appear in the path. Wildcard and {id} segments are not allowed.
     
-    * `methodRoles` - The configured HTTP methods and their corresponding required roles for each request.
+    * `methodRoles` - The configured HTTP methods and the corresponding roles for each request.
     
-        * `method` - The HTTP method to which this rule applies. The wildcard method can also be used here.
+        * `method` - The HTTP method to which this rule applies. The wildcard method may be used here.
         
-        * `roles`  - A simple list of roles required for this segment using this method. The user will require any role from the list.
+        * `roles`  - A list of roles required for this method. The user requires at least one role from the list.
 ```json
 {
   "segments" : [
@@ -362,7 +358,7 @@ use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This removes the nee
 }
 ```
 
-NB. In the event that an incoming request has multiple unique rules that can apply to it (E.g a rule with a wildcard segment/method and a concrete rule), the request will be evaluated with both rules and will be accepted if either of them succeed.
+Note: In the event that an incoming request has multiple unique rules that can apply to it (E.g a rule with a wildcard segment/method and a concrete rule), the request will be evaluated using both rules and will be accepted if either succeeds.
  
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP routes, for which there are two requirements:
