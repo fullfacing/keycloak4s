@@ -191,12 +191,15 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
 
-Keycloak4s provides an akka-http authorization adapter that can be used to secure a server/api and authorize incoming requests. The rules/policies for the server
+Keycloak4s provides an akka-http authorization adapter that can be used to secure a server/api by validating and authorizing incoming requests. The rules/policies for the server
 are configured using a json policy configuration object.
 Incoming requests are compared to the configured rules to determine what permissions are required in the user's bearer token to be authorized.
 
 The configuration json file should be placed in the `resource` folder. This allows one to used the provided function to deserialize and use the config:
 `PolicyBuilders.buildPathAuthorization("config_name.json")`. 
+
+In our use case, Keycloak clients represent a specific api/microservice. Client roles are then created for each client as the available permissions for each service.
+The roles can then be assigned to users as necessary to grant permissions.
 
 Example access token payload with a user's roles configured correctly for authorization with keycloak4s adapters:
 ```json
@@ -242,8 +245,8 @@ Policy Configuration Example:
           "roles" : "action-admin"
         },
         {
-          "method" : "HEAD",
-          "roles" : [ "action-head", "action-admin" ]
+          "method" : "POST",
+          "roles" : [ "action-post", "action-admin" ]
         }
       ]
     },
