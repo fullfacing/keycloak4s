@@ -31,7 +31,7 @@
   "segments" : [
     {
       "segment" : "resource1",
-      "auth" : [
+      "methodRoles" : [
         {
           "method" : "GET",
           "roles" : [ "read1", "write1", "delete1" ]
@@ -48,7 +48,7 @@
     },
     {
       "segment" : "resource2",
-      "auth" : [
+      "methodRoles" : [
         {
           "method" : "GET",
           "roles" : [ "read2", "write2", "delete2" ]

@@ -191,9 +191,14 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
 
-Authorization 
+Keycloak4s provides an akka-http authorization adapter that can be used to secure a server/api and authorize incoming requests. The rules/policies for the server
+are configured using a json policy configuration object.
+Incoming requests are compared to the configured rules to determine what permissions are required in the user's bearer token to be authorized.
 
-Example access token payload with user's roles configured correctly for authorization with our adapters:
+The configuration json file should be placed in the `resource` folder. This allows one to used the provided function to deserialize and use the config:
+`PolicyBuilders.buildPathAuthorization("config_name.json")`. 
+
+Example access token payload with a user's roles configured correctly for authorization with keycloak4s adapters:
 ```json
 {
   "resource_access": {
@@ -255,20 +260,10 @@ Policy Configuration Example:
   "segments" : [
     {
       "segment" : "resource1",
-      "auth" : [
+      "methodRoles" : [
         {
           "method" : "GET",
-          "roles" : { 
-            "or": [ 
-              "read", 
-              "write", 
-              { 
-                "and" :  [ 
-                  "resource1", "some_other_role" 
-                ]
-              } 
-            ]
-           }
+          "roles" : [ "read", "write", "delete" ]
         },
         {
           "method" : "POST",
@@ -280,9 +275,9 @@ Policy Configuration Example:
 }
 ```
 
-* `service` -       Example: "api-reporting"
-                    The name of the secured client/service. This will be the same as the the representative client created in the Keycloak server.
-                    This field is used to find the user's permissions for service in the access token. 
+* `service` - Example: "api-reporting".
+              The name of the secured client/service. This will be the same as the the representative client created in the Keycloak server.
+              This field is used to find the user's permissions for the service in the access token. 
             
 * `enforcementMode` - Enum that determines how requests with no matching policy rule are handled. The three options are:       
    * "ENFORCING"  - Requests with no matching policy rule are denied.
@@ -290,38 +285,82 @@ Policy Configuration Example:
    * "DISABLED"   - No authorization evaluation takes place. A valid token still needs be present in a request.
             
 * `paths` - A list of policy/path rules that determine what permissions are required by a user making a request to this path.
+
     * `path` - Example: "/v2/resource/segment/action". The section of the path entered here depends on where the `secure` directive is placed
     in your akka-http routes. The request path within the `secure` directive will be matched against the configured path in this field.
-    A "wildcard" path can be configured using a "\*" segment. Eg. A path configured simply as "/\*" will mean this rule will apply to any
-    request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".
+    
+     >Special segments:<br> 
+     A "wildcard" path/segment can be configured using a "\*" segment. Eg. A path configured simply as "/\*" will mean this rule will apply to any
+       request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".<br>
+      A segment "{id}" is used to denote a valid UUID path parameter. E.g. A GetById path "/v1/resource/{id}". Example of a request matching this rule:
+      "/v1/resource/689c4936-5274-4543-85d7-296cc456100b"
+    
     * `methodRoles` - A list of HTTP methods and the permissions required for a request to this path using each specified method.
-        * `method` - The HTTP method this applies to. This field set to "*" will make the rule apply to any HTTP method.
+    
+        * `method` - The HTTP method to which this rule applies. Set this field to "*" in order to make the rule apply to any HTTP method.
+        
         * `roles` - Here the required permissions to access this path, using this method, are defined.
            - If just a single role is a required this field can be populated with a simple string: e.g. "admin"
-           - A list of strings will resolve to defaults to Or evaluation: e.g. [ "admin", "read", "write" ] effectively means the user requires any one of the listed permissions.
+           - A list of strings will by default resolve to Or evaluation: e.g. [ "admin", "read", "write" ], this effectively means the user requires any one of the listed permissions.
            - For more complicated permission logic, with logic for optional and required roles, a custom data construct was created:
+           
+```scala
+sealed trait RequiredRoles
+
+final case class And(and: List[Either[RequiredRoles, String]]) extends RequiredRoles
+final case class Or(or: List[Either[RequiredRoles, String]])  extends RequiredRoles
+```          
             
 ```json
 {
-  "and" : [
+  "roles" : {
+    "and" : [
+      {
+       "or" : [ "resource-read", "resource-write", "resource-delete" ]
+      },
+      {
+        "or" : [ "resource2-read", "resource2-write", "resource2-delete" ]
+     },
+     {
+       "or" : [ "segment-read", "segment-write", "segment-delete" ]
+     }
+    ]
+  }
+}
+```
+
+* `segments` - This field can be used to setup rules for segments that repeat in your configured paths. To reference a saved segment in your configured paths,
+use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This removes the need to retype the method roles for each configured path in which this segment is used.
+
+    * `segment` - The segment string that will appear in the path. Only normal segments can be used here (no wildcard/ {id} segments).
+    
+    * `methodRoles` - The configured HTTP methods and their corresponding required roles for each request.
+    
+        * `method` - The HTTP method to which this rule applies. The wildcard method can also be used here.
+        
+        * `roles`  - A simple list of roles required for this segment using this method. The user will require any role from the list.
+```json
+{
+  "segments" : [
     {
-      "or" : [ "resource-read", "resource-write", "resource-delete" ]
-    },
-    {
-      "or" : [ "resource2-read", "resource2-write", "resource2-delete" ]
-    },
-    {
-      "or" : [ "segment-read", "segment-write", "segment-delete" ]
+      "segment" : "resource1",
+      "methodRoles" : [
+        {
+          "method" : "GET",
+          "roles" : [ "read", "write", "delete" ]
+        },
+        {
+          "method" : "POST",
+          "roles" : [ "write", "delete" ]
+        }
+      ]
     }
   ]
 }
 ```
 
-* `segments` - This field can be used to setup rules for segments that repeat in your configured paths. To reference a saved segment in your configured paths,
-use the syntax `{{segment}}` e.g. "/v1/{{segment}}/action". This removes the need to retype the method roles for each configured path this segment is used in.
-    
-    
-
+NB. In the event that an incoming request has multiple unique rules that can apply to it (E.g a rule with a wildcard segment/method and a concrete rule), the request will be evaluated with both rules and will be accepted if either of them succeed.
+ 
 **Plugging in the Adapter**<br/> <a name="adapter-plugin"></a>
 In order for the adapter to validate and authorize requests it needs to be plugged into the Akka-HTTP routes, for which there are two requirements:
 * A policy enforcement configuration for the adapter needs to be created. (Refer to [Policy Enforcement Configuration](#policy-enforcement))
@@ -329,7 +368,7 @@ In order for the adapter to validate and authorize requests it needs to be plugg
 
 With the validator and configuration at the ready the adapter can be plugged in:
 1. Mix in the `SecurityDirectives` trait into the class containing the routes, this provides the `secure` directive which plugs in the adapter.
-2. Invoke `secure` with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure inside the directive.
+2. Invoke `secure` with the policy enforcement configuration, and wrap the *entire* Akka-HTTP Route structure that you want to secure inside the directive.
 
 *Example:*<br/>
 ```scala
