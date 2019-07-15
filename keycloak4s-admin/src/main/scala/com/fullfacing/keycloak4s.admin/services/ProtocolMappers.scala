@@ -11,12 +11,7 @@ import scala.collection.immutable.Seq
 
 class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  /** Create multiple protocol mappers for either a client or client scope.
-   *
-   * @param entityId ID of the client or client-scope (depending on value of entity param).
-   * @param mapper   The ProtocolMappers to be created.
-   * @param entity   The type of entity this Protocol Mapper is linked to (Client or Client-Scope).
-   */
+  /** Creates multiple protocol mappers for either a client or client scope. */
   def createMany(entityId: UUID, entity: ProtocolMapperEntity, mapper: Seq[ProtocolMapper.Create]): R[Either[KeycloakError, Unit]] = {
     val path: Path = Seq(client.realm, entity.value, entityId, "protocol-mappers", "add-models")
     client.post[Unit](path, mapper)
