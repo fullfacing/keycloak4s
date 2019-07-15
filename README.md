@@ -454,4 +454,4 @@ The subtypes of `KeycloakError` are as follows:
 [Akka-HTTP]: https://doc.akka.io/docs/akka-http/current/introduction.html
 [Admin-API]: https://www.keycloak.org/docs-api/5.0/rest-api/index.html
 [Nimbus]: https://connect2id.com/products/nimbus-jose-jwt
-[Policy-Configuration]: https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter)
+[Policy-Configuration]: https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter
