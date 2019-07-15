@@ -31,13 +31,13 @@ class AuthenticationManagementTests extends IntegrationSpec {
   val storedFlow: AtomicReference[AuthenticationFlow] = new AtomicReference[AuthenticationFlow]()
 
   "fetchAuthenticationProviders" should "retrieve a non-empty list of Authentication Providers" in {
-    authMgmt.fetchAuthenticationProviders().map(_.map { providers =>
+    authMgmt.fetchAuthenticatorProviders().map(_.map { providers =>
       providers shouldNot be (empty)
     })
   }.shouldReturnSuccess
 
   "fetchClientAuthenticationProviders" should "retrieve a non-empty list of Client Authentication Providers" in {
-    authMgmt.fetchClientAuthenticationProviders().map(_.map { providers =>
+    authMgmt.fetchClientAuthenticatorProviders().map(_.map { providers =>
       providers shouldNot be (empty)
     })
   }.shouldReturnSuccess

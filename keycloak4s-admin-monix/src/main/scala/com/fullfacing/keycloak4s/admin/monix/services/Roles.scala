@@ -1,8 +1,8 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import java.nio.ByteBuffer
 import java.util.UUID
 
+import akka.util.ByteString
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import com.fullfacing.keycloak4s.core.models.{Group, User}
@@ -11,7 +11,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observable[ByteBuffer]] {
+class Roles(implicit client: KeycloakClient) extends services.Roles[Task, Observable[ByteString]] {
 
   /**
    *

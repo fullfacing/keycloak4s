@@ -10,76 +10,42 @@ import scala.collection.immutable.Seq
 
 class AuthenticationManagement[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  /**
-   * Returns a list of authenticator providers.
-   *
-   * @return
-   */
-  def fetchAuthenticationProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {
+  /* Retrieves a list of authenticator providers. **/
+  def fetchAuthenticatorProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {
     client.get[Seq[AuthenticationProvider]](client.realm :: "authentication" :: "authenticator-providers" :: Nil)
   }
 
-  /**
-   * Returns a list of client authenticator providers.
-   *
-   * @return
-   */
-  def fetchClientAuthenticationProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {
+  /* Retrieves a list of client authenticator providers. **/
+  def fetchClientAuthenticatorProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {
     val path = Seq(client.realm, "authentication", "client-authenticator-providers")
     client.get[Seq[AuthenticationProvider]](path)
   }
 
-  /**
-   * Get authenticator provider’s configuration description.
-   *
-   * @param providerId ID of the Provider.
-   * @return
-   */
+  /* Retrieves a description of an authenticator provider's configuration. **/
   def fetchProviderConfigDescription(providerId: String): R[Either[KeycloakError, AuthenticatorConfigInfo]] = {
     val path = Seq(client.realm, "authentication", "config-description", providerId)
     client.get[AuthenticatorConfigInfo](path)
   }
 
-  /**
-   * Get authenticator configuration.
-   *
-   * @param configId ID of the Configuration.
-   * @return
-   */
+  /* Retrieves an authenticator provider's configuration. **/
   def fetchAuthenticatorConfig(configId: UUID): R[Either[KeycloakError, AuthenticatorConfig]] = {
     val path = Seq(client.realm, "authentication", "config", configId.toString)
     client.get[AuthenticatorConfig](path)
   }
 
-  /**
-   * Replaces authenticator configuration.
-   *
-   * @param configId    ID of the Configuration.
-   * @param replacement Object describing new state of authenticator configuration.
-   * @return
-   */
+  /* Replaces an authenticator provider's configuration. **/
   def updateAuthenticatorConfig(configId: UUID, replacement: AuthenticatorConfig.Update): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "config", configId.toString)
     client.put[Unit](path, replacement)
   }
 
-  /**
-   * Delete authenticator configuration.
-   *
-   * @param configId ID of the Configuration.
-   * @return
-   */
+  /* Deletes an authenticator provider's configuration. **/
   def deleteAuthenticatorConfig(configId: UUID): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "config", configId.toString)
     client.delete[Unit](path)
   }
 
-  /**
-   * Add new authentication execution.
-   *
-   * @param request Object describing authentication execution.
-   * @return
-   */
+  /* Add a new authentication execution. **/
   def createAuthenticationExecution(request: AuthenticationExecution): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "authentication", "executions")
     client.post[Unit](path, request)

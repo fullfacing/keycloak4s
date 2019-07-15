@@ -1,12 +1,14 @@
 package utils
 
+import akka.util.ByteString
+import com.fullfacing.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
-import com.fullfacing.transport.backends.MonixHttpBackendL
-import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
+import com.softwaremill.sttp.SttpBackend
 import monix.eval.Task
 import monix.execution.Scheduler
+import monix.reactive.Observable
 import org.scalatest._
 
 import scala.concurrent.Future
@@ -18,9 +20,9 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   val keycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
-  implicit val context: Scheduler         = monix.execution.Scheduler.global
-  implicit val backend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
-  implicit val client: KeycloakClient     = new KeycloakClient(keycloakConfig)
+  implicit val context: Scheduler = monix.execution.Scheduler.global
+  implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
+  implicit val client: KeycloakClient = new KeycloakClient(keycloakConfig)
 
   /* Keycloak Services **/
   val attackDetService: AttackDetection   = Keycloak.AttackDetection
