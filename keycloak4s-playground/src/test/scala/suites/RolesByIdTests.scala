@@ -4,10 +4,10 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import utils.{Errors, IntegrationSpec}
-import com.fullfacing.keycloak4s.core.models.{ManagementPermission, Role}
+import com.fullfacing.keycloak4s.core.models.Role
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
+import utils.{Errors, IntegrationSpec}
 
 @DoNotDiscover
 class RolesByIdTests extends IntegrationSpec {
@@ -176,23 +176,23 @@ class RolesByIdTests extends IntegrationSpec {
     task.value.shouldReturnSuccess
   }
 
-  "authPermissionsInitialised" should "return the management permissions of the role stating whether it is enabled or not" in {
+  "fetchManagementPermissions" should "return the management permissions of the role stating whether it is enabled or not" in {
     val task =
       for {
-        _ <- rolesByIdService.authPermissionsInitialised(rRole1.get())
-        r <- rolesByIdService.authPermissionsInitialised(cRole1.get())
+        _ <- rolesByIdService.fetchManagementPermissions(rRole1.get())
+        r <- rolesByIdService.fetchManagementPermissions(cRole1.get())
       } yield r
 
     task.shouldReturnSuccess
   }
 
-  "initialiseRoleAuthPermissions" should "successfully initialise the role's auth permissions" in {
+  "enableManagementPermissions" should "successfully initialise the role's auth permissions" in {
     val task =
       for {
-        _ <- EitherT(rolesByIdService.initialiseRoleAuthPermissions(rRole1.get(), ManagementPermission.Enable(true)))
-        _ <- EitherT(rolesByIdService.initialiseRoleAuthPermissions(cRole1.get(), ManagementPermission.Enable(true)))
-        r <- EitherT(rolesByIdService.authPermissionsInitialised(rRole1.get()))
-        c <- EitherT(rolesByIdService.authPermissionsInitialised(cRole1.get()))
+        _ <- EitherT(rolesByIdService.enableManagementPermissions(rRole1.get()))
+        _ <- EitherT(rolesByIdService.enableManagementPermissions(cRole1.get()))
+        r <- EitherT(rolesByIdService.fetchManagementPermissions(rRole1.get()))
+        c <- EitherT(rolesByIdService.fetchManagementPermissions(cRole1.get()))
       } yield {
         r.enabled shouldBe true
         c.enabled shouldBe true
@@ -204,10 +204,10 @@ class RolesByIdTests extends IntegrationSpec {
   "initialiseRoleAuthPermissions" should "successfully disable the role's auth permissions" in {
     val task =
       for {
-        _ <- EitherT(rolesByIdService.initialiseRoleAuthPermissions(rRole1.get(), ManagementPermission.Enable(false)))
-        _ <- EitherT(rolesByIdService.initialiseRoleAuthPermissions(cRole1.get(), ManagementPermission.Enable(false)))
-        r <- EitherT(rolesByIdService.authPermissionsInitialised(rRole1.get()))
-        c <- EitherT(rolesByIdService.authPermissionsInitialised(cRole1.get()))
+        _ <- EitherT(rolesByIdService.disableManagementPermissions(rRole1.get()))
+        _ <- EitherT(rolesByIdService.disableManagementPermissions(cRole1.get()))
+        r <- EitherT(rolesByIdService.fetchManagementPermissions(rRole1.get()))
+        c <- EitherT(rolesByIdService.fetchManagementPermissions(cRole1.get()))
       } yield {
         r.enabled shouldBe false
         c.enabled shouldBe false

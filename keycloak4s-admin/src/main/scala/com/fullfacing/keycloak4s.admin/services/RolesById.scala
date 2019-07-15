@@ -13,18 +13,21 @@ class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
-  def fetch(id: UUID): R[Either[KeycloakError, Role]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id)
+  /** Fetch the role with the given role ID. */
+  def fetch(roleId: UUID): R[Either[KeycloakError, Role]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId)
     client.get[Role](path)
   }
 
-  def update(id: UUID, role: Role.Update): R[Either[KeycloakError, Unit]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id)
+  /** Update details of the given role. */
+  def update(roleId: UUID, role: Role.Update): R[Either[KeycloakError, Unit]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId)
     client.put[Unit](path, role)
   }
 
-  def delete(id: UUID): R[Either[KeycloakError, Unit]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id)
+  /** Delete the role. */
+  def delete(roleId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId)
     client.delete[Unit](path)
   }
 
@@ -32,47 +35,55 @@ class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------ Composite Roles ------------------------------------------- //
   // ------------------------------------------------------------------------------------------------------ //
   /** Make the role a composite role by associating some child roles. */
-  def addCompositeRoles(id: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+  def addCompositeRoles(roleId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
     val body = roleIds.map(Role.Id)
-    val path: Path = Seq(client.realm, "roles-by-id", id, "composites")
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "composites")
     client.post[Unit](path, body)
   }
 
   /** Get role’s children Returns a set of role’s children provided the role is a composite. */
-  def fetchCompositeRoles(id: UUID): R[Either[KeycloakError, List[Role]]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id, "composites")
+  def fetchCompositeRoles(roleId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "composites")
     client.get[List[Role]](path)
   }
 
   /** Remove a set of roles from the role’s composite. */
-  def removeCompositeRoles(id: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
+  def removeCompositeRoles(roleId: UUID, roleIds: List[UUID]): R[Either[KeycloakError, Unit]] = {
     val body = roleIds.map(Role.Id)
-    val path: Path = Seq(client.realm, "roles-by-id", id, "composites")
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "composites")
     client.delete[Unit](path, body)
   }
 
   /** Get client-level roles for the client that are in the role’s composite. */
-  def fetchClientLevelCompositeRoles(id: UUID, clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id, "composites", "clients", clientId)
+  def fetchClientLevelCompositeRoles(roleId: UUID, clientId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "composites", "clients", clientId)
     client.get[List[Role]](path)
   }
 
   /** Get realm-level roles that are in the role’s composite. */
-  def fetchRealmLevelCompositeRoles(id: UUID): R[Either[KeycloakError, List[Role]]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id, "composites", "realm")
+  def fetchRealmLevelCompositeRoles(roleId: UUID): R[Either[KeycloakError, List[Role]]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "composites", "realm")
     client.get[List[Role]](path)
   }
 
   // ------------------------------------------------------------------------------------------------------ //
   // --------------------------------------------- Permissions -------------------------------------------- //
   // ------------------------------------------------------------------------------------------------------ //
-  def authPermissionsInitialised(id: UUID): R[Either[KeycloakError, ManagementPermission]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id, "management", "permissions")
+  /** Retrieve the management permission details of the role. */
+  def fetchManagementPermissions(roleId: UUID): R[Either[KeycloakError, ManagementPermission]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "management", "permissions")
     client.get[ManagementPermission](path)
   }
 
-  def initialiseRoleAuthPermissions(id: UUID, ref: ManagementPermission.Enable): R[Either[KeycloakError, ManagementPermission]] = {
-    val path: Path = Seq(client.realm, "roles-by-id", id, "management", "permissions")
-    client.put[ManagementPermission](path, ref)
+  /** Enable management permissions for the role. */
+  def enableManagementPermissions(roleId: UUID): R[Either[KeycloakError, ManagementPermission]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "management", "permissions")
+    client.put[ManagementPermission](path, ManagementPermission.Enable(true))
+  }
+
+  /** Disable management permissions for the role. */
+  def disableManagementPermissions(roleId: UUID): R[Either[KeycloakError, ManagementPermission]] = {
+    val path: Path = Seq(client.realm, "roles-by-id", roleId, "management", "permissions")
+    client.put[ManagementPermission](path, ManagementPermission.Enable(false))
   }
 }
