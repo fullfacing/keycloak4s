@@ -6,7 +6,7 @@
 **A Scala-based middleware API for [Keycloak](https://www.keycloak.org/)**  
 *Based on version 6.0.1*
 
-keycloak4s is an opinionated Scala-built API that serves as a bridge between any Scala project and a Keycloak server. It allows access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html), and provides adapters that validates Keycloak's bearer tokens. It authorizes requests via a JSON config file inspired by their [policy enforcement configuration](https://www.keycloak.org/docs/latest/authorization_services/index.html#_enforcer_filter).
+keycloak4s is an opinionated Scala-built API that serves as a bridge between any Scala project and a Keycloak server. It allows access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html), and provides adapters that validates Keycloak's bearer tokens. It authorizes requests via a JSON config file inspired by their [policy enforcement configuration][Policy-Configuration].
 
 The project is split into the following modules, each as a separate dependency:
 * `keycloak4s-core`: Contains core functionality and shared models across other modules.
@@ -193,7 +193,7 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
 Request authorization in keycloak4s is performed by evaluating it against a set of policy-enforcement rules. The service's rules are represented by a policy configuration object. This object is parsed from a JSON structure, inspired by Keycloak's [policy enforcement JSON configuration][Policy-Configuration]. Incoming requests are compared to these rules in order to determine which permissions a bearer token needs to contain.
 
-The configuration JSON file must be placed in a project's `resources` folder. Specifying the file name allows for the construction of the policy enforcement object:
+The configuration JSON file must be placed in a project's `resources` folder. Specifying the file name allows for the construction of the policy enforcement object:<br/>
 `val policyConfig = PolicyBuilders.buildPathAuthorization("config_name.json")`. 
 
 In our intended use case, the clients of a Keycloak realm each represent a specific API. Client-level roles are then created for each client as available permissions for the API, after which the roles can be assigned to users, granting permissions as required.
@@ -226,16 +226,7 @@ Example of the Policy Configuration JSON Structure:
   "enforcementMode" : "ENFORCING",
   "paths" : [
     {
-      "path" : "/v1/{{resource1}}"
-    },
-    {
-      "path" : "/v1/{{resource1}}/{id}"
-    },
-    {
-      "path" : "/v1/{{resource1}}/{id}/another-resource"
-    },
-    {
-      "path" : "/v1/{{resource1}}/{id}/another-resource/{id}/action",
+      "path" : "/v1/resource1/{id}/another-resource/{id}/action",
       "methodRoles": [
         {
           "method" : "*",
@@ -253,21 +244,6 @@ Example of the Policy Configuration JSON Structure:
         {
           "method" : "*",
           "roles" : "admin"
-        }
-      ]
-    }
-  ],
-  "segments" : [
-    {
-      "segment" : "resource1",
-      "methodRoles" : [
-        {
-          "method" : "GET",
-          "roles" : [ "read", "write", "delete" ]
-        },
-        {
-          "method" : "POST",
-          "roles" : [ "write", "delete" ]
         }
       ]
     }
@@ -339,6 +315,17 @@ final case class Or(or: List[Either[RequiredRoles, String]])  extends RequiredRo
         * `roles`  - A list of roles required for this method. The user requires at least one role from the list.
 ```json
 {
+  "paths": [
+    {
+      "path" : "/v1/{{resource1}}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/another-resource"
+    }
+  ],
   "segments" : [
     {
       "segment" : "resource1",
