@@ -11,8 +11,7 @@ import scala.collection.immutable.Seq
 
 class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  /**
-   * Create multiple protocol mappers for either a client or client scope.
+  /** Create multiple protocol mappers for either a client or client scope.
    *
    * @param entityId ID of the client or client-scope (depending on value of entity param).
    * @param mapper   The ProtocolMappers to be created.

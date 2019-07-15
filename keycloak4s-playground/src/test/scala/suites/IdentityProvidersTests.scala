@@ -49,7 +49,7 @@ class IdentityProvidersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetch" should "also be able to retrieve an Identity Provider by its alias" in {
-    idProvService.fetch("test_oidc").map(_.map { idProv =>
+    idProvService.fetchByAlias("test_oidc").map(_.map { idProv =>
       idProv.config.get("clientId") shouldBe Some("test_id")
     })
   }.shouldReturnSuccess
@@ -65,7 +65,7 @@ class IdentityProvidersTests extends IntegrationSpec {
 
     for {
       _       <- EitherT(idProvService.update("test_oidc", update))
-      idProv  <- EitherT(idProvService.fetch("test_oidc"))
+      idProv  <- EitherT(idProvService.fetchByAlias("test_oidc"))
     } yield idProv.trustEmail shouldBe true
   }.value.shouldReturnSuccess
 

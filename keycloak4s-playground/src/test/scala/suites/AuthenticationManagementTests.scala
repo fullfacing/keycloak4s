@@ -43,13 +43,13 @@ class AuthenticationManagementTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "fetchProviderConfigDescription" should "retrieve information of a specified Authentication Provider" in {
-    authMgmt.fetchProviderConfigDescription("client-secret").map(_.map { info =>
+    authMgmt.fetchAuthenticatorProviderConfigDescription("client-secret").map(_.map { info =>
       info.name shouldBe "Client Id and Secret"
     })
   }.shouldReturnSuccess
 
   "fetchFlowAuthenticationExecutions" should "retrieve a non-empty list of a specified Flow's Authentication Executions" in {
-    authMgmt.fetchFlowAuthenticationExecutions("browser").map(_.map { executions =>
+    authMgmt.fetchFlowExecutions("browser").map(_.map { executions =>
       executions shouldNot be (empty)
       storedExecutionsInfo.set(executions)
     })
@@ -66,7 +66,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetchSingleExecution" should "retrieve a specified Execution" in {
-    authMgmt.fetchSingleExecution(storedExecutionInfo.get().id).map(_.map { execution =>
+    authMgmt.fetchExecution(storedExecutionInfo.get().id).map(_.map { execution =>
       storedExecution.set(execution)
     })
   }.shouldReturnSuccess
@@ -76,7 +76,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
 
     for {
       configId  <- EitherT.fromOption[Task](option, Errors.CONFIG_NOT_FOUND)
-      config    <- EitherT(authMgmt.fetchAuthenticatorConfig(configId))
+      config    <- EitherT(authMgmt.fetchAuthenticatorProviderConfig(configId))
     } yield {
       config.alias shouldBe "test_config"
       storedConfig.set(config)
@@ -87,27 +87,27 @@ class AuthenticationManagementTests extends IntegrationSpec {
     val update = AuthenticatorConfig.Update(alias = Some("test_config2"))
 
     for {
-      _       <- EitherT(authMgmt.updateAuthenticatorConfig(storedConfig.get().id, update))
-      config  <- EitherT(authMgmt.fetchAuthenticatorConfig(storedConfig.get().id))
+      _       <- EitherT(authMgmt.updateAuthenticatorProviderConfig(storedConfig.get().id, update))
+      config  <- EitherT(authMgmt.fetchAuthenticatorProviderConfig(storedConfig.get().id))
     } yield config.alias shouldBe "test_config2"
   }.value.shouldReturnSuccess
 
   "deleteAuthenticatorConfig" should "delete a specified Authentication configuration" in {
-    authMgmt.deleteAuthenticatorConfig(storedConfig.get().id)
+    authMgmt.deleteAuthenticatorProviderConfig(storedConfig.get().id)
   }.shouldReturnSuccess
 
   "copyAuthenticationFlow" should "copy an existing Authentication flow under a new name" in {
-    authMgmt.copyAuthenticationFlow("browser", "temp_flow")
+    authMgmt.copyFlow("browser", "temp_flow")
   }.shouldReturnSuccess
 
   "lowerExecutionPriority" should "lower the priority of an Execution" in {
 
     for {
-      infos       <- EitherT(authMgmt.fetchFlowAuthenticationExecutions("temp_flow"))
+      infos       <- EitherT(authMgmt.fetchFlowExecutions("temp_flow"))
       info        <- EitherT.fromOption[Task](infos.headOption, Errors.EXECUTION_NOT_FOUND)
-      execution1  <- EitherT(authMgmt.fetchSingleExecution(info.id))
+      execution1  <- EitherT(authMgmt.fetchExecution(info.id))
       _           <- EitherT(authMgmt.lowerExecutionPriority(execution1.id))
-      execution2  <- EitherT(authMgmt.fetchSingleExecution(info.id))
+      execution2  <- EitherT(authMgmt.fetchExecution(info.id))
     } yield {
       execution2.priority should be > execution1.priority
       storedExecutionsInfo.set(infos)
@@ -121,7 +121,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
 
     for {
       _           <- EitherT(authMgmt.raiseExecutionPriority(execution1.id))
-      execution2  <- EitherT(authMgmt.fetchSingleExecution(execution1.id))
+      execution2  <- EitherT(authMgmt.fetchExecution(execution1.id))
     } yield execution2.priority should be < execution1.priority
   }.value.shouldReturnSuccess
 
@@ -160,7 +160,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "fetchRequiredAction" should "retrieve a specified Required Action" in {
-    authMgmt.fetchRequiredAction("test_action_provider").map(_.map { action =>
+    authMgmt.fetchRequiredActionByAlias("test_action_provider").map(_.map { action =>
       storedAction.set(action)
     })
   }.shouldReturnSuccess
@@ -176,14 +176,14 @@ class AuthenticationManagementTests extends IntegrationSpec {
 
     for {
       _       <- EitherT(authMgmt.updateRequiredAction("test_action_provider", update))
-      action  <- EitherT(authMgmt.fetchRequiredAction("test_action_provider"))
+      action  <- EitherT(authMgmt.fetchRequiredActionByAlias("test_action_provider"))
     } yield action.name shouldBe "test_action_2"
   }.value.shouldReturnSuccess
 
   "lowerRequiredActionPriority" should "lower the priority of an existing Required Action" in {
     for {
       _       <- EitherT(authMgmt.lowerRequiredActionPriority("test_action_provider"))
-      action  <- EitherT(authMgmt.fetchRequiredAction("test_action_provider"))
+      action  <- EitherT(authMgmt.fetchRequiredActionByAlias("test_action_provider"))
     } yield {
       action.priority > storedAction.get().priority
       storedAction.set(action)
@@ -193,7 +193,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
   "raiseRequiredActionPriority" should "raise the priority of an existing Required Action" in {
     for {
       _       <- EitherT(authMgmt.raiseRequiredActionPriority("test_action_provider"))
-      action  <- EitherT(authMgmt.fetchRequiredAction("test_action_provider"))
+      action  <- EitherT(authMgmt.fetchRequiredActionByAlias("test_action_provider"))
     } yield action.priority < storedAction.get().priority
   }.value.shouldReturnSuccess
 
@@ -202,7 +202,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "fetchAuthenticationFlows" should "retrieve a non-empty list of Authentication Flows" in {
-    authMgmt.fetchAuthenticationFlows().map(_.map { flows =>
+    authMgmt.fetchFlows().map(_.map { flows =>
       flows shouldNot be (empty)
       val flow = flows.find(_.alias == "temp_flow")
       storedFlow.set(flow.get)
@@ -210,10 +210,10 @@ class AuthenticationManagementTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "fetchAuthenticationFlow" should "retrieve a specified Authentication Flow" in {
-    authMgmt.fetchAuthenticationFlow(storedFlow.get().id)
+    authMgmt.fetchFlowById(storedFlow.get().id)
   }.shouldReturnSuccess
 
   "deleteAuthenticationFlow" should "delete a specified Authentication Flow" in {
-    authMgmt.deleteAuthenticationFlow(storedFlow.get().id)
+    authMgmt.deleteFlow(storedFlow.get().id)
   }.shouldReturnSuccess
 }
