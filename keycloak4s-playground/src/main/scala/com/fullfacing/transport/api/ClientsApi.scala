@@ -12,7 +12,7 @@ object ClientsApi extends SecurityDirectives {
 
   val api: Route =
     contextFromPostman { correlationId =>
-      secure((pathClientsConfig, correlationId)) {
+      secure((pathClientsConfig, correlationId)) { _ =>
         ClientsRoutes.api ~
           AccountRoutes.api ~
           SiteRoutes.api
