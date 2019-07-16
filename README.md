@@ -191,7 +191,7 @@ implicit val customValidator: TokenValidator = new CustomValidator(keycloakConfi
 
 
 **Policy Enforcement Configuration**<br/> <a name="policy-enforcement"></a>
-Request authorization in keycloak4s is performed by evaluating it against a set of policy-enforcement rules. The service's rules are represented by a policy configuration object. This object is parsed from a JSON structure, inspired by Keycloak's [policy enforcement JSON configuration][Policy-Configuration]. Incoming requests are compared to these rules in order to determine which permissions a bearer token needs to contain.
+Request authorization in keycloak4s is performed by evaluating requests against a set of policy-enforcement rules. The service's rules are represented by a policy configuration object. This object is parsed from a JSON structure, inspired by Keycloak's [policy enforcement JSON configuration][Policy-Configuration]. Incoming requests are compared to these rules in order to determine which permissions a bearer token needs to contain.
 
 The configuration JSON file must be placed in a project's `resources` folder. Specifying the file name allows for the construction of the policy enforcement object:<br/>
 `val policyConfig = PolicyBuilders.buildPathAuthorization("config_name.json")`. 
@@ -254,15 +254,15 @@ Example of the Policy Configuration JSON Structure:
 * `service` - Example: "api-reporting".
               This is the API's name that is represented in Keycloak as a client. It is used to check the user's access token for permissions for the service. 
             
-* `enforcementMode` - This is an enum that determines how requests that has no matching policy rule are handled. The three options are:       
+* `enforcementMode` - This is an enum that determines how requests that have no matching policy rule are handled. The three options are:       
    * "ENFORCING"  - Requests with no matching policy rule are denied.
    * "PERMISSIVE" - Requests with no matching policy rule are accepted. Requests that match a policy rule are evaluated to determine access.
    * "DISABLED"   - No authorization evaluation takes place. A valid access token is still required.
             
-* `paths` - This field defines the roles in each path. It determines the permissions that are required for each request to access the specified path.
+* `paths` - This is where rules for each protected route in the api are defined. It determines the permissions that are required for each request to access the specified path.
 
     * `path` - Example: "/v2/resource/segment/action".
-               The request path within the `secure` directive will be matched against the configured path defined here.
+               The request path within the `secure` directive will be matched against the configured path defined here.<br><br>
     
      >Special segments:<br> 
      A "wildcard" path/segment can be configured using a "\*" segment. For example, a path configured simply as "/\*" means this rule will apply to any request. A path configured as "/v1/segment/*" will apply to any request starting with the path "/v1/segment/".<br>
