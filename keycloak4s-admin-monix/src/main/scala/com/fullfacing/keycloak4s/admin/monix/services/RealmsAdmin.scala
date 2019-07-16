@@ -1,6 +1,5 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import akka.util.ByteString
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import com.fullfacing.keycloak4s.core.models.{AdminEvent, EventRepresentation}
@@ -9,7 +8,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class RealmsAdmin(implicit client: KeycloakClient) extends services.RealmsAdmin[Task, Observable[ByteString]] {
+class RealmsAdmin[T](implicit client: KeycloakClient[T]) extends services.RealmsAdmin[Task, Observable[T]] {
 
   /** Returns all admin events, or filters events based on URL query parameters listed here. */
   def fetchAdminEventsS(realm: String = client.realm,

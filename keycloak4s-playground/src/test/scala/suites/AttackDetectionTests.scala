@@ -2,6 +2,7 @@ package suites
 
 import java.util.concurrent.atomic.AtomicReference
 
+import akka.util.ByteString
 import cats.data.EitherT
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{Clients, Users}
@@ -16,10 +17,10 @@ import utils.{Errors, IntegrationSpec}
 class AttackDetectionTests extends IntegrationSpec {
 
   private val adKeycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "AttackRealm", authConfig)
-  private val adClient: KeycloakClient = new KeycloakClient(adKeycloakConfig)
+  private val adClient: KeycloakClient[T] = new KeycloakClient(adKeycloakConfig)
 
-  override val clientService: Clients = Keycloak.Clients(adClient)
-  override val userService: Users     = Keycloak.Users(adClient)
+  override val clientService: Clients[T] = Keycloak.Clients[ByteString](adClient)
+  override val userService: Users[T]     = Keycloak.Users[ByteString](adClient)
 
   val realm = "AttackRealm"
   val realmCreate = RealmRepresentation.Create(

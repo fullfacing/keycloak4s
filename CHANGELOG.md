@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [???]
+### Added
+- Documentation has been added.
+### Changed
+- KeycloakClient in the Monix submodule now takes a parameter for the type of byte collection used by the backend for streaming.
+- The changelog is now separate from the readme.
+- Rewrote all admin javadocs to be standardized.
+- Renamed admin functions to be standardized.
+### Removed
+- Removed the MonixHttpBackendL from the playground module.
+
 ## [0.19.3]
 ### Added
 - Added missing Clients service calls with the path /{realm}/clients/{id}/scope-mappings.

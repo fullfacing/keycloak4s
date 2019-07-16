@@ -1,9 +1,8 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import akka.util.ByteString
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import monix.eval.Task
 import monix.reactive.Observable
 
-class AttackDetection(implicit client: KeycloakClient) extends services.AttackDetection[Task, Observable[ByteString]]
+class AttackDetection[T](implicit client: KeycloakClient[T]) extends services.AttackDetection[Task, Observable[T]]
