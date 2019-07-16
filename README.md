@@ -101,10 +101,10 @@ for {
 } yield (u, g)
 ```
 
-The majority of the functions in a service handler corresponds directly with an admin API route. However, a few are composite functions created for convenience. An example of this can be seen in the aforementioned example where the`createAndRetrieve` function which chains a create- and a fetch call.
+The majority of the functions in a service handler corresponds directly with an admin API route. However, a few are composite functions created for convenience. An example of this can be seen in the aforementioned example where the`createAndRetrieve` function chains a create- and a fetch call.
 
 ## Module: keycloak4s-admin-monix <a name="keycloak4s-admin-monix"></a>
-keycloak4s-admin-monix can be used as an alternative to keycloak4s-admin-monix. This module is typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type. This removes the need to set up the types for KeycloakClient or the service handlers. Additionally, this module contains reactive streaming variants of the fetch calls, which allows for batch retrieval and processing. 
+keycloak4s-admin-monix can be used as an alternative to keycloak4s-admin. This module is typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type. This removes the need to set up the types for KeycloakClient or the service handlers. Additionally, this module contains reactive streaming variants of the fetch calls, which allows for batch retrieval and processing. 
 
 The steps to make these calls remains the same as in the keycloak4s-admin. The following example provide the specific pre-built sttp backend. For more information, refer to [Module: keycloak4s-admin](#keycloak4s-admin) in this document.
 
