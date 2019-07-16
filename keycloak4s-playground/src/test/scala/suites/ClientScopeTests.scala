@@ -159,7 +159,7 @@ class ClientScopeTests extends IntegrationSpec {
       .shouldReturnSuccess
   }
 
-  "fetchClientRoles" should "retrieve all client roles mapped to this scope" in {
+  "fetchMappedClientRoles" should "retrieve all client roles mapped to this scope" in {
     val task =
       EitherT(clientScopeService.fetchMappedClientRoles(scope1.get(), clientUuid.get())).map { s =>
         s.size                   shouldBe 1

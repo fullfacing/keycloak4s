@@ -209,8 +209,8 @@ class GroupsTests extends IntegrationSpec {
   "ManagementPermissions" should "fire fetch and update requests for ManagementPermission model" in {
     val task =
       (for {
-        p  <- EitherT(groupService.fetchManagementPermissions(group3.get()))
-        up <- EitherT(groupService.updateManagementPermissions(group3.get(), ManagementPermission(enabled = false, p.resource, p.scopePermissions)))
+        _  <- EitherT(groupService.fetchManagementPermissions(group3.get()))
+        up <- EitherT(groupService.disableManagementPermissions(group3.get()))
       } yield {
         up.enabled should equal(false)
       }).value

@@ -392,9 +392,8 @@ class ClientsTests extends IntegrationSpec {
   "ManagementPermissions" should "fetch and update requests for ManagementPermission model" in {
     val task =
       (for {
-        cp  <- EitherT(clientService.fetchManagementPermissions(client3.get))
-        ucp <- EitherT(clientService.disableManagementPermissions(client3.get,
-          ManagementPermission(enabled = false, cp.resource, cp.scopePermissions)))
+        _   <- EitherT(clientService.fetchManagementPermissions(client3.get))
+        ucp <- EitherT(clientService.disableManagementPermissions(client3.get))
       } yield {
         ucp.enabled should equal(false)
       }).value

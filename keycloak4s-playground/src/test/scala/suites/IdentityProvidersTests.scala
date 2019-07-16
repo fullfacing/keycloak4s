@@ -3,7 +3,7 @@ package suites
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.core.models.{IdentityProvider, IdentityProviderMapper, ManagementPermission}
+import com.fullfacing.keycloak4s.core.models.{IdentityProvider, IdentityProviderMapper}
 import com.fullfacing.keycloak4s.core.models.enums.{MapperTypes, ProviderTypes}
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
@@ -76,9 +76,7 @@ class IdentityProvidersTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "updateManagementPermissions" should "update the management permissions of an Identity Provider" in {
-    val update = ManagementPermission.Update(enabled = Some(true))
-
-    idProvService.updateManagementPermissions("test_oidc", update).map(_.map { mp =>
+    idProvService.enableManagementPermissions("test_oidc").map(_.map { mp =>
       mp.enabled shouldBe true
       mp.resource shouldBe defined
       mp.scopePermissions.getOrElse(Map.empty[String, String]) shouldNot be (empty)
