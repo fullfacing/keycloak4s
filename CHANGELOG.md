@@ -1,14 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [???]
+## [0.20.0]
 ### Added
 - Documentation has been added.
 ### Changed
 - KeycloakClient in the Monix submodule now takes a parameter for the type of byte collection used by the backend for streaming.
 - The changelog is now separate from the readme.
-- Rewrote all admin javadocs to be standardized.
-- Renamed admin functions to be standardized.
+- Renamed RealmRepresentation to Realm, EventRepresentation to Event, and RolesRepresentation to Roles.
+- Moved case classes that are only implemented inside other case classes to their companion objects.
+- Rewrote all admin javadocs to follow a standard.
+- Renamed admin functions to follow a standard.
 ### Removed
 - Removed the MonixHttpBackendL from the playground module.
 

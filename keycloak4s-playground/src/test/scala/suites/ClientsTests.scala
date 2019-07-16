@@ -393,9 +393,11 @@ class ClientsTests extends IntegrationSpec {
     val task =
       (for {
         _   <- EitherT(clientService.fetchManagementPermissions(client3.get))
-        ucp <- EitherT(clientService.disableManagementPermissions(client3.get))
+        ecp <- EitherT(clientService.enableManagementPermissions(client3.get))
+        dcp <- EitherT(clientService.disableManagementPermissions(client3.get))
       } yield {
-        ucp.enabled should equal(false)
+        ecp.enabled should equal(true)
+        dcp.enabled should equal(false)
       }).value
     task.shouldReturnSuccess
   }

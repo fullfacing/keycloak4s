@@ -7,8 +7,8 @@ import cats.data.EitherT
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{Clients, Users}
 import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
-import com.fullfacing.keycloak4s.core.models.{Response => _, _}
-import com.softwaremill.sttp.{sttp, _}
+import com.fullfacing.keycloak4s.core.models._
+import com.softwaremill.sttp.{sttp, Response, _}
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
@@ -23,7 +23,7 @@ class AttackDetectionTests extends IntegrationSpec {
   override val userService: Users[T]     = Keycloak.Users[ByteString](adClient)
 
   val realm = "AttackRealm"
-  val realmCreate = RealmRepresentation.Create(
+  val realmCreate = Realm.Create(
     realm = realm,
     id    = realm,
     enabled = Some(true),

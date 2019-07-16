@@ -11,31 +11,31 @@ import scala.collection.immutable.Seq
 class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Creates a realm. */
-  def create(realm: RealmRepresentation.Create): R[Either[KeycloakError, Unit]] = {
+  def create(realm: Realm.Create): R[Either[KeycloakError, Unit]] = {
     val path = Seq.empty[String]
     client.post[Unit](path, realm)
   }
 
   /** Retrieves the top-level representation of a realm. Does not include nested information like Users and Clients. */
-  def fetch(realm: String = client.realm): R[Either[KeycloakError, RealmRepresentation]] = {
+  def fetch(realm: String = client.realm): R[Either[KeycloakError, Realm]] = {
     val path = Seq(realm)
-    client.get[RealmRepresentation](path)
+    client.get[Realm](path)
   }
 
   /** Retrieves the top-level representations of all realm. Does not include nested information like Users and Clients. */
-  def fetchAll(): R[Either[KeycloakError, List[RealmRepresentation]]] = {
+  def fetchAll(): R[Either[KeycloakError, List[Realm]]] = {
     val path = Seq()
-    client.get[List[RealmRepresentation]](path)
+    client.get[List[Realm]](path)
   }
 
   /** Composite of create and fetch. */
-  def createAndRetrieve(realm: RealmRepresentation.Create): R[Either[KeycloakError, RealmRepresentation]] =
+  def createAndRetrieve(realm: Realm.Create): R[Either[KeycloakError, Realm]] =
     Concurrent[R].flatMap(create(realm)) { _ =>
       fetch(realm.realm)
     }
 
   /** Updates a realm. Ignores User, role or client information. */
-  def update(update: RealmRepresentation.Update, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+  def update(update: Realm.Update, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm)
     client.put[Unit](path, update)
   }
@@ -177,7 +177,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
                   ipAddress: Option[String] = None,
                   max: Option[Int] = None,
                   `type`: Option[List[String]] = None,
-                  user: Option[String] = None): R[Either[KeycloakError, Seq[EventRepresentation]]] = {
+                  user: Option[String] = None): R[Either[KeycloakError, Seq[Event]]] = {
 
     val query = createQuery(
       ("client", clientName),
@@ -191,7 +191,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     )
 
     val path = Seq(realm, "events")
-    client.get[Seq[EventRepresentation]](path, query = query)
+    client.get[Seq[Event]](path, query = query)
   }
 
   /** Deletes a realm's events */
@@ -226,15 +226,15 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /** Partial exports a realm. */
   def partialExport(realm: String = client.realm,
                     exportClients: Option[Boolean] = None,
-                    exportGroupsAndRoles: Option[Boolean] = None): R[Either[KeycloakError, RealmRepresentation]] = {
+                    exportGroupsAndRoles: Option[Boolean] = None): R[Either[KeycloakError, Realm]] = {
     val path    = Seq(realm, "partial-export")
     val queries = createQuery(("exportClients", exportClients), ("exportGroupsAndRoles", exportGroupsAndRoles))
 
-    client.post[RealmRepresentation](path, query = queries)
+    client.post[Realm](path, query = queries)
   }
 
   /** Partially imports a realm. */
-  def partialImport(rep: PartialImport, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
+  def partialImport(rep: Realm.PartialImport, realm: String = client.realm): R[Either[KeycloakError, Unit]] = {
     val path = Seq(realm, "partialImport")
     client.post[Unit](path, rep)
   }
@@ -316,7 +316,7 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
 
   /** Creates a new initial access token for a realm. */
-  def createInitialAccessToken(config: ClientInitialAccessCreate, realm: String = client.realm): R[Either[KeycloakError, ClientInitialAccess]] = {
+  def createInitialAccessToken(config: ClientInitialAccess.Create, realm: String = client.realm): R[Either[KeycloakError, ClientInitialAccess]] = {
     client.post[ClientInitialAccess](realm :: "clients-initial-access" :: Nil, config)
   }
 

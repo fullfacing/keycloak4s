@@ -5,9 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
 import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.eval.Task
-import org.json4s.jackson.Serialization.writePretty
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
 

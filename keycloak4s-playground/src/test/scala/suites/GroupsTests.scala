@@ -210,9 +210,11 @@ class GroupsTests extends IntegrationSpec {
     val task =
       (for {
         _  <- EitherT(groupService.fetchManagementPermissions(group3.get()))
-        up <- EitherT(groupService.disableManagementPermissions(group3.get()))
+        ep <- EitherT(groupService.enableManagementPermissions(group3.get()))
+        dp <- EitherT(groupService.disableManagementPermissions(group3.get()))
       } yield {
-        up.enabled should equal(false)
+        ep.enabled should equal(true)
+        dp.enabled should equal(false)
       }).value
       task.shouldReturnSuccess
   }

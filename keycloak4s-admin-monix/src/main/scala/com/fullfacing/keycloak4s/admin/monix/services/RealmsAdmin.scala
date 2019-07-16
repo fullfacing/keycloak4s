@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.admin.monix.services
 
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
-import com.fullfacing.keycloak4s.core.models.{AdminEvent, EventRepresentation}
+import com.fullfacing.keycloak4s.core.models.{AdminEvent, Event}
 import monix.eval.Task
 import monix.reactive.Observable
 
@@ -51,7 +51,7 @@ class RealmsAdmin[T](implicit client: KeycloakClient[T]) extends services.Realms
                    ipAddress: Option[String] = None,
                    `type`: Option[List[String]] = None,
                    user: Option[String] = None,
-                   batchSize: Int = 100): Observable[EventRepresentation] = {
+                   batchSize: Int = 100): Observable[Event] = {
 
     val query = createQuery(
       ("client", clientName),
@@ -63,6 +63,6 @@ class RealmsAdmin[T](implicit client: KeycloakClient[T]) extends services.Realms
     )
 
     val path = Seq(realm, "events")
-    client.getList[EventRepresentation](path, query, first, limit, batchSize)
+    client.getList[Event](path, query, first, limit, batchSize)
   }
 }

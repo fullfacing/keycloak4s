@@ -75,12 +75,14 @@ class IdentityProvidersTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
-  "updateManagementPermissions" should "update the management permissions of an Identity Provider" in {
-    idProvService.enableManagementPermissions("test_oidc").map(_.map { mp =>
-      mp.enabled shouldBe true
-      mp.resource shouldBe defined
-      mp.scopePermissions.getOrElse(Map.empty[String, String]) shouldNot be (empty)
-    })
+  "ManagementPermissions" should "update the management permissions of an Identity Provider" in {
+    (for {
+      ep <- EitherT(idProvService.enableManagementPermissions("test_oidc"))
+      dp <- EitherT(idProvService.disableManagementPermissions("test_oidc"))
+    } yield {
+      ep.enabled should equal(true)
+      dp.enabled should equal(false)
+    }).value
   }.shouldReturnSuccess
 
   "fetchMapperTypes" should "retrieve the mapper types for the specified Identity Provider" in {
