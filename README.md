@@ -69,7 +69,7 @@ The module uses the client credential flow behind the scenes to simplify access 
 Refer to the keycloak4s-core segment for details on KeycloakConfig. Please note that the authorization realm must be a [service account](https://www.keycloak.org/docs/latest/server_admin/index.html#_service_accounts)-enabled admin client.
 
 **2 - Create a KeycloakClient**<br/>
-The KeycloakClient handles the HTTP calls to the KeycloakServer. It requires a KeycloakConfig, and a sttp backend (the KeycloakClient and the sttp backend must match parametric types). Alternatively, the Akka/Monix module can be used for a concrete implementation. For more information, refer to the [Module: keycloak4s-admin-monix](#keycloak4s-admin-monix) module of this document.
+The KeycloakClient handles the HTTP calls to the KeycloakServer. It requires a KeycloakConfig, and an sttp backend (the KeycloakClient and the sttp backend must match parametric types). Alternatively, the Akka/Monix module can be used for a concrete implementation. For more information, refer to the [Module: keycloak4s-admin-monix](#keycloak4s-admin-monix) module of this document.
 
 *Example:*
 ```scala
@@ -82,8 +82,8 @@ In this context, a service handler contains the admin calls that are relevant to
 
 *Example:*
 ```scala
-val usersService = Keycloak.Users[Task, Observable[ByteBuffer, Any]]
-val rolesService = Keycloak.Roles[Task, Observable[ByteBuffer, Any]]
+val usersService = Keycloak.Users[Task, Observable[ByteBuffer]]
+val rolesService = Keycloak.Roles[Task, Observable[ByteBuffer]]
 ```
 
 **4 - Invoke the calls**<br/> 
@@ -104,7 +104,7 @@ for {
 The majority of the functions in a service handler corresponds directly with an admin API route. However, a few are composite functions created for convenience. An example of this can be seen in the aforementioned example where the`createAndRetrieve` function which chains a create- and a fetch call.
 
 ## Module: keycloak4s-admin-monix <a name="keycloak4s-admin-monix"></a>
-keycloak4s-admin-monix can be used as an alternative to keycloak4S-admin-monix. This module is typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type. This removes the need to set up the types for KeycloakClient or the service handlers. Additionally, this module contains reactive streaming variants of the fetch calls, which allows for batch retrieval and processing, as well as a Monix-wrapped Akka-HTTP based sttp backend that is ready for use. 
+keycloak4s-admin-monix can be used as an alternative to keycloak4s-admin-monix. This module is typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type. This removes the need to set up the types for KeycloakClient or the service handlers. Additionally, this module contains reactive streaming variants of the fetch calls, which allows for batch retrieval and processing. 
 
 The steps to make these calls remains the same as in the keycloak4s-admin. The following example provide the specific pre-built sttp backend. For more information, refer to [Module: keycloak4s-admin](#keycloak4s-admin) in this document.
 
@@ -392,7 +392,7 @@ val sessionState: Option[UUID] = payload.extractAs[UUID]("session_state")
 val audiences: List[String] = payload.extractList("aud")
 
 // extracts the value for a given key as a List of the given type
-val resourceAccess: List[UUID] = payload.extractAsListOf[UUID]("allowed_ids")
+val allowedIds: List[UUID] = payload.extractAsListOf[UUID]("allowed_ids")
 ```
 
 The parametric extractors use the internal [json4s](http://json4s.org/) serializers by default, but can be customized by passing a json4s `Formats` instance explicitly to the function, or by declaring it implicitly in scope.
