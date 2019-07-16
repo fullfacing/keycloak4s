@@ -279,9 +279,9 @@ class RolesTests extends IntegrationSpec {
   "Management Permissions" should "do something or another to a realm role" in {
     val task =
       (for {
-        a <- EitherT(realmRoleService.authPermissionsInitialised(rRole1Name))
-        b <- EitherT(realmRoleService.initialiseAuthPermissions(rRole1Name, ManagementPermission.Enable(true)))
-        c <- EitherT(realmRoleService.initialiseAuthPermissions(rRole1Name, ManagementPermission.Enable(false)))
+        a <- EitherT(realmRoleService.fetchManagementPermissions(rRole1Name))
+        b <- EitherT(realmRoleService.enableManagementPermissions(rRole1Name))
+        c <- EitherT(realmRoleService.disableManagementPermissions(rRole1Name))
       } yield println(writePretty((a, b, c)))).value
 
     task.shouldReturnSuccess
@@ -290,9 +290,9 @@ class RolesTests extends IntegrationSpec {
   it should "do something or another to a client role" in {
     val task =
       (for {
-        a <- EitherT(clientRoleService.authPermissionsInitialised(clientUuid.get(), cRole1Name))
-        b <- EitherT(clientRoleService.initialiseAuthPermissions(clientUuid.get(), cRole1Name, ManagementPermission.Enable(true)))
-        c <- EitherT(clientRoleService.initialiseAuthPermissions(clientUuid.get(), cRole1Name, ManagementPermission.Enable(false)))
+        a <- EitherT(clientRoleService.fetchManagementPermissions(clientUuid.get(), cRole1Name))
+        b <- EitherT(clientRoleService.enableManagementPermissions(clientUuid.get(), cRole1Name))
+        c <- EitherT(clientRoleService.disableManagementPermissions(clientUuid.get(), cRole1Name))
       } yield println(writePretty((a, b, c)))).value
 
     task.shouldReturnSuccess
