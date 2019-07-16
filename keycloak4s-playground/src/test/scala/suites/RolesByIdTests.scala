@@ -201,7 +201,7 @@ class RolesByIdTests extends IntegrationSpec {
     task.value.shouldReturnSuccess
   }
 
-  "initialiseRoleAuthPermissions" should "successfully disable the role's auth permissions" in {
+  "disableManagementPermissions" should "successfully disable the role's auth permissions" in {
     val task =
       for {
         _ <- EitherT(rolesByIdService.disableManagementPermissions(rRole1.get()))

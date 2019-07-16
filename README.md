@@ -106,7 +106,7 @@ The majority of the functions in a service handler corresponds directly with an 
 ## Module: keycloak4s-admin-monix <a name="keycloak4s-admin-monix"></a>
 keycloak4s-admin-monix can be used as an alternative to keycloak4s-admin. This module is typed to Monix with [Tasks][Task] as the response wrapper and [Observables][Observable] as the streaming type. This removes the need to set up the types for KeycloakClient or the service handlers, apart from the type of byte collection used by the backend for streaming. Additionally, this module contains reactive streaming variants of the fetch calls, which allows for batch retrieval and processing. 
 
-The steps to make these calls remains the same as in the keycloak4s-admin. The following example provide the specific pre-built sttp backend. For more information, refer to [Module: keycloak4s-admin](#keycloak4s-admin) in this document.
+The steps to make these calls remains the same as in the keycloak4s-admin. The following example provides the specific pre-built sttp backend. For more information, refer to [Module: keycloak4s-admin](#keycloak4s-admin) in this document.
 
 *Example:*
 ```scala
