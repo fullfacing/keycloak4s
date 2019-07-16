@@ -243,10 +243,8 @@ class RealmsTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "updateUsersManagementPermissions" should "update the user management permissions" in {
-    val update = ManagementPermission.Update(enabled = Some(true))
-
     for {
-      _           <- EitherT(realmService.updateUsersManagementPermissions(update, "test_realm"))
+      _           <- EitherT(realmService.enableUsersManagementPermissions("test_realm"))
       permissions <- EitherT(realmService.fetchUsersManagementPermissions("test_realm"))
     } yield permissions.enabled shouldBe true
   }.value.shouldReturnSuccess

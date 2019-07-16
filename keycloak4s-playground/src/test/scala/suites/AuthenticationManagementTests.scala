@@ -30,25 +30,25 @@ class AuthenticationManagementTests extends IntegrationSpec {
   val storedAction: AtomicReference[RequiredActionProvider] = new AtomicReference[RequiredActionProvider]()
   val storedFlow: AtomicReference[AuthenticationFlow] = new AtomicReference[AuthenticationFlow]()
 
-  "fetchAuthenticationProviders" should "retrieve a non-empty list of Authentication Providers" in {
+  "fetchAuthenticatorProviders" should "retrieve a non-empty list of Authentication Providers" in {
     authMgmt.fetchAuthenticatorProviders().map(_.map { providers =>
       providers shouldNot be (empty)
     })
   }.shouldReturnSuccess
 
-  "fetchClientAuthenticationProviders" should "retrieve a non-empty list of Client Authentication Providers" in {
+  "fetchClientAuthenticatorProviders" should "retrieve a non-empty list of Client Authentication Providers" in {
     authMgmt.fetchClientAuthenticatorProviders().map(_.map { providers =>
       providers shouldNot be (empty)
     })
   }.shouldReturnSuccess
 
-  "fetchProviderConfigDescription" should "retrieve information of a specified Authentication Provider" in {
+  "fetchAuthenticatorProviderConfigDescription" should "retrieve information of a specified Authentication Provider" in {
     authMgmt.fetchAuthenticatorProviderConfigDescription("client-secret").map(_.map { info =>
       info.name shouldBe "Client Id and Secret"
     })
   }.shouldReturnSuccess
 
-  "fetchFlowAuthenticationExecutions" should "retrieve a non-empty list of a specified Flow's Authentication Executions" in {
+  "fetchFlowExecutions" should "retrieve a non-empty list of a specified Flow's Authentication Executions" in {
     authMgmt.fetchFlowExecutions("browser").map(_.map { executions =>
       executions shouldNot be (empty)
       storedExecutionsInfo.set(executions)
@@ -65,13 +65,13 @@ class AuthenticationManagementTests extends IntegrationSpec {
     } yield storedExecutionInfo.set(execution)
   }.value.shouldReturnSuccess
 
-  "fetchSingleExecution" should "retrieve a specified Execution" in {
+  "fetchExecution" should "retrieve a specified Execution" in {
     authMgmt.fetchExecution(storedExecutionInfo.get().id).map(_.map { execution =>
       storedExecution.set(execution)
     })
   }.shouldReturnSuccess
 
-  "fetchAuthenticatorConfig" should "retrieve a specified Authentication configuration" in {
+  "fetchAuthenticatorProviderConfig" should "retrieve a specified Authentication configuration" in {
     val option = storedExecution.get().authenticatorConfig
 
     for {
@@ -83,7 +83,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
     }
   }.value.shouldReturnSuccess
 
-  "updateAuthenticatorConfig" should "update a specified Authentication configuration" in {
+  "updateAuthenticatorProviderConfig" should "update a specified Authentication configuration" in {
     val update = AuthenticatorConfig.Update(alias = Some("test_config2"))
 
     for {
@@ -92,7 +92,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
     } yield config.alias shouldBe "test_config2"
   }.value.shouldReturnSuccess
 
-  "deleteAuthenticatorConfig" should "delete a specified Authentication configuration" in {
+  "deleteAuthenticatorProviderConfig" should "delete a specified Authentication configuration" in {
     authMgmt.deleteAuthenticatorProviderConfig(storedConfig.get().id)
   }.shouldReturnSuccess
 
@@ -159,7 +159,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
     authMgmt.registerRequiredAction(action)
   }.shouldReturnSuccess
 
-  "fetchRequiredAction" should "retrieve a specified Required Action" in {
+  "fetchRequiredActionByAlias" should "retrieve a specified Required Action" in {
     authMgmt.fetchRequiredActionByAlias("test_action_provider").map(_.map { action =>
       storedAction.set(action)
     })
@@ -201,7 +201,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
     authMgmt.deleteRequiredAction("test_action_provider")
   }.shouldReturnSuccess
 
-  "fetchAuthenticationFlows" should "retrieve a non-empty list of Authentication Flows" in {
+  "fetchFlows" should "retrieve a non-empty list of Authentication Flows" in {
     authMgmt.fetchFlows().map(_.map { flows =>
       flows shouldNot be (empty)
       val flow = flows.find(_.alias == "temp_flow")
@@ -209,11 +209,11 @@ class AuthenticationManagementTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
-  "fetchAuthenticationFlow" should "retrieve a specified Authentication Flow" in {
+  "fetchFlowById" should "retrieve a specified Authentication Flow" in {
     authMgmt.fetchFlowById(storedFlow.get().id)
   }.shouldReturnSuccess
 
-  "deleteAuthenticationFlow" should "delete a specified Authentication Flow" in {
+  "deleteFlow" should "delete a specified Authentication Flow" in {
     authMgmt.deleteFlow(storedFlow.get().id)
   }.shouldReturnSuccess
 }

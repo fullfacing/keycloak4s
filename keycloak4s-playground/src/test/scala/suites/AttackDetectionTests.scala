@@ -75,10 +75,10 @@ class AttackDetectionTests extends IntegrationSpec {
     val task =
       for {
         _ <- EitherT.right(login(password = userCredentials.value))
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures shouldBe 0
         a.numFailures shouldBe 2
@@ -91,9 +91,9 @@ class AttackDetectionTests extends IntegrationSpec {
     val task =
       for {
         _  <- EitherT.right(invalidLogin)
-        b  <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b  <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _  <- EitherT(attackDetService.clearAllLoginFailures(realm))
-        a  <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        a  <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         a.numFailures     shouldBe 0
@@ -108,9 +108,9 @@ class AttackDetectionTests extends IntegrationSpec {
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _ <- EitherT(attackDetService.clearAllLoginFailures(realm))
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         b.disabled        shouldBe true
@@ -125,9 +125,9 @@ class AttackDetectionTests extends IntegrationSpec {
     val task =
       for {
         _ <- EitherT.right(invalidLogin)
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
-        _ <- EitherT(attackDetService.clearUserLoginFailure(realm, tUser.get.id))
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
+        _ <- EitherT(attackDetService.clearUserLoginFailure(tUser.get.id, realm))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         a.numFailures     shouldBe 0
@@ -142,9 +142,9 @@ class AttackDetectionTests extends IntegrationSpec {
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
-        _ <- EitherT(attackDetService.clearUserLoginFailure(realm, tUser.get.id))
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
+        _ <- EitherT(attackDetService.clearUserLoginFailure(tUser.get.id, realm))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         b.disabled        shouldBe true
