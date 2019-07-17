@@ -12,8 +12,4 @@ class Root[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   def serverInfo: R[Either[KeycloakError, ServerInfo]] = {
     client.get[ServerInfo](Seq.empty[String])
   }
-
-//  def corsPreflight(path: Seq[String] = Seq.empty[String])(implicit authToken: String): R[Either[KeycloakError, UnknownResponse]] = { //TODO test call
-//    client.options(path)
-//  }
 }

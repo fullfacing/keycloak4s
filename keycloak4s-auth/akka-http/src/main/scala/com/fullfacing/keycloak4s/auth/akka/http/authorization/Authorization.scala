@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.authorisation
+package com.fullfacing.keycloak4s.auth.akka.http.authorization
 
 import java.util.UUID
 
@@ -17,7 +17,7 @@ import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
 import scala.annotation.tailrec
 import scala.util.matching.Regex
 
-trait Authorisation extends PolicyEnforcement {
+trait Authorization extends PolicyEnforcement {
 
   val service: String
   private val validUuid: Regex = """[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}""".r
@@ -35,10 +35,10 @@ trait Authorisation extends PolicyEnforcement {
     }
   }
 
-  def authoriseRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean
+  def authorizeRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean
 }
 
-object Authorisation {
+object Authorization {
 
   private implicit def routeToDirective[A](route: StandardRoute): Directive[A] =
     toDirective[A](route)(yes[A])
@@ -55,20 +55,20 @@ object Authorisation {
   def checkPermissions[A](segment: String, permissions: AuthPayload, success: AuthRoles => Directive[A])(implicit cId: UUID): Directive[A] = {
     permissions.accessToken.extractResourceAccess.find { case (k, _) => k.equalsIgnoreCase(segment) } match {
       case Some((_, v)) => success(v)
-      case None         => Logging.authorisationDenied(cId, segment); authorisationFailed()
+      case None         => Logging.authorizationDenied(cId, segment); authorizationFailed()
     }
   }
 
-  def authoriseResourceServerAccess(permissions: AuthPayload, resourceServer: String)(implicit cId: UUID): Directive1[(Path, HttpMethod, List[String])] = {
+  def authorizeResourceServerAccess(permissions: AuthPayload, resourceServer: String)(implicit cId: UUID): Directive1[(Path, HttpMethod, List[String])] = {
     extractMethod.flatMap { method =>
       extractUnmatchedPath.flatMap { path =>
-        Logging.requestAuthorising(cId, path, method)
+        Logging.requestAuthorizing(cId, path, method)
         checkPermissions(resourceServer, permissions, r => provide((path, method, r.roles)))
       }
     }
   }
 
-  def authorisationFailed(): StandardRoute =
+  def authorizationFailed(): StandardRoute =
     complete(HttpResponse(UNAUTHORIZED.code, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, UNAUTHORIZED.getMessage)))
 
 }

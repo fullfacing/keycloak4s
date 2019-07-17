@@ -12,186 +12,108 @@ import scala.collection.immutable.Seq
 
 class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  /**
-   * Import identity provider from uploaded JSON file
-   *
-   * @param config
-   * @return
-   */
+  /** Imports an identity provider from a JSON file. */
   def `import`(config: File): R[Either[KeycloakError, Map[String, String]]] = {
-    val path = Seq(client.realm, "identity-provider", "import-config")
+    val path: Path = Seq(client.realm, "identity-provider", "import-config")
     val multipart = createMultipart(config)
     client.post[Map[String, String]](path, multipart)
   }
 
-  /**
-   * Create a new identity provider.
-   *
-   * @param identityProvider  Object representing IdentityProvider details.
-   * @return
-   */
+  /** Creates a new identity provider. */
   def create(identityProvider: IdentityProvider.Create): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "identity-provider", "instances")
+    val path: Path = Seq(client.realm, "identity-provider", "instances")
     client.post[Unit](path, identityProvider)
   }
 
-  /**
-   * Get identity providers.
-   */
+  /** Retrieves a list of identity providers. */
   def fetch(): R[Either[KeycloakError, Seq[IdentityProvider]]] = {
-    val path = Seq(client.realm, "identity-provider", "instances")
+    val path: Path = Seq(client.realm, "identity-provider", "instances")
     client.get[Seq[IdentityProvider]](path)
   }
 
-  /**
-   * Get an identity provider.
-   *
-   * @param alias
-   * @return
-   */
-  def fetch(alias: String): R[Either[KeycloakError, IdentityProvider]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias)
+  /** Retrieves an identity provider by alias. */
+  def fetchByAlias(alias: String): R[Either[KeycloakError, IdentityProvider]] = {
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias)
     client.get[IdentityProvider](path)
   }
 
-  /**
-   * Get identity provider types.
-   *
-   * @param providerTypeId  Provider id
-   * @return
-   */
+  /** Retrieves a list of identity provider types. */
   def fetchProviderType(providerTypeId: ProviderType): R[Either[KeycloakError, IdentityProvider.Type]] = {
-    val path = Seq(client.realm, "identity-provider", "providers", providerTypeId.value)
+    val path: Path = Seq(client.realm, "identity-provider", "providers", providerTypeId.value)
     client.get[IdentityProvider.Type](path)
   }
 
-  /**
-   * Update an identity provider.
-   *
-   * @param alias
-   * @return
-   */
+  /** Updates an identity provider. */
   def update(alias: String, identityProvider: IdentityProvider.Update): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias)
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias)
     client.put[Unit](path, identityProvider)
   }
 
-  /**
-   * Deletes an identity provider.
-   *
-   * @param alias
-   * @return
-   */
+  /** Deletes an identity provider. */
   def delete(alias: String): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias)
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias)
     client.delete[Unit](path)
   }
 
-  /**
-   * Export public broker configuration for identity provider.
-   *
-   * @param alias
-   * @param format  Optional format to use.
-   * @return
-   */
+  /** Exports a public broker configuration for a identity provider. */
   def exportBrokerConfig(alias: String, format: Option[String] = None): R[Either[KeycloakError, Unit]] = {
     val query = createQuery(("format", format))
 
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "export")
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "export")
     client.get[Unit](path, query = query)
   }
 
-  /**
-   * Return object stating whether client Authorization permissions have been initialized or not and a reference.
-   *
-   * @param alias ID of the group.
-   * @return
-   */
+  /** Retrieves details of a identity provider's management permissions. */
   def fetchManagementPermissions(alias: String): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "management", "permissions")
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "management", "permissions")
     client.get[ManagementPermission](path)
   }
 
-  /**
-   * Update group management permissions .
-   *
-   * @param alias       ID of the group.
-   * @param permissions
-   * @return
-   */
-  def updateManagementPermissions(alias: String, permissions: ManagementPermission.Update): R[Either[KeycloakError, ManagementPermission]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "management", "permissions")
-    client.put[ManagementPermission](path, permissions)
+  /** Enables a identity provider's management permissions. */
+  def enableManagementPermissions(alias: String): R[Either[KeycloakError, ManagementPermission]] = {
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "management", "permissions")
+    client.put[ManagementPermission](path, ManagementPermission.Enable(true))
   }
 
-  /**
-   * Get mapper types for identity provider.
-   *
-   * @param alias
-   * @return Map of provider Ids and corresponding IdentityProviderMapper object
-   */
+  /** Disables a identity provider's management permissions. */
+  def disableManagementPermissions(alias: String): R[Either[KeycloakError, ManagementPermission]] = {
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "management", "permissions")
+    client.put[ManagementPermission](path, ManagementPermission.Enable(false))
+  }
+
+  /** Retrieves a list of mapper types for a identity provider. */
   def fetchMapperTypes(alias: String): R[Either[KeycloakError, Map[String, IdentityProviderMapperType]]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "mapper-types")
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "mapper-types")
     client.get[Map[String, IdentityProviderMapperType]](path)
   }
 
-  /**
-   * Add a mapper to identity provider.
-   *
-   * @param alias
-   * @param mapper
-   * @return
-   */
+  /** Adds a mapper to a identity provider. */
   def createMapper(alias: String, mapper: IdentityProviderMapper.Create): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers")
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "mappers")
     client.post[Unit](path, mapper)
   }
 
-  /**
-   * Get mappers for identity provider.
-   *
-   * @param alias
-   * @return
-   */
+  /** Retrieves a list of mappers for a identity provider. */
   def fetchMappers(alias: String): R[Either[KeycloakError, Seq[IdentityProviderMapper]]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers")
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "mappers")
     client.get[Seq[IdentityProviderMapper]](path)
   }
 
-  /**
-   * Get mapper by ID for identity provider.
-   *
-   * @param alias
-   * @param mapperId
-   * @return
-   */
+  /** Retrieves a mapper by ID for a identity provider. */
   def fetchMapper(alias: String, mapperId: UUID): R[Either[KeycloakError, IdentityProviderMapper]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId.toString)
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId)
     client.get[IdentityProviderMapper](path)
   }
 
-  /**
-   * Update a mapper for the identity provider.
-   *
-   * @param alias
-   * @param mapperId
-   * @param mapper
-   * @return
-   */
+  /** Updates a mapper for a identity provider. */
   def updateMapper(alias: String, mapperId: UUID, mapper: IdentityProviderMapper.Update): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId.toString)
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId)
     client.put[Unit](path, mapper)
   }
 
-  /**
-   * Delete mapper for identity provider.
-   *
-   * @param alias
-   * @param mapperId
-   * @return
-   */
+  /** Deletes a mapper for a identity provider. */
   def deleteMapper(alias: String, mapperId: UUID): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId.toString)
+    val path: Path = Seq(client.realm, "identity-provider", "instances", alias, "mappers", mapperId)
     client.delete[Unit](path)
   }
 }

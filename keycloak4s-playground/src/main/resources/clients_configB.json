@@ -12,6 +12,24 @@
       ]
     },
     {
+      "path" : "segment/*",
+      "methodRoles" : [
+        {
+          "method" : "*",
+          "roles" : { "and": [ "segment-star", "segment" ] }
+        }
+      ]
+    },
+    {
+      "path" : "segment",
+      "methodRoles" : [
+        {
+          "method" : "*",
+          "roles" : "segment"
+        }
+      ]
+    },
+    {
       "path": "{{sites}}"
     },
     {
@@ -27,7 +45,25 @@
       "path": "{{clients}}/{{accounts}}"
     },
     {
-      "path": "{{clients}}/{{accounts}}/{{sites}}"
+      "path": "{{clients}}/{{accounts}}/{{sites}}",
+      "methodRoles" : [
+        {
+          "method" : "GET",
+          "roles" : [ "test-read", "test-write", "test-delete" ]
+        },
+        {
+          "method" : "POST",
+          "roles" : [ "test-write", "test-delete" ]
+        },
+        {
+          "method" : "DELETE",
+          "roles" : "test-delete"
+        },
+        {
+          "method" : "HEAD",
+          "roles" : "test-head"
+        }
+      ]
     },
     {
       "path": "{{clients}}/{id}/{{accounts}}/{id}/{{sites}}/{id}"
@@ -57,7 +93,7 @@
   "segments": [
     {
       "segment": "sites",
-      "auth": [
+      "methodRoles": [
         {
           "method": "GET",
           "roles": [
@@ -90,7 +126,7 @@
     },
     {
       "segment": "clients",
-      "auth": [
+      "methodRoles": [
         {
           "method": "GET",
           "roles": [
@@ -123,7 +159,7 @@
     },
     {
       "segment": "accounts",
-      "auth": [
+      "methodRoles": [
         {
           "method": "*",
           "roles": ["accounts-delete"]

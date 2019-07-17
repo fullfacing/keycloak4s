@@ -33,7 +33,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val now = Instant.now()
     val exp = now.plusSeconds(60)
 
-    val token = TestData.createToken(exp)
+    val token = TestData.createToken(Some(exp))
 
     validateExp(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
@@ -42,9 +42,17 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val now = Instant.now()
     val exp = now.minusSeconds(60)
 
-    val token = TestData.createToken(exp)
+    val token = TestData.createToken(Some(exp))
 
     validateExp(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.EXPIRED)
+  }
+
+  it should "fail to validate a token without an expiration date" in {
+    val now = Instant.now()
+
+    val token = TestData.createToken()
+
+    validateExp(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.EXP_MISSING)
   }
 
   "validateNbf" should "successfully validate a token used after its not-before date" in {
@@ -52,7 +60,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = now.plusSeconds(60)
     val nbf = now.minusSeconds(60)
 
-    val token = TestData.createToken(exp, withNbf = Some(nbf))
+    val token = TestData.createToken(Some(exp), withNbf = Some(nbf))
 
     validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
@@ -62,7 +70,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = now.plusSeconds(60)
     val nbf = now.plusSeconds(60)
 
-    val token = TestData.createToken(exp, withNbf = Some(nbf))
+    val token = TestData.createToken(Some(exp), withNbf = Some(nbf))
 
     validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.NOT_YET_VALID)
   }
@@ -72,7 +80,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = now.plusSeconds(60)
     val nbf = Instant.ofEpochMilli(0L)
 
-    val token = TestData.createToken(exp, withNbf = Some(nbf))
+    val token = TestData.createToken(Some(exp), withNbf = Some(nbf))
 
     validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
@@ -81,7 +89,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val now = Instant.now()
     val exp = now.plusSeconds(60)
 
-    val token = TestData.createToken(exp)
+    val token = TestData.createToken(Some(exp))
 
     validateNbf(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
@@ -91,7 +99,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = now.plusSeconds(60)
     val iat = now.minusSeconds(60)
 
-    val token = TestData.createToken(exp, withIat = iat.some)
+    val token = TestData.createToken(Some(exp), withIat = iat.some)
 
     validateIat(token.getJWTClaimsSet, Date.from(now)) shouldBe valid(())
   }
@@ -101,7 +109,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = now.plusSeconds(60)
     val iat = now.plusSeconds(60)
 
-    val token = TestData.createToken(exp, withIat = iat.some)
+    val token = TestData.createToken(Some(exp), withIat = iat.some)
 
     validateIat(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.IAT_INCORRECT)
   }
@@ -110,7 +118,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val now = Instant.now()
     val exp = now.plusSeconds(60)
 
-    val token = TestData.createToken(exp)
+    val token = TestData.createToken(Some(exp))
 
     validateIat(token.getJWTClaimsSet, Date.from(now)) shouldBe invalidNel(Exceptions.IAT_MISSING)
   }
@@ -119,7 +127,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = Instant.now()
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token = TestData.createToken(exp, withIss = iss.some)
+    val token = TestData.createToken(Some(exp), withIss = iss.some)
 
     validateIss(token.getJWTClaimsSet, validatorUri) shouldBe valid(())
   }
@@ -128,7 +136,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val exp = Instant.now()
     val iss = "http://localhost:9000/auth/realms/test"
 
-    val token = TestData.createToken(exp, withIss = iss.some)
+    val token = TestData.createToken(Some(exp), withIss = iss.some)
 
     validateIss(token.getJWTClaimsSet, validatorUri) shouldBe invalidNel(Exceptions.ISS_INCORRECT)
   }
@@ -136,7 +144,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
   it should "fail to validate a token without an issuer" in {
     val exp = Instant.now()
 
-    val token = TestData.createToken(exp)
+    val token = TestData.createToken(Some(exp))
 
     validateIss(token.getJWTClaimsSet, validatorUri) shouldBe invalidNel(Exceptions.ISS_MISSING)
   }
@@ -148,7 +156,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
 
     validator.process(token.serialize()).unsafeRunSync() shouldBe a[Right[_, _]]
   }
@@ -160,9 +168,9 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token1 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some)
-    val token2 = TestData.createToken(exp, withNbf = nbf.plusSeconds(120).some, withIat = iat.plusSeconds(120).some, withIss = iss.some)
-    val token3 = TestData.createToken(exp.minusSeconds(120), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token1 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some)
+    val token2 = TestData.createToken(Some(exp), withNbf = nbf.plusSeconds(120).some, withIat = iat.plusSeconds(120).some, withIss = iss.some)
+    val token3 = TestData.createToken(Some(exp.minusSeconds(120)), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
 
     val ex1 = Exceptions.buildClaimsException(NonEmptyList(Exceptions.ISS_MISSING, Nil))
     val ex2 = Exceptions.buildClaimsException(NonEmptyList(Exceptions.NOT_YET_VALID, Exceptions.IAT_INCORRECT :: Nil))
@@ -186,7 +194,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
 
     validator.process(token.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
   }
@@ -204,7 +212,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, signerOverride = signer.some)
+    val token = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some, signerOverride = signer.some)
 
     validator.process(token.serialize()).unsafeRunSync() shouldBe Left(Exceptions.SIG_INVALID)
   }
@@ -216,8 +224,8 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token1 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
-    val token2 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token1 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token2 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
 
     validator.parProcess(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe a[Right[_, _]]
   }
@@ -229,8 +237,8 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token1 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
-    val token2 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token1 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token2 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
 
     validator.parProcess(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
   }
@@ -242,8 +250,8 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token1 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
-    val token2 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token1 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some)
+    val token2 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
 
     validator.parProcess(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
   }
@@ -255,8 +263,8 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
     val iat = now.minusSeconds(60)
     val iss = "http://localhost:8080/auth/realms/test"
 
-    val token1 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
-    val token2 = TestData.createToken(exp, withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token1 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
+    val token2 = TestData.createToken(Some(exp), withNbf = nbf.some, withIat = iat.some, withIss = iss.some, keyIdOverride = Some("does not exist"))
 
     validator.parProcess(token1.serialize(), token2.serialize()).unsafeRunSync() shouldBe Left(Exceptions.PUBLIC_KEY_NOT_FOUND)
   }

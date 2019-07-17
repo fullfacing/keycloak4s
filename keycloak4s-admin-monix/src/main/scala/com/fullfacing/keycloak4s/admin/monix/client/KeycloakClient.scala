@@ -1,7 +1,5 @@
 package com.fullfacing.keycloak4s.admin.monix.client
 
-import java.nio.ByteBuffer
-
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.{KeycloakClient => KeycloakClientA}
 import com.fullfacing.keycloak4s.admin.monix.utilities.ObservableExtensions.ObservableExtensions
@@ -14,7 +12,7 @@ import monix.reactive.Observable
 import scala.collection.immutable.Seq
 import scala.reflect._
 
-class KeycloakClient(config: KeycloakConfig)(implicit client: SttpBackend[Task, Observable[ByteBuffer]]) extends KeycloakClientA[Task, Observable[ByteBuffer]](config) {
+class KeycloakClient[T](config: KeycloakConfig)(implicit client: SttpBackend[Task, Observable[T]]) extends KeycloakClientA[Task, Observable[T]](config) {
 
   /**
    * Used for calls that return a sequence of items, this sequentially makes calls to retrieve and process

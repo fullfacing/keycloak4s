@@ -1,0 +1,67 @@
+{
+  "service" : "api-test",
+  "enforcementMode" : "ENFORCING",
+  "paths" : [
+    {
+      "path" : "/v1/{{resource1}}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/{{resource2}}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/{{resource2}}/{id}"
+    },
+    {
+      "path" : "/v1/{{resource1}}/{id}/{{resource2}}/action",
+      "methodRoles": [
+        {
+          "method" : "GET",
+          "roles" : "action-get"
+        },
+        {
+          "method" : "HEAD",
+          "roles" : "action-head"
+        }
+      ]
+    }
+  ],
+  "segments" : [
+    {
+      "segment" : "resource1",
+      "methodRoles" : [
+        {
+          "method" : "GET",
+          "roles" : [ "read1", "write1", "delete1" ]
+        },
+        {
+          "method" : "POST",
+          "roles" : [ "write1", "delete1" ]
+        },
+        {
+          "method" : "DELETE",
+          "roles" : [ "delete1" ]
+        }
+      ]
+    },
+    {
+      "segment" : "resource2",
+      "methodRoles" : [
+        {
+          "method" : "GET",
+          "roles" : [ "read2", "write2", "delete2" ]
+        },
+        {
+          "method" : "POST",
+          "roles" : [ "write2", "delete2" ]
+        },
+        {
+          "method" : "DELETE",
+          "roles" : [ "delete2" ]
+        }
+      ]
+    }
+  ]
+}
