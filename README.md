@@ -34,7 +34,7 @@ Each module can be pulled into a project separately using the following SBT depe
 * keycloak4s-core:        `"com.fullfacing" %% "keycloak4s-core" % "1.0.0"`
 * keycloak4s-admin:       `"com.fullfacing" %% "keycloak4s-admin" % "1.0.0"`
 * keycloak4s-admin-monix: `"com.fullfacing" %% "keycloak4s-monix" % "1.0.0"`
-* keycloak4s-akka-http:   `"com.fullfacing" %% "keycloak4s-akka-http" % "1.0.0"`
+* keycloak4s-akka-http:   `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "1.0.0"`
 
 The core module is a dependency for all other modules, and is automatically pulled in when using any other module.
 
