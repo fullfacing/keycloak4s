@@ -1,9 +1,10 @@
 # keycloak4s
 [![CircleCI](https://circleci.com/gh/fullfacing/keycloak4s.svg?style=shield&circle-token=0788f14be0abb7f8ab8194fbd2cd179122b3ee85)](https://circleci.com/gh/fullfacing/keycloak4s)
 [![codecov](https://codecov.io/gh/fullfacing/keycloak4s/branch/master/graph/badge.svg?token=WKbJaagGhz)](https://codecov.io/gh/fullfacing/keycloak4s)
-[![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.fullfacing/keycloak4s-core_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/fullfacing/keycloak4s-core_2.12/)
+[![Maven Central](https://img.shields.io/maven-central/v/com.fullfacing/keycloak4s_2.12.svg)](https://search.maven.org/search?q=a:keycloak4s_2.12)
 
-**A Scala-based middleware API for [Keycloak](https://www.keycloak.org/)**  
+**A Scala-based middleware API for
+[Keycloak](https://www.keycloak.org/)**
 *Based on version 6.0.1*
 
 keycloak4s is an opinionated Scala-built API that serves as a bridge between any Scala project and a Keycloak server. It allows access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html), and provides adapters that validates Keycloak's bearer tokens. It authorizes requests via a JSON config file inspired by their [policy enforcement configuration][Policy-Configuration].
