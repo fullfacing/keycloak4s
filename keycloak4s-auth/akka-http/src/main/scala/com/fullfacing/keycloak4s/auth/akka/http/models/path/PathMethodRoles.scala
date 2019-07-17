@@ -14,14 +14,33 @@ import org.json4s.JsonAST.{JArray, JObject, JString, JValue}
 final case class PathMethodRoles(method: Method,
                                  roles: RequiredRoles) {
 
-  private def eval(e: Either[RequiredRoles, String], userRoles: List[String]): Boolean = e match {
-    case Right(s)  => userRoles.contains(s)
-    case Left(obj) => evaluateUserAccess(obj, userRoles)
+  sealed trait Check[A]
+  class Continue[A](m: => Check[A]) extends Check[A] {
+    lazy val next: Check[A] =  m
   }
 
-  def evaluateUserAccess(configRoles: RequiredRoles = roles, userRoles: List[String]): Boolean = configRoles match {
-    case And(eithers) => eithers.forall(eval(_, userRoles))
-    case Or(eithers)  => eithers.exists(eval(_, userRoles))
+  case class Done[A](result: A) extends Check[A]
+
+  def execute[A](evalProcess: Check[A]): A = evalProcess match {
+    case Done(a) => a
+    case c: Continue[A] => execute(c.next)
+  }
+
+  def evaluateUserAccess(configRoles: RequiredRoles = roles, userRoles: List[String]): Boolean = {
+    def eval(e: Either[RequiredRoles, String]): Check[Boolean] = e match {
+      case Right(s)  => Done(userRoles.contains(s))
+      case Left(obj) => new Continue(loop(obj))
+    }
+
+    def loop(configRoles: RequiredRoles): Check[Boolean] = configRoles match {
+      case And(results) => val checks = results.map(eval)
+        println(checks)
+        Done(checks.forall(execute))
+      case Or(results)  => val checks = results.map(eval)
+        Done(checks.exists(execute))
+    }
+
+    execute(loop(configRoles))
   }
 }
 
