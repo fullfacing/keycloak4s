@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.20.1]
+### Changed
+- Changed the functions for evaluating user access to be stack safe.
+
 ## [0.20.0]
 ### Added
 - Documentation has been added.
