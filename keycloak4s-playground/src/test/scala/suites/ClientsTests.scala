@@ -99,8 +99,8 @@ class ClientsTests extends IntegrationSpec {
     task.shouldReturnSuccess
   }
 
-  "getClientInstallationProvider" should "return the client installation file" in {
-    clientService.getClientInstallationProvider(client1.get).shouldReturnSuccess
+  "getInstallationProvider" should "return the client installation file" in {
+    clientService.getInstallationProvider(client1.get).shouldReturnSuccess
   }
 
   "updateClientForServiceAccount" should "update client to enable service accounts" in {
@@ -150,7 +150,7 @@ class ClientsTests extends IntegrationSpec {
   }
 
   "fetchKeyInfo" should "return the key info" in {
-    clientService.fetchKeyInfo("key1", client2.get).shouldReturnSuccess
+    clientService.fetchKeystoreInfo("key1", client2.get).shouldReturnSuccess
   }
 
   /* Client Scope(Role) Mapping Tests */
@@ -392,11 +392,12 @@ class ClientsTests extends IntegrationSpec {
   "ManagementPermissions" should "fetch and update requests for ManagementPermission model" in {
     val task =
       (for {
-        cp  <- EitherT(clientService.fetchClientAuthorisationPermissions(client3.get))
-        ucp <- EitherT(clientService.updateClientAuthorisationPermissions(client3.get,
-          ManagementPermission(enabled = false, cp.resource, cp.scopePermissions)))
+        _   <- EitherT(clientService.fetchManagementPermissions(client3.get))
+        ecp <- EitherT(clientService.enableManagementPermissions(client3.get))
+        dcp <- EitherT(clientService.disableManagementPermissions(client3.get))
       } yield {
-        ucp.enabled should equal(false)
+        ecp.enabled should equal(true)
+        dcp.enabled should equal(false)
       }).value
     task.shouldReturnSuccess
   }

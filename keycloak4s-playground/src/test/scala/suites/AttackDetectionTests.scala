@@ -2,12 +2,13 @@ package suites
 
 import java.util.concurrent.atomic.AtomicReference
 
+import akka.util.ByteString
 import cats.data.EitherT
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{Clients, Users}
 import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
-import com.fullfacing.keycloak4s.core.models.{Response => _, _}
-import com.softwaremill.sttp.{sttp, _}
+import com.fullfacing.keycloak4s.core.models._
+import com.softwaremill.sttp.{sttp, Response, _}
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
@@ -16,13 +17,13 @@ import utils.{Errors, IntegrationSpec}
 class AttackDetectionTests extends IntegrationSpec {
 
   private val adKeycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "AttackRealm", authConfig)
-  private val adClient: KeycloakClient = new KeycloakClient(adKeycloakConfig)
+  private val adClient: KeycloakClient[T] = new KeycloakClient(adKeycloakConfig)
 
-  override val clientService: Clients = Keycloak.Clients(adClient)
-  override val userService: Users     = Keycloak.Users(adClient)
+  override val clientService: Clients[T] = Keycloak.Clients[ByteString](adClient)
+  override val userService: Users[T]     = Keycloak.Users[ByteString](adClient)
 
   val realm = "AttackRealm"
-  val realmCreate = RealmRepresentation.Create(
+  val realmCreate = Realm.Create(
     realm = realm,
     id    = realm,
     enabled = Some(true),
@@ -75,10 +76,10 @@ class AttackDetectionTests extends IntegrationSpec {
     val task =
       for {
         _ <- EitherT.right(login(password = userCredentials.value))
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures shouldBe 0
         a.numFailures shouldBe 2
@@ -91,9 +92,9 @@ class AttackDetectionTests extends IntegrationSpec {
     val task =
       for {
         _  <- EitherT.right(invalidLogin)
-        b  <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b  <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _  <- EitherT(attackDetService.clearAllLoginFailures(realm))
-        a  <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        a  <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         a.numFailures     shouldBe 0
@@ -108,9 +109,9 @@ class AttackDetectionTests extends IntegrationSpec {
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _ <- EitherT(attackDetService.clearAllLoginFailures(realm))
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         b.disabled        shouldBe true
@@ -125,9 +126,9 @@ class AttackDetectionTests extends IntegrationSpec {
     val task =
       for {
         _ <- EitherT.right(invalidLogin)
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
-        _ <- EitherT(attackDetService.clearUserLoginFailure(realm, tUser.get.id))
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
+        _ <- EitherT(attackDetService.clearUserLoginFailure(tUser.get.id, realm))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         a.numFailures     shouldBe 0
@@ -142,9 +143,9 @@ class AttackDetectionTests extends IntegrationSpec {
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
-        b <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
-        _ <- EitherT(attackDetService.clearUserLoginFailure(realm, tUser.get.id))
-        a <- EitherT(attackDetService.fetchUserStatus(realm, tUser.get.id))
+        b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
+        _ <- EitherT(attackDetService.clearUserLoginFailure(tUser.get.id, realm))
+        a <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
       } yield {
         b.numFailures > 0 shouldBe true
         b.disabled        shouldBe true

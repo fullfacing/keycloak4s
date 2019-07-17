@@ -1,6 +1,5 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import java.nio.ByteBuffer
 import java.util.UUID
 
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
@@ -11,7 +10,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Groups(implicit client: KeycloakClient) extends services.Groups[Task, Observable[ByteBuffer]] {
+class Groups[T](implicit client: KeycloakClient[T]) extends services.Groups[Task, Observable[T]] {
 
   /**
    * Retrieves all groups for a Realm. Only name and ids are returned.

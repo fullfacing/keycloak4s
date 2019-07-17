@@ -31,7 +31,7 @@ class RealmsTests extends IntegrationSpec {
   val storedBoolean: AtomicReference[Boolean] = new AtomicReference[Boolean]()
 
   "create" should "POST a new Realm" in {
-    val realm = RealmRepresentation.Create(
+    val realm = Realm.Create(
       id                        = "test_realm",
       realm                     = "test_realm",
       eventsEnabled             = Some(true),
@@ -48,7 +48,7 @@ class RealmsTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "createAndRetrieve" should "create a Realm and subsequently return it" in {
-    realmService.createAndRetrieve(RealmRepresentation.Create(id = "test_realm2", realm = "test_realm2"))
+    realmService.createAndRetrieve(Realm.Create(id = "test_realm2", realm = "test_realm2"))
   }.shouldReturnSuccess
 
   "fetch" should "retrieve the Realm as configured in KeycloakClient" in {
@@ -70,7 +70,7 @@ class RealmsTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "update" should "update a Realm" in {
-    val update = RealmRepresentation.Update(enabled = Some(true))
+    val update = Realm.Update(enabled = Some(true))
 
     for {
       _     <- EitherT(realmService.update(update, "test_realm"))
@@ -242,14 +242,15 @@ class RealmsTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
-  "updateUsersManagementPermissions" should "update the user management permissions" in {
-    val update = ManagementPermission.Update(enabled = Some(true))
-
-    for {
-      _           <- EitherT(realmService.updateUsersManagementPermissions(update, "test_realm"))
-      permissions <- EitherT(realmService.fetchUsersManagementPermissions("test_realm"))
-    } yield permissions.enabled shouldBe true
-  }.value.shouldReturnSuccess
+  "UsersManagementPermissions" should "update the user management permissions" in {
+    (for {
+      ep <- EitherT(realmService.enableUsersManagementPermissions("test_realm"))
+      dp <- EitherT(realmService.disableUsersManagementPermissions("test_realm"))
+    } yield {
+      ep.enabled should equal(true)
+      dp.enabled should equal(false)
+    }).value
+  }.shouldReturnSuccess
 
   "fetchClientRegistrationPolicyProviders" should "retrieve a non-empty list of client registration polices" in {
     realmService.fetchClientRegistrationPolicyProviders().map(_.map { policies =>
@@ -264,7 +265,7 @@ class RealmsTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "createInitialAccessToken" should "create an initial access token" in {
-    val config = ClientInitialAccessCreate(count = Some(5), expiration = Some(86400))
+    val config = ClientInitialAccess.Create(count = Some(5), expiration = Some(86400))
     realmService.createInitialAccessToken(config, "test_realm").shouldReturnSuccess
 
     for {

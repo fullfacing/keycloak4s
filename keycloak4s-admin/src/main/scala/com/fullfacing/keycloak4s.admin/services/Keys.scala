@@ -8,10 +8,8 @@ import scala.collection.immutable.Seq
 
 class Keys[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  /**
-   *
-   */
-  def getRealmKeys(): R[Either[KeycloakError, KeysMetadata]] = {
+  /** Retrieves metadata of a Realm's keys. */
+  def fetchRealmKeys(): R[Either[KeycloakError, KeysMetadata]] = {
     val path = Seq(client.realm, "keys")
     client.get[KeysMetadata](path)
   }

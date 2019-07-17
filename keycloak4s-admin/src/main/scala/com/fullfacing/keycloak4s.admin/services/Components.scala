@@ -11,64 +11,41 @@ import scala.collection.immutable.Seq
 
 class Components[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
-  /**
-   * Create a component.
-   *
-   * @param component Object representing a component's details.
-   * @return
-   */
+  /** Creates a component. */
   def create(component: Component.Create): R[Either[KeycloakError, Unit]] = {
-    client.post[Unit](client.realm :: "components" :: Nil, component)
+    val path: Path = Seq(client.realm, "components")
+    client.post[Unit](path, component)
   }
 
-  /**
-   * Retrieves all components for a Realm.
-   */
+  /** Retrieves a list of components for a Realm. */
   def fetch(name: Option[String], parent: Option[String], `type`: Option[String]): R[Either[KeycloakError, Seq[Component]]] = {
+    val path: Path = Seq(client.realm, "components")
     val query = createQuery(("name", name), ("parent",parent), ("type",`type`))
-    client.get[Seq[Component]](client.realm :: "components" :: Nil, query)
+    client.get[Seq[Component]](path, query)
   }
 
-  /**
-   * Retrieves a component.
-   *
-   * @param componentId ID of the component.
-   * @return
-   */
+  /** Retrieves a component by id. */
   def fetchById(componentId: UUID): R[Either[KeycloakError, Component]] = {
-    client.get[Component](client.realm :: "components" :: componentId.toString :: Nil)
+    val path: Path = Seq(client.realm, "components", componentId)
+    client.get[Component](path)
   }
 
-  /**
-   * Updates a component.
-   *
-   * @param componentId ID of the component.
-   * @param component   Object representing a component's details.
-   * @return
-   */
+  /** Updates a component. */
   def update(componentId: UUID, component: Component.Update): R[Either[KeycloakError, Unit]] = {
-    client.put[Unit](client.realm :: "components" :: componentId.toString :: Nil, component)
+    val path: Path = Seq(client.realm, "components", componentId)
+    client.put[Unit](path, component)
   }
 
-  /**
-   * Deletes a component.
-   *
-   * @param componentId ID of the component.
-   * @return
-   */
+  /** Deletes a component. */
   def delete(componentId: UUID): R[Either[KeycloakError, Unit]] = {
-    client.delete[Unit](client.realm :: "components" :: componentId.toString :: Nil)
+    val path: Path = Seq(client.realm, "components", componentId)
+    client.delete[Unit](path)
   }
 
-  /** Note - Unable to get a valid response while testing
-   * Retrieves list of sub component types that are available to configure for a particular parent component.
-   *
-   * @param componentId ID of the component.
-   * @param `type`      subType of the component
-   * @return
-   */
-  def fetchSubComponentTypes(componentId: UUID, `type`: String): R[Either[KeycloakError, Seq[ComponentType]]] = {
+  /** Retrieves a list of sub component types that are available to configure for a particular parent component. */
+  def fetchSubTypes(componentId: UUID, `type`: String): R[Either[KeycloakError, Seq[ComponentType]]] = {
+    val path: Path = Seq(client.realm, "components", componentId, "sub-component-types")
     val query = Seq(KeyValue("type", `type`))
-    client.get[Seq[ComponentType]](client.realm :: "components" :: componentId.toString :: "sub-component-types" :: Nil, query = query)
+    client.get[Seq[ComponentType]](path, query = query)
   }
 }

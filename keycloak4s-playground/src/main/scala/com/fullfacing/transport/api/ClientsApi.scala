@@ -11,14 +11,19 @@ import com.fullfacing.transport.Implicits._
 object ClientsApi extends SecurityDirectives {
 
   val api: Route =
-    secure(pathClientsConfig) {
-      ClientsRoutes.api ~
-        AccountRoutes.api ~
-        SiteRoutes.api
+    contextFromPostman { correlationId =>
+      secure((pathClientsConfig, correlationId)) { _ =>
+        ClientsRoutes.api ~
+          AccountRoutes.api ~
+          SiteRoutes.api
+      }
     }
 
-
-  def context: Directive1[UUID] = {
-    optionalHeaderValueByName("Postman-Token").flatMap(cId => provide(cId.map(UUID.fromString).getOrElse(UUID.randomUUID())))
+  def contextFromPostman: Directive1[UUID] = {
+    optionalHeaderValueByName("Postman-Token").flatMap { cId =>
+      provide {
+        cId.fold(UUID.randomUUID())(UUID.fromString)
+      }
+    }
   }
 }

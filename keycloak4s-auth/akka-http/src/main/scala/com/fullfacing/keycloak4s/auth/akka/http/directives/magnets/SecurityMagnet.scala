@@ -2,44 +2,45 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
 import java.util.UUID
 
-import akka.http.scaladsl.server.Directive0
-import akka.http.scaladsl.server.Directives.pass
+import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.Directives.provide
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation
-import com.fullfacing.keycloak4s.auth.akka.http.authorisation.Authorisation._
+import com.fullfacing.keycloak4s.auth.akka.http.authorization.Authorization
+import com.fullfacing.keycloak4s.auth.akka.http.authorization.Authorization._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
 
 trait SecurityMagnet {
-  def apply(): Directive0
+  def apply(): Directive1[AuthPayload]
 }
 
 object SecurityMagnet {
 
-  /* Authorises a request with a correlation ID passed through. **/
-  implicit def run(parameters: (Authorisation, UUID))(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
+  /* Authorizes a request with a correlation ID passed through. **/
+  implicit def run(parameters: (Authorization, UUID))(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
     val (securityConfig, cId) = parameters
-    authorise(securityConfig, cId)(tokenValidator)
+    authorize(securityConfig, cId)
   }
 
-  /* Authorises a request and generates a new correlation ID. **/
-  implicit def run(securityConfig: Authorisation)(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
-    authorise(securityConfig, UUID.randomUUID())
+  /* Authorizes a request and generates a new correlation ID. **/
+  implicit def run(securityConfig: Authorization)(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>
+    authorize(securityConfig, UUID.randomUUID())
   }
 
-  private def authorise(securityConfig: Authorisation, correlationId: => UUID)(implicit tokenValidator: TokenValidator): Directive0 = {
+  private def authorize(securityConfig: Authorization, correlationId: => UUID)(implicit tokenValidator: TokenValidator): Directive1[AuthPayload] = {
     validateToken(correlationId).tflatMap { case (cId, authPayload) =>
       if (securityConfig.policyDisabled()) {
-        pass
+        provide(authPayload)
       } else {
-        authoriseResourceServerAccess(authPayload, securityConfig.service)(cId).flatMap { case (path, method, userRoles) =>
-          val isAuthorised = securityConfig.authoriseRequest(path, method, userRoles)(cId)
+        authorizeResourceServerAccess(authPayload, securityConfig.service)(cId).flatMap { case (path, method, userRoles) =>
+          val isAuthorized = securityConfig.authorizeRequest(path, method, userRoles)(cId)
 
-          if (isAuthorised) {
-            Logging.requestAuthorised(cId)
-            pass
+          if (isAuthorized) {
+            Logging.requestAuthorized(cId)
+            provide(authPayload)
           } else {
-            authorisationFailed()
+            authorizationFailed()
           }
         }
       }

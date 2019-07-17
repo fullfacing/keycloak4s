@@ -1,40 +1,44 @@
 package utils
 
+import akka.util.ByteString
+import com.fullfacing.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
-import com.fullfacing.transport.backends.MonixHttpBackendL
-import com.softwaremill.sttp.asynchttpclient.monix.AsyncHttpClientMonixBackend
+import com.softwaremill.sttp.SttpBackend
 import monix.eval.Task
 import monix.execution.Scheduler
+import monix.reactive.Observable
 import org.scalatest._
 
 import scala.concurrent.Future
 
 class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
 
+  type T = ByteString
+
   /* Keycloak Server Configuration **/
   val authConfig      = KeycloakConfig.Auth("master", "admin-cli", ServerInitializer.clientSecret)
   val keycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
-  implicit val context: Scheduler         = monix.execution.Scheduler.global
-  implicit val backend: MonixHttpBackendL = new MonixHttpBackendL(AsyncHttpClientMonixBackend())
-  implicit val client: KeycloakClient     = new KeycloakClient(keycloakConfig)
+  implicit val context: Scheduler = monix.execution.Scheduler.global
+  implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
+  implicit val client: KeycloakClient[T] = new KeycloakClient(keycloakConfig)
 
   /* Keycloak Services **/
-  val attackDetService: AttackDetection   = Keycloak.AttackDetection
-  val authMgmt: AuthenticationManagement  = Keycloak.AuthenticationManagement
-  val clientScopeService: ClientScopes    = Keycloak.ClientScopes
-  val clientService: Clients              = Keycloak.Clients
-  val componentService: Components        = Keycloak.Components
-  val groupService: Groups                = Keycloak.Groups
-  val idProvService: IdentityProviders    = Keycloak.IdentityProviders
-  val protocolMapService: ProtocolMappers = Keycloak.ProtocolMappers
-  val realmService: RealmsAdmin           = Keycloak.RealmsAdmin
-  val rolesByIdService: RolesById         = Keycloak.RolesById
-  val roleService: Roles                  = Keycloak.Roles
-  val userService: Users                  = Keycloak.Users
+  val attackDetService: AttackDetection[T]   = Keycloak.AttackDetection
+  val authMgmt: AuthenticationManagement[T]  = Keycloak.AuthenticationManagement
+  val clientScopeService: ClientScopes[T]    = Keycloak.ClientScopes
+  val clientService: Clients[T]              = Keycloak.Clients
+  val componentService: Components[T]        = Keycloak.Components
+  val groupService: Groups[T]                = Keycloak.Groups
+  val idProvService: IdentityProviders[T]    = Keycloak.IdentityProviders
+  val protocolMapService: ProtocolMappers[T] = Keycloak.ProtocolMappers
+  val realmService: RealmsAdmin[T]           = Keycloak.RealmsAdmin
+  val rolesByIdService: RolesById[T]         = Keycloak.RolesById
+  val roleService: Roles[T]                  = Keycloak.Roles
+  val userService: Users[T]                  = Keycloak.Users
 
   /* Sub-Services **/
   val clientRoleService: roleService.ClientLevel.type = roleService.ClientLevel
