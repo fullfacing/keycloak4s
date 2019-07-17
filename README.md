@@ -13,14 +13,14 @@ The project is split into the following modules, each as a separate dependency:
 * `keycloak4s-core`: Contains core functionality and shared models across other modules.
 * `keycloak4s-admin`: Allows access to Keycloak's [Admin API][Admin-API]. Utilizes SoftwareMill's [sttp](https://github.com/softwaremill/sttp) and Cats Effect's [Concurrent](https://typelevel.org/cats-effect/typeclasses/concurrent.html) which respectively allows for customization of the HTTP client.
 * `keycloak4s-admin-monix`: A more concrete implementation of keycloak-admin using [Monix][Monix]. Contains additional reactive streaming functionality.
-* `keycloak4s-akka-http`: A client adapter capable of validating Keycloak's bearer tokens, and providing authorization for [Akka-HTTP][Akka-Http] requests.
+* `keycloak4s-auth-akka-http`: A client adapter capable of validating Keycloak's bearer tokens, and providing authorization for [Akka-HTTP][Akka-Http] requests.
 
 ### Contents
 1. [Installation](#Installation)
 2. [Module: keycloak4s-core](#keycloak4s-core)
 3. [Module: keycloak4s-admin](#keycloak4s-admin)
 4. [Module: keycloak4s-admin-monix](#keycloak4s-admin-monix)
-5. [Module: keycloak4s-akka-http](#keycloak4s-akka-http)
+5. [Module: keycloak4s-auth-akka-http](#keycloak4s-akka-http)
     1. [Token Validation](#token-validation)
     2. [Policy Enforcement Configuration](#policy-enforcement)
     3. [Plugging in the Adapter](#adapter-plugin)
@@ -31,10 +31,10 @@ The project is split into the following modules, each as a separate dependency:
 ## Installation
 
 Each module can be pulled into a project separately using the following SBT dependencies:
-* keycloak4s-core:        `"com.fullfacing" %% "keycloak4s-core" % "1.0.0"`
-* keycloak4s-admin:       `"com.fullfacing" %% "keycloak4s-admin" % "1.0.0"`
-* keycloak4s-admin-monix: `"com.fullfacing" %% "keycloak4s-monix" % "1.0.0"`
-* keycloak4s-akka-http:   `"com.fullfacing" %% "keycloak4s-akka-http" % "1.0.0"`
+* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "1.0.0"`
+* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "1.0.0"`
+* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-monix" % "1.0.0"`
+* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "1.0.0"`
 
 The core module is a dependency for all other modules, and is automatically pulled in when using any other module.
 
@@ -134,7 +134,7 @@ usersService.fetchS(batchSize = 20)
 
 A `fetchL` variant is also available which performs the same batch streaming, but automatically converts the Observable to a List of Task when the stream has completed.
 
-## Module: keycloak4s-akka-http <a name="keycloak4s-akka-http"></a>
+## Module: keycloak4s-auth-akka-http <a name="keycloak4s-akka-http"></a>
 *Please note: This module is especially opinionated and was designed with our company's needs in mind. However, an effort was made to keep it as abstract as possible to allow for repurposed use. Feedback on its usability is encouraged.*
 
 This module is a client adapter for Akka-HTTP that allows the service to validate Keycloak's bearer tokens (through the use of [Nimbus JOSE + JWT][Nimbus]). It provides high-level RBAC authorization for requests via Akka-HTTP's directives, and a JSON policy enforcement configuration.
@@ -404,7 +404,7 @@ Alongside the generic extractors are additional extractors for commonly required
 keycloak4s has customized logging spanning over `trace`, `debug` and `error` levels using [SLF4J](https://www.slf4j.org/). To restrict logging output, the following Logger names should be referenced:
 * Top level: `keycloak4s`
 * keycloak4s-admin module: `keycloak4s.admin`
-* keycloak4s-akka-http module: `keycloak4s.auth`
+* keycloak4s-auth-akka-http module: `keycloak4s.auth`
 
 Internal correlation UUIDs are passed between function calls of the same request to assist in tracing logs and debugging. Normally, a correlation ID is generated for each request. However, a UUID can be passed along for a request if there is a need for it. To do so requires passing the UUID and policy enforcement configuration as a Tuple into the `secure` directive (refer to [Plugging in the Adapter](#adapter-plugin)).
 
