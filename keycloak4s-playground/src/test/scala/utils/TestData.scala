@@ -25,7 +25,7 @@ object TestData {
 
   val signer: JWSSigner = new RSASSASigner(rsaJwk)
 
-  def createToken(withExp: Instant,
+  def createToken(withExp: Option[Instant] = None,
                   withIat: Option[Instant] = None,
                   withNbf: Option[Instant] = None,
                   withIss: Option[String] = None,
@@ -34,8 +34,11 @@ object TestData {
                   signerOverride: Option[JWSSigner] = None): SignedJWT = {
 
     val claimsSetBuilder = new JWTClaimsSet.Builder()
-      .expirationTime(Date.from(withExp))
       .jwtID(UUID.randomUUID().toString)
+
+    val addExp: JWTClaimsSet.Builder => JWTClaimsSet.Builder = builder => withExp.fold(builder) { exp =>
+      builder.expirationTime(Date.from(exp))
+    }
 
     val addNbf: JWTClaimsSet.Builder => JWTClaimsSet.Builder = builder => withNbf.fold(builder) { nbf =>
       builder.notBeforeTime(Date.from(nbf))
@@ -53,7 +56,7 @@ object TestData {
       builder.claim("resource_access", JSONObjectUtils.parse(permissions))
     }
 
-    val claimsSet = addNbf.andThen(addIat).andThen(addIss).andThen(addClaims)(claimsSetBuilder).build()
+    val claimsSet = addExp.andThen(addNbf).andThen(addIat).andThen(addIss).andThen(addClaims)(claimsSetBuilder).build()
 
     val header: JWSHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
       .keyID(keyIdOverride.getOrElse(rsaJwk.getKeyID))

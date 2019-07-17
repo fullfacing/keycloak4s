@@ -2,16 +2,17 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives.magnets
 
 import java.util.UUID
 
-import akka.http.scaladsl.server.Directive0
-import akka.http.scaladsl.server.Directives.pass
+import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.Directives.provide
 import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.authorization.Authorization
 import com.fullfacing.keycloak4s.auth.akka.http.authorization.Authorization._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
 
 trait SecurityMagnet {
-  def apply(): Directive0
+  def apply(): Directive1[AuthPayload]
 }
 
 object SecurityMagnet {
@@ -27,17 +28,17 @@ object SecurityMagnet {
     authorize(securityConfig, UUID.randomUUID())
   }
 
-  private def authorize(securityConfig: Authorization, correlationId: => UUID)(implicit tokenValidator: TokenValidator): Directive0 = {
+  private def authorize(securityConfig: Authorization, correlationId: => UUID)(implicit tokenValidator: TokenValidator): Directive1[AuthPayload] = {
     validateToken(correlationId).tflatMap { case (cId, authPayload) =>
       if (securityConfig.policyDisabled()) {
-        pass
+        provide(authPayload)
       } else {
         authorizeResourceServerAccess(authPayload, securityConfig.service)(cId).flatMap { case (path, method, userRoles) =>
           val isAuthorized = securityConfig.authorizeRequest(path, method, userRoles)(cId)
 
           if (isAuthorized) {
             Logging.requestAuthorized(cId)
-            pass
+            provide(authPayload)
           } else {
             authorizationFailed()
           }

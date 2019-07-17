@@ -24,17 +24,17 @@ class AuthDirectiveTests extends FlatSpec with Matchers with ScalatestRouteTest 
   def context: Directive1[UUID] = provide(UUID.randomUUID())
   val api1: Route =
     context { correlationId =>
-      secure((configEnforcing, correlationId)) {
+      secure((configEnforcing, correlationId)) { _ =>
         complete("Authorized!")
       }
     }
-  val api2: Route = secure(configDisabled) { complete("Authorized!") }
-  val api3: Route = secure(configPermissive) { complete("Authorized!") }
+  val api2: Route = secure(configDisabled) { _ => complete("Authorized!") }
+  val api3: Route = secure(configPermissive) { _ => complete("Authorized!") }
 
   def permissionsBuilder(roles: List[String], service: String = "api-test"): String = write(service -> ("roles" -> roles))
 
   def validToken(roles: List[String], service: String = "api-test"): SignedJWT = createToken(
-    withExp = Instant.now().plusSeconds(60),
+    withExp = Some(Instant.now().plusSeconds(60)),
     withIat = Some(Instant.now()),
     withIss = Some(validatorUri),
     withResourceAccess = Some(permissionsBuilder(roles, service))

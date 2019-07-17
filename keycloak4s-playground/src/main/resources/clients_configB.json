@@ -93,7 +93,7 @@
   "segments": [
     {
       "segment": "sites",
-      "auth": [
+      "methodRoles": [
         {
           "method": "GET",
           "roles": [
@@ -126,7 +126,7 @@
     },
     {
       "segment": "clients",
-      "auth": [
+      "methodRoles": [
         {
           "method": "GET",
           "roles": [
@@ -159,7 +159,7 @@
     },
     {
       "segment": "accounts",
-      "auth": [
+      "methodRoles": [
         {
           "method": "*",
           "roles": ["accounts-delete"]

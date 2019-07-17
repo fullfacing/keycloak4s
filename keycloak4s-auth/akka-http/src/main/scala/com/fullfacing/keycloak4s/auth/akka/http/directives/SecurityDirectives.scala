@@ -1,7 +1,8 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives
 
-import akka.http.scaladsl.server.Directive0
+import akka.http.scaladsl.server.Directive1
 import com.fullfacing.keycloak4s.auth.akka.http.directives.magnets.SecurityMagnet
+import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
 
 trait SecurityDirectives extends ValidationDirective {
 
@@ -16,5 +17,5 @@ trait SecurityDirectives extends ValidationDirective {
    *
    * @param magnet Either just the config object or a tuple (config, correlationId)
    */
-  def secure(magnet: SecurityMagnet): Directive0 = magnet()
+  def secure(magnet: SecurityMagnet): Directive1[AuthPayload] = magnet()
 }

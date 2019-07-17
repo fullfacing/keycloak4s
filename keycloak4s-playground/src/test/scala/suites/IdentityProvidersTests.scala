@@ -3,7 +3,7 @@ package suites
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.core.models.{IdentityProvider, IdentityProviderMapper, ManagementPermission}
+import com.fullfacing.keycloak4s.core.models.{IdentityProvider, IdentityProviderMapper}
 import com.fullfacing.keycloak4s.core.models.enums.{MapperTypes, ProviderTypes}
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
@@ -49,7 +49,7 @@ class IdentityProvidersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "fetch" should "also be able to retrieve an Identity Provider by its alias" in {
-    idProvService.fetch("test_oidc").map(_.map { idProv =>
+    idProvService.fetchByAlias("test_oidc").map(_.map { idProv =>
       idProv.config.get("clientId") shouldBe Some("test_id")
     })
   }.shouldReturnSuccess
@@ -65,7 +65,7 @@ class IdentityProvidersTests extends IntegrationSpec {
 
     for {
       _       <- EitherT(idProvService.update("test_oidc", update))
-      idProv  <- EitherT(idProvService.fetch("test_oidc"))
+      idProv  <- EitherT(idProvService.fetchByAlias("test_oidc"))
     } yield idProv.trustEmail shouldBe true
   }.value.shouldReturnSuccess
 
@@ -75,14 +75,14 @@ class IdentityProvidersTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
-  "updateManagementPermissions" should "update the management permissions of an Identity Provider" in {
-    val update = ManagementPermission.Update(enabled = Some(true))
-
-    idProvService.updateManagementPermissions("test_oidc", update).map(_.map { mp =>
-      mp.enabled shouldBe true
-      mp.resource shouldBe defined
-      mp.scopePermissions.getOrElse(Map.empty[String, String]) shouldNot be (empty)
-    })
+  "ManagementPermissions" should "update the management permissions of an Identity Provider" in {
+    (for {
+      ep <- EitherT(idProvService.enableManagementPermissions("test_oidc"))
+      dp <- EitherT(idProvService.disableManagementPermissions("test_oidc"))
+    } yield {
+      ep.enabled should equal(true)
+      dp.enabled should equal(false)
+    }).value
   }.shouldReturnSuccess
 
   "fetchMapperTypes" should "retrieve the mapper types for the specified Identity Provider" in {
