@@ -34,7 +34,6 @@ final case class PathMethodRoles(method: Method,
 
     def loop(configRoles: RequiredRoles): Check[Boolean] = configRoles match {
       case And(results) => val checks = results.map(eval)
-        println(checks)
         Done(checks.forall(execute))
       case Or(results)  => val checks = results.map(eval)
         Done(checks.exists(execute))
