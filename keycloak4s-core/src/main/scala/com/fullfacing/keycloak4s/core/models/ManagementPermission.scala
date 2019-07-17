@@ -6,8 +6,4 @@ final case class ManagementPermission(enabled: Boolean,
 
 object ManagementPermission {
   final case class Enable(enabled: Boolean)
-
-  final case class Update(enabled: Option[Boolean] = None,
-                          resource: Option[String] = None,
-                          scopePermissions: Option[Map[String, String]] = None)
 }

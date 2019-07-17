@@ -5,9 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
 import com.fullfacing.keycloak4s.core.models._
-import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.eval.Task
-import org.json4s.jackson.Serialization.writePretty
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
 
@@ -278,24 +276,30 @@ class RolesTests extends IntegrationSpec {
 
   "Management Permissions" should "do something or another to a realm role" in {
     val task =
-      (for {
-        a <- EitherT(realmRoleService.authPermissionsInitialised(rRole1Name))
-        b <- EitherT(realmRoleService.initialiseAuthPermissions(rRole1Name, ManagementPermission.Enable(true)))
-        c <- EitherT(realmRoleService.initialiseAuthPermissions(rRole1Name, ManagementPermission.Enable(false)))
-      } yield println(writePretty((a, b, c)))).value
+      for {
+        _ <- EitherT(realmRoleService.fetchManagementPermissions(rRole1Name))
+        b <- EitherT(realmRoleService.enableManagementPermissions(rRole1Name))
+        c <- EitherT(realmRoleService.disableManagementPermissions(rRole1Name))
+      } yield {
+        b.enabled shouldBe true
+        c.enabled shouldBe false
+      }
 
-    task.shouldReturnSuccess
+    task.value.shouldReturnSuccess
   }
 
   it should "do something or another to a client role" in {
     val task =
-      (for {
-        a <- EitherT(clientRoleService.authPermissionsInitialised(clientUuid.get(), cRole1Name))
-        b <- EitherT(clientRoleService.initialiseAuthPermissions(clientUuid.get(), cRole1Name, ManagementPermission.Enable(true)))
-        c <- EitherT(clientRoleService.initialiseAuthPermissions(clientUuid.get(), cRole1Name, ManagementPermission.Enable(false)))
-      } yield println(writePretty((a, b, c)))).value
+      for {
+        _ <- EitherT(clientRoleService.fetchManagementPermissions(clientUuid.get(), cRole1Name))
+        b <- EitherT(clientRoleService.enableManagementPermissions(clientUuid.get(), cRole1Name))
+        c <- EitherT(clientRoleService.disableManagementPermissions(clientUuid.get(), cRole1Name))
+      } yield {
+        b.enabled shouldBe true
+        c.enabled shouldBe false
+      }
 
-    task.shouldReturnSuccess
+    task.value.shouldReturnSuccess
   }
 
 

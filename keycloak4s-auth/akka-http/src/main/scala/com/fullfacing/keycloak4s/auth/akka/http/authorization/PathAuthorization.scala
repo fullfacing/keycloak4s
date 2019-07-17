@@ -123,7 +123,7 @@ object PathAuthorization {
       .flatMap { segment =>
         val r = segment.drop(2).dropRight(2)
         savedSegments.find(_.segment == r) match {
-          case Some(s) => Some(s.auth)
+          case Some(s) => Some(s.methodRoles)
           case _       =>
             Logging.authResourceNotFound(r)
             None
