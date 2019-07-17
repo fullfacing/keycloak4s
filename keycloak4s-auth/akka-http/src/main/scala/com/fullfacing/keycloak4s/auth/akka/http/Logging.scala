@@ -41,21 +41,21 @@ object Logging {
   def tokenValidationFailed(cId: UUID, exMessage: String, tokenType: TokenType): Unit =
     logger.error(s"${cIdErr(cId)}${tokenType.value} validation failed - $exMessage")
 
-  /* Authorisation Logging **/
+  /* Authorization Logging **/
 
-  def requestAuthorising(cId: => UUID, path: => Path, method: => HttpMethod): Unit = {
-    logger.logDebugIff(s"${cIdLog(cId)}Authorising $gr${method.value}$cy request...$rs")
-    logger.logTrace(s"${cIdLog(cId)}Authorising $gr${method.value}$cy request for path $gr$path$cy...$rs")
+  def requestAuthorizing(cId: => UUID, path: => Path, method: => HttpMethod): Unit = {
+    logger.logDebugIff(s"${cIdLog(cId)}Authorizing $gr${method.value}$cy request...$rs")
+    logger.logTrace(s"${cIdLog(cId)}Authorizing $gr${method.value}$cy request for path $gr$path$cy...$rs")
   }
 
-  def requestAuthorised(cId: => UUID): Unit =
+  def requestAuthorized(cId: => UUID): Unit =
     logger.logTrace(s"${cIdLog(cId)}Request successfully authorized.$rs")
 
-  def authorisationDenied(cId: UUID, service: String): Unit =
-    logger.logDebug(s"$re${cIdErr(cId)}Authorisation denied, user is not allowed access to $service.$rs")
+  def authorizationDenied(cId: UUID, service: String): Unit =
+    logger.logDebug(s"$re${cIdErr(cId)}Authorization denied, user is not allowed access to $service.$rs")
 
-  def authorisationPathDenied(cId: UUID, method: HttpMethod, path: Path): Unit =
-    logger.logDebug(s"$re${cIdErr(cId)}Authorisation denied, user is not allowed access to ${method.value} $path.$rs")
+  def authorizationPathDenied(cId: UUID, method: HttpMethod, path: Path): Unit =
+    logger.logDebug(s"$re${cIdErr(cId)}Authorization denied, user is not allowed access to ${method.value} $path.$rs")
 
   def configFileNotFound(filename: String): Unit =
     logger.error(s"Policy Enforcement configuration JSON file $filename not found.")
@@ -64,7 +64,7 @@ object Logging {
     logger.error("Failed to parse policy configuration JSON file.")
 
   def authResourceNotFound(ar: String): Unit =
-    logger.error(s"Authorisation initialization failed: Segment variable $ar not found in JSON configuration.")
+    logger.error(s"Authorization initialization failed: Segment variable $ar not found in JSON configuration.")
 
   /* Logging Helpers **/
 
