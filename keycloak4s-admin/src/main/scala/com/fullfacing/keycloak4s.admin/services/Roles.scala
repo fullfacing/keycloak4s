@@ -20,7 +20,7 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     /** Create a client level role for the given client. */
     def create(clientId: UUID, role: Role.Create): R[Either[KeycloakError, String]] = {
       val path: Path = Seq(client.realm, "clients", clientId, "roles")
-      Concurrent[R].map(client.post[Headers](path, role.copy(clientRole = true)))(extractStringFromResponse)
+      Concurrent[R].map(client.post[Headers](path, role.copy(clientRole = true)))(extractString)
     }
 
     /** Creates and then fetches a new client level role for the given client. */

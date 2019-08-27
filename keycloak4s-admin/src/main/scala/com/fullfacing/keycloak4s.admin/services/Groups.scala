@@ -19,7 +19,7 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /** Creates a group. */
   def create(group: Group.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "groups")
-    Concurrent[R].map(client.post[Headers](path, group))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, group))(extractUuid)
   }
 
   /** Creates a sub group within a group. */

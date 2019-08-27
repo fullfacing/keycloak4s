@@ -18,7 +18,7 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /** Create a new user in the realm. */
   def create(user: User.Create): R[Either[KeycloakError, UUID]] = {
     val path = Seq(client.realm, "users")
-    Concurrent[R].map(client.post[Headers](path, user))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, user))(extractUuid)
   }
 
   /** Compound function that creates and then retrieves a new user. */

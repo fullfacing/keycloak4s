@@ -14,7 +14,7 @@ class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) 
   /** Creates a new client scope. Client Scope’s name must be unique. */
   def create(clientScope: ClientScope.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "client-scopes")
-    Concurrent[R].map(client.post[Headers](path, clientScope))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, clientScope))(extractUuid)
   }
 
   /** Retrieves client scopes. */

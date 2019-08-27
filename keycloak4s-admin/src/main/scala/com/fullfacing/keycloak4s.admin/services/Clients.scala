@@ -27,7 +27,7 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /** Creates a new client, client_id must be unique. */
   def create(nClient: Client.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "clients")
-    Concurrent[R].map(client.post[Headers](path, nClient))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, nClient))(extractUuid)
   }
 
   /** Retrieves a list of clients. */

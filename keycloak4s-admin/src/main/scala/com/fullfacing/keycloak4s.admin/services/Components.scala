@@ -15,7 +15,7 @@ class Components[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   /** Creates a component. */
   def create(component: Component.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "components")
-    Concurrent[R].map(client.post[Headers](path, component))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, component))(extractUuid)
   }
 
   /** Retrieves a list of components for a Realm. */

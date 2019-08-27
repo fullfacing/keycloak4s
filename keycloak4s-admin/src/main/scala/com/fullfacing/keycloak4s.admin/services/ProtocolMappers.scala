@@ -21,7 +21,7 @@ class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S
   /** Creates a protocol mapper for either a client or client scope. */
   def create(entityId: UUID, entity: ProtocolMapperEntity, mapper: ProtocolMapper.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, entity.value, entityId, "protocol-mappers", "models")
-    Concurrent[R].map(client.post[Headers](path, mapper))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, mapper))(extractUuid)
   }
 
   /** Retrieves a list of protocol mappers belonging to either a client or client scope. */
