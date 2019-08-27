@@ -1,9 +1,7 @@
-package com.fullfacing.keycloak4s.auth.akka.http
+package com.fullfacing.keycloak4s.auth.core
 
 import java.util.UUID
 
-import akka.http.scaladsl.model.HttpMethod
-import akka.http.scaladsl.model.Uri.Path
 import com.fullfacing.keycloak4s.core.Exceptions.ConfigInitialisationException
 import com.fullfacing.keycloak4s.core.logging.Logging._
 import com.fullfacing.keycloak4s.core.logging._
@@ -43,9 +41,9 @@ object Logging {
 
   /* Authorization Logging **/
 
-  def requestAuthorizing(cId: => UUID, path: => Path, method: => HttpMethod): Unit = {
-    logger.logDebugIff(s"${cIdLog(cId)}Authorizing $gr${method.value}$cy request...$rs")
-    logger.logTrace(s"${cIdLog(cId)}Authorizing $gr${method.value}$cy request for path $gr$path$cy...$rs")
+  def requestAuthorizing(cId: => UUID, path: => String, method: => String): Unit = {
+    logger.logDebugIff(s"${cIdLog(cId)}Authorizing $gr${method}$cy request...$rs")
+    logger.logTrace(s"${cIdLog(cId)}Authorizing $gr${method}$cy request for path $gr$path$cy...$rs")
   }
 
   def requestAuthorized(cId: => UUID): Unit =
@@ -54,8 +52,8 @@ object Logging {
   def authorizationDenied(cId: UUID, service: String): Unit =
     logger.logDebug(s"$re${cIdErr(cId)}Authorization denied, user is not allowed access to $service.$rs")
 
-  def authorizationPathDenied(cId: UUID, method: HttpMethod, path: Path): Unit =
-    logger.logDebug(s"$re${cIdErr(cId)}Authorization denied, user is not allowed access to ${method.value} $path.$rs")
+  def authorizationPathDenied(cId: UUID, method: String, path: String): Unit =
+    logger.logDebug(s"$re${cIdErr(cId)}Authorization denied, user is not allowed access to ${method} $path.$rs")
 
   def configFileNotFound(filename: String): Unit =
     logger.error(s"Policy Enforcement configuration JSON file $filename not found.")

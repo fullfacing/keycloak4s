@@ -4,14 +4,14 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethod, HttpResponse}
-import akka.http.scaladsl.server.Directives.{complete, extractUnmatchedPath, provide, extractMethod}
+import akka.http.scaladsl.server.Directives.{complete, extractMethod, extractUnmatchedPath, provide}
 import akka.http.scaladsl.server.StandardRoute.toDirective
 import akka.http.scaladsl.server.util.Tuple.yes
 import akka.http.scaladsl.server.{Directive, Directive1, StandardRoute}
-import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
-import com.fullfacing.keycloak4s.auth.akka.http.models.common.PolicyEnforcement
-import com.fullfacing.keycloak4s.auth.akka.http.models.{AuthPayload, AuthRoles}
+import com.fullfacing.keycloak4s.auth.core.PayloadImplicits._
+import com.fullfacing.keycloak4s.auth.core.models.common.PolicyEnforcement
+import com.fullfacing.keycloak4s.auth.core.models.{AuthPayload, AuthRoles}
+import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
 
 import scala.annotation.tailrec
@@ -62,7 +62,7 @@ object Authorization {
   def authorizeResourceServerAccess(permissions: AuthPayload, resourceServer: String)(implicit cId: UUID): Directive1[(Path, HttpMethod, List[String])] = {
     extractMethod.flatMap { method =>
       extractUnmatchedPath.flatMap { path =>
-        Logging.requestAuthorizing(cId, path, method)
+        Logging.requestAuthorizing(cId, path.toString(), method.value)
         checkPermissions(resourceServer, permissions, r => provide((path, method, r.roles)))
       }
     }

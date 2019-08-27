@@ -1,6 +1,6 @@
 package com.fullfacing.transport
 
-import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.fullfacing.keycloak4s.auth.core.validation.TokenValidator
 import monix.execution.Scheduler
 
 object Implicits {

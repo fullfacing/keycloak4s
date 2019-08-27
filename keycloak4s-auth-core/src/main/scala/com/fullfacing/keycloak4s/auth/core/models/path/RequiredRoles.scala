@@ -1,6 +1,6 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models.path
+package com.fullfacing.keycloak4s.auth.core.models.path
 
-import com.fullfacing.keycloak4s.auth.akka.http.Logging
+import com.fullfacing.keycloak4s.auth.core.Logging
 import org.json4s.JsonAST.{JArray, JObject, JString, JValue}
 
 sealed trait RequiredRoles

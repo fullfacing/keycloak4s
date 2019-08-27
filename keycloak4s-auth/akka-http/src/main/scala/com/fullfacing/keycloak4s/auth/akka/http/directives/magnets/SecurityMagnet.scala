@@ -4,12 +4,12 @@ import java.util.UUID
 
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.provide
-import com.fullfacing.keycloak4s.auth.akka.http.Logging
 import com.fullfacing.keycloak4s.auth.akka.http.authorization.Authorization
 import com.fullfacing.keycloak4s.auth.akka.http.authorization.Authorization._
 import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
-import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
-import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.fullfacing.keycloak4s.auth.core.models.AuthPayload
+import com.fullfacing.keycloak4s.auth.core.Logging
+import com.fullfacing.keycloak4s.auth.core.validation.TokenValidator
 
 trait SecurityMagnet {
   def apply(): Directive1[AuthPayload]

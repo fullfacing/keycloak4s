@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models.path
+package com.fullfacing.keycloak4s.auth.core.models.path
 
 /**
  * @param path        The path for which this rule applies.

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models.common
+package com.fullfacing.keycloak4s.auth.core.models.common
 
 import com.fullfacing.keycloak4s.core.models.enums.{PolicyEnforcementMode, PolicyEnforcementModes}
 

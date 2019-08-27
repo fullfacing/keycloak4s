@@ -5,9 +5,9 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpMethod
 import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule, RequiredRoles}
+import com.fullfacing.keycloak4s.auth.core.models.common.{AuthSegment, MethodRoles}
+import com.fullfacing.keycloak4s.auth.core.models.path.{And, Or, PathMethodRoles, PathRule, RequiredRoles}
+import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
