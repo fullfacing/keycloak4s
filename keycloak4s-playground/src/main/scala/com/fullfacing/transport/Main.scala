@@ -30,7 +30,7 @@ object Main extends TaskApp {
   val adminClient: String = "admin-cli" //Name of the admin Client inside adminRealm.
   val adminSecret: String = "???" //Secret of adminClient.
 
-  val authConfig  = KeycloakConfig.Auth(adminRealm, adminClient, adminSecret)
+  val authConfig  = KeycloakConfig.Secret(adminRealm, adminClient, adminSecret)
   val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)
 
   def run(args: List[String]): Task[ExitCode] = Akka.connect().flatMap { _ =>

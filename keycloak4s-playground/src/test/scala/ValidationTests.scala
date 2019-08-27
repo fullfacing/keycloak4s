@@ -21,7 +21,7 @@ class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester wi
   val port    = 8080
   val realm   = "test"
 
-  val authConfig  = KeycloakConfig.Auth("", "", "")
+  val authConfig  = KeycloakConfig.Secret("", "", "")
   val config      = KeycloakConfig(scheme, host, port, realm, authConfig)
 
   val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, config)

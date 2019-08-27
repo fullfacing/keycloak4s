@@ -12,7 +12,7 @@ object AuthTestData {
   val port    = 8080
   val realm   = "test"
 
-  val authConfig     = KeycloakConfig.Auth("", "", "")
+  val authConfig     = KeycloakConfig.Secret("", "", "")
   val keycloakConfig = KeycloakConfig(scheme, host, port, realm, authConfig)
 
   implicit val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, keycloakConfig)
