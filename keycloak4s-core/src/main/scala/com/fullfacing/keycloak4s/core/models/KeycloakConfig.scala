@@ -9,7 +9,12 @@ final case class KeycloakConfig(scheme: String,
 
 object KeycloakConfig {
 
-  final case class Auth(realm: String,
-                        clientId: String,
-                        clientSecret: String)
+  sealed trait Auth {
+    val realm: String
+    val clientId: String
+  }
+
+  final case class Password(realm: String, clientId: String, username: String, password: String) extends Auth
+
+  final case class Secret(realm: String, clientId: String, clientSecret: String) extends Auth
 }
