@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
@@ -15,9 +16,9 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------ CRUD ------------------------------------------------ //
   // ------------------------------------------------------------------------------------------------------ //
   /** Create a new user in the realm. */
-  def create(user: User.Create): R[Either[KeycloakError, Unit]] = {
+  def create(user: User.Create): R[Either[KeycloakError, UUID]] = {
     val path = Seq(client.realm, "users")
-    client.post[Unit](path, user)
+    Concurrent[R].map(client.post[Headers](path, user))(extractUuidFromResponse)
   }
 
   /** Compound function that creates and then retrieves a new user. */

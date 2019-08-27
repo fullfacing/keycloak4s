@@ -4,13 +4,14 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import cats.implicits._
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.admin.client.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.handles.Logging.logLeft
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
-import com.softwaremill.sttp.{Id, RequestT, SttpBackend, Uri, sttp}
+import com.softwaremill.sttp.{Id, RequestT, SttpBackend, Uri, asString, sttp}
 import org.json4s.jackson.Serialization.read
 
 import scala.collection.immutable.Seq
@@ -41,12 +42,15 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
   private def setResponse[A <: Any : Manifest](request: RequestT[Id, String, Nothing])(implicit tag: TypeTag[A], cId: UUID)
   : F[Either[KeycloakSttpException, RequestT[Id, A, Nothing]]] = {
 
-    val response = request.mapResponse { raw =>
+    val respAs = asString.mapWithMetadata { case (raw, meta) =>
       Logging.requestSuccessful(raw, cId)
-      read[A](if (tag.tpe =:= typeOf[Unit]) "null" else raw)
+
+      if (tag.tpe =:= typeOf[Unit]) read[A]("null")
+      else if (tag.tpe =:= typeOf[Headers]) meta.headers.toMap.asInstanceOf[A]
+      else read[A](raw)
     }
 
-    withAuth(response)
+    withAuth(request.response(respAs))
   }
 
   private def call[B <: Any : Manifest](request: RequestT[Id, String, Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
@@ -92,4 +96,8 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit cl
     val injected  = payload.apply(request)
     call[A](injected, buildRequestInfo(path, "DELETE", injected.body))
   }
+}
+
+object KeycloakClient {
+  type Headers = Map[String, String]
 }

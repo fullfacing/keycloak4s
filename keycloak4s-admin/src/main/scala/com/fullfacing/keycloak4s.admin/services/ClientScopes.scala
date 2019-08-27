@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.{ClientScope, KeycloakError, Mappings, Role}
 
 import scala.collection.immutable.Seq
@@ -11,9 +12,9 @@ import scala.collection.immutable.Seq
 class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Creates a new client scope. Client Scope’s name must be unique. */
-  def create(clientScope: ClientScope.Create): R[Either[KeycloakError, Unit]] = {
+  def create(clientScope: ClientScope.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "client-scopes")
-    client.post[Unit](path, clientScope)
+    Concurrent[R].map(client.post[Headers](path, clientScope))(extractUuidFromResponse)
   }
 
   /** Retrieves client scopes. */

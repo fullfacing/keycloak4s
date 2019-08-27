@@ -18,6 +18,7 @@ object Exceptions {
   val SIG_INVALID           = KeycloakException(401, "Unauthorized", "Bearer and/or ID token signature verification failed.".some)
   val AUTH_MISSING          = KeycloakException(403, "Forbidden", "Authorization details not included in bearer token.".some)
   val UNAUTHORIZED          = KeycloakException(403, "Forbidden", "Authorization denied.".some)
+  val ID_NOT_FOUND          = KeycloakException(404, "Not Found", "Object created but ID could not be retrieved from headers.".some)
 
 
   def RESOURCE_NOT_FOUND(`type`: String)  = KeycloakException(500, "Internal Server Error", Some(s"${`type`} could not be retrieved."))

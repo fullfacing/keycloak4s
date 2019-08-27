@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 
@@ -12,9 +13,9 @@ import scala.collection.immutable.Seq
 class Components[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Creates a component. */
-  def create(component: Component.Create): R[Either[KeycloakError, Unit]] = {
+  def create(component: Component.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "components")
-    client.post[Unit](path, component)
+    Concurrent[R].map(client.post[Headers](path, component))(extractUuidFromResponse)
   }
 
   /** Retrieves a list of components for a Realm. */

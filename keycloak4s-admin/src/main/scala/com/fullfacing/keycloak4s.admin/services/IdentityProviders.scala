@@ -5,6 +5,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 import com.fullfacing.keycloak4s.core.models.enums.ProviderType
 
@@ -20,9 +21,9 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
   }
 
   /** Creates a new identity provider. */
-  def create(identityProvider: IdentityProvider.Create): R[Either[KeycloakError, Unit]] = {
+  def create(identityProvider: IdentityProvider.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "identity-provider", "instances")
-    client.post[Unit](path, identityProvider)
+    Concurrent[R].map(client.post[Headers](path, identityProvider))(extractUuidFromResponse)
   }
 
   /** Retrieves a list of identity providers. */
