@@ -18,11 +18,16 @@ package object services {
   type Path = ImmutableSeq[String]
   implicit def uuidToString: UUID => String = _.toString
 
-  def extractUuidFromResponse(response: Either[KeycloakError, Headers]): Either[KeycloakError, UUID] = response.flatMap { headers =>
+  def extractStringFromResponse(response: Either[KeycloakError, Headers]): Either[KeycloakError, String] = response.flatMap { headers =>
     headers
       .get("Location")
-      .map(location => UUID.fromString(location.split('/').last))
+      .map(location => location.split('/').last)
       .toRight(Exceptions.ID_NOT_FOUND)
+  }
+
+  def extractUuidFromResponse(response: Either[KeycloakError, Headers]): Either[KeycloakError, UUID] = response.flatMap { headers =>
+    extractStringFromResponse(response)
+      .map(UUID.fromString)
   }
 
   /** Creates a sequence of sttp KeyValues representing query parameters. */

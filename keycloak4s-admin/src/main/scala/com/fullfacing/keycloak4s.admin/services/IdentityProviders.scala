@@ -21,9 +21,9 @@ class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R,
   }
 
   /** Creates a new identity provider. */
-  def create(identityProvider: IdentityProvider.Create): R[Either[KeycloakError, UUID]] = {
+  def create(identityProvider: IdentityProvider.Create): R[Either[KeycloakError, String]] = {
     val path: Path = Seq(client.realm, "identity-provider", "instances")
-    Concurrent[R].map(client.post[Headers](path, identityProvider))(extractUuidFromResponse)
+    Concurrent[R].map(client.post[Headers](path, identityProvider))(extractStringFromResponse)
   }
 
   /** Retrieves a list of identity providers. */
