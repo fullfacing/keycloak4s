@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - 2019-08-27
+### Added
+- KeycloakConfig.Auth split into two subtypes, Secret and Password, to additionally support a password grant type.
+### Changed
+- Updated EventTypes to support additions for Keycloak 7.0.0
+- Modified create calls for services to return the created resource's UUID. 
+
 ## [0.20.1]
 ### Changed
 - Changed the functions for evaluating user access to be stack safe.

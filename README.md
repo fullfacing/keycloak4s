@@ -43,12 +43,12 @@ The core module shares common functionality (such as logging and error handling)
 
 It is important to note that the KeycloakConfig model contains the Keycloak server information. This information will be required often. Included in this set of information, is the following:
 * The Keycloak server's URL scheme, host and port.
-* The name, client ID and client secret of the Keycloak realm providing authorization.
 * The name of the Keycloak realm to be targeted.
+* The name, client ID and client secret of the Keycloak realm providing authorization (client-credential grant) *OR* the client ID along with the username and password of the authorized user (password grant).
 
 *Example:*
 ```scala
-val authConfig = KeycloakConfig.Auth(
+val authConfig = KeycloakConfig.Secret(
     realm         = "master",
     clientId      = "admin-cli",
     clientSecret  = "b753f3ba-c4e7-4f3f-ac16-a074d4d89353"
