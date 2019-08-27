@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
@@ -17,9 +18,9 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
     // --- CRUD --- //
     /** Create a client level role for the given client. */
-    def create(clientId: UUID, role: Role.Create): R[Either[KeycloakError, Unit]] = {
+    def create(clientId: UUID, role: Role.Create): R[Either[KeycloakError, String]] = {
       val path: Path = Seq(client.realm, "clients", clientId, "roles")
-      client.post[Unit](path, role.copy(clientRole = true))
+      Concurrent[R].map(client.post[Headers](path, role.copy(clientRole = true)))(extractString)
     }
 
     /** Creates and then fetches a new client level role for the given client. */

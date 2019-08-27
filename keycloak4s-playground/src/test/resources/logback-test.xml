@@ -17,10 +17,10 @@
         </encoder>
     </appender>
 
-    <logger name="keycloak4s.admin" level="error"/>
-    <logger name="keycloak4s.auth"  level="error"/>
+    <logger name="keycloak4s.admin" level="trace"/>
+    <logger name="keycloak4s.auth"  level="trace"/>
 
-    <root level="error">
+    <root level="trace">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="STDERR"/>
     </root>

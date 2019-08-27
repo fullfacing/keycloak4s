@@ -5,6 +5,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 import com.fullfacing.keycloak4s.core.models.enums.{InstallationProvider, InstallationProviders}
@@ -24,9 +25,9 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
 
   /** Creates a new client, client_id must be unique. */
-  def create(nClient: Client.Create): R[Either[KeycloakError, Unit]] = {
+  def create(nClient: Client.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "clients")
-    client.post[Unit](path, nClient)
+    Concurrent[R].map(client.post[Headers](path, nClient))(extractUuid)
   }
 
   /** Retrieves a list of clients. */

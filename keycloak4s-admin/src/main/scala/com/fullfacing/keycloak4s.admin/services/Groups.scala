@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
+import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
@@ -16,9 +17,9 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
   // ------------------------------------------------------------------------------------------------------ //
   
   /** Creates a group. */
-  def create(group: Group.Create): R[Either[KeycloakError, Unit]] = {
+  def create(group: Group.Create): R[Either[KeycloakError, UUID]] = {
     val path: Path = Seq(client.realm, "groups")
-    client.post[Unit](path, group)
+    Concurrent[R].map(client.post[Headers](path, group))(extractUuid)
   }
 
   /** Creates a sub group within a group. */
