@@ -89,7 +89,7 @@ val json4sVersion         = "3.6.5"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.0.0-RC2"
 val nimbusVersion         = "7.8"
-val scalaTestVersion      = "3.0.5"
+val scalaTestVersion      = "3.0.8"
 val sttpAkkaMonixVersion  = "1.0.1"
 val sttpVersion           = "1.5.19"
 
