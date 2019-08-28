@@ -198,11 +198,9 @@ lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth-core"))
 // ------------------------------------------------------- //
 // Project and configuration for keycloak4s-auth-akka-http //
 // ------------------------------------------------------- //
-lazy val akkaHttpDependencies: Seq[ModuleID] = akkaHttp ++ nimbus
-
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= akkaHttpDependencies)
+  .settings(libraryDependencies ++= akkaHttp)
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
   .dependsOn(`keycloak4s-auth-core`)
 

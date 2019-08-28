@@ -1,6 +1,7 @@
 package com.fullfacing.transport
 
-import com.fullfacing.keycloak4s.auth.akka.http.authorization.{PathAuthorization, PolicyBuilders}
+import com.fullfacing.keycloak4s.auth.core.PolicyBuilders
+import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 
 object Config {
 

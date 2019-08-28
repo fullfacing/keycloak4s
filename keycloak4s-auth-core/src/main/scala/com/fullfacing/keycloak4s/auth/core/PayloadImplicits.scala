@@ -1,5 +1,6 @@
 package com.fullfacing.keycloak4s.auth.core
 
+import com.fullfacing.keycloak4s.auth.core.models.AuthRoles
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.nimbusds.jose.Payload
 import org.json4s.Formats

@@ -6,8 +6,9 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.fullfacing.keycloak4s.auth.akka.http.authorization.{PathAuthorization, PolicyBuilders}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.Directives._
+import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirective._
+import com.fullfacing.keycloak4s.auth.core.PolicyBuilders
+import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.nimbusds.jwt.SignedJWT
 import org.json4s.jackson.Serialization._
