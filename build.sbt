@@ -187,9 +187,9 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .dependsOn(`keycloak4s-admin`)
 
 // ------------------------------------------------------- //
-// Project and configuration for keycloak4s-auth-akka-http //
+// Project and configuration for keycloak4s-auth-core //
 // ------------------------------------------------------- //
-lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth-core"))
+lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth/core"))
   .settings(global: _*)
   .settings(libraryDependencies ++= nimbus)
   .settings(name := "keycloak4s-auth-core", publishArtifact := true)
