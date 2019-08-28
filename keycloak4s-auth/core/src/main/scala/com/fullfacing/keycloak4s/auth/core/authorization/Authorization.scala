@@ -9,7 +9,7 @@ trait Authorization extends PolicyEnforcement {
   val service: String
 
   /**
-   *
+   * Abstract function to handle authorization of a request.
    *
    * @param requestPath The path of the HTTP request.
    * @param method      The HTTP method of the request.
