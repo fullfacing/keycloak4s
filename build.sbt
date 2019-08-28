@@ -80,18 +80,18 @@ val scalacOpts = Seq(
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.1.8"
+val akkaHttpVersion       = "10.1.9"
 val akkaStreamsVersion    = "2.5.23"
 val catsCoreVersion       = "1.6.0"
 val catsEffectVersion     = "1.3.0"
-val enumeratumVersion     = "1.5.14"
+val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.5"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.0.0-RC2"
-val nimbusVersion         = "7.2.1"
-val scalaTestVersion      = "3.0.8"
+val nimbusVersion         = "7.8"
+val scalaTestVersion      = "3.0.5"
 val sttpAkkaMonixVersion  = "1.0.1"
-val sttpVersion           = "1.5.17"
+val sttpVersion           = "1.5.19"
 
 // -------------------------------------- //
 //          Library Dependencies          //
