@@ -50,7 +50,7 @@ final case class PathAuthorization(service: String,
       if (matched.nonEmpty) findMatchingPaths(t, matched, d + 1, wildcard) else wildcard
   }
 
-  def extractPath(path: String): List[String] =
+  private def extractPath(path: String): List[String] =
     path.split("/").toList.collect {
       case s if validUuid.unapplySeq(s).nonEmpty => "{id}"
       case s if s.nonEmpty                       => s
