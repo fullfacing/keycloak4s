@@ -4,11 +4,11 @@ import java.util.UUID
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirectives
+import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirective._
 import com.fullfacing.transport.Config._
 import com.fullfacing.transport.Implicits._
 
-object ClientsApi extends SecurityDirectives {
+object ClientsApi {
 
   val api: Route =
     contextFromPostman { correlationId =>

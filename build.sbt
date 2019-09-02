@@ -187,15 +187,22 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .dependsOn(`keycloak4s-admin`)
 
 // ------------------------------------------------------- //
+// Project and configuration for keycloak4s-auth-core //
+// ------------------------------------------------------- //
+lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth/core"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= nimbus)
+  .settings(name := "keycloak4s-auth-core", publishArtifact := true)
+  .dependsOn(`keycloak4s-core`)
+
+// ------------------------------------------------------- //
 // Project and configuration for keycloak4s-auth-akka-http //
 // ------------------------------------------------------- //
-lazy val akkaHttpDependencies: Seq[ModuleID] = akkaHttp ++ nimbus
-
 lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= akkaHttpDependencies)
+  .settings(libraryDependencies ++= akkaHttp)
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
-  .dependsOn(`keycloak4s-core`)
+  .dependsOn(`keycloak4s-auth-core`)
 
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
@@ -221,6 +228,7 @@ lazy val root = (project in file("."))
     `keycloak4s-core`,
     `keycloak4s-admin`,
     `keycloak4s-monix`,
+    `keycloak4s-auth-core`,
     `keycloak4s-akka-http`,
     `keycloak4s-playground`
   )

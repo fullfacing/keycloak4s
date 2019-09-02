@@ -1,18 +1,17 @@
-package com.fullfacing.keycloak4s.auth.akka.http.authorization
+package com.fullfacing.keycloak4s.auth.core.authorization
 
-import cats.implicits._
 import java.util.UUID
 
-import akka.http.scaladsl.model.HttpMethod
-import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.auth.akka.http.Logging
-import com.fullfacing.keycloak4s.auth.akka.http.models.common.{AuthSegment, MethodRoles}
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule, RequiredRoles}
+import cats.implicits._
+import com.fullfacing.keycloak4s.auth.core.Logging
+import com.fullfacing.keycloak4s.auth.core.models.common.{AuthSegment, MethodRoles}
+import com.fullfacing.keycloak4s.auth.core.models.path._
 import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
-
+import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization._
 import scala.annotation.tailrec
+import scala.util.matching.Regex
 
 /**
  * Security configuration for a top level authorization directive.
@@ -23,7 +22,7 @@ import scala.annotation.tailrec
  */
 final case class PathAuthorization(service: String,
                                    enforcementMode: PolicyEnforcementMode,
-                                   paths: List[PathRule]) extends Authorization {
+                                   paths: List[PathRule]) extends Authorization[AuthRequest] {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -51,26 +50,27 @@ final case class PathAuthorization(service: String,
       if (matched.nonEmpty) findMatchingPaths(t, matched, d + 1, wildcard) else wildcard
   }
 
+  private def extractPath(path: String): List[String] =
+    path.split("/").toList.collect {
+      case s if validUuid.unapplySeq(s).nonEmpty => "{id}"
+      case s if s.nonEmpty                       => s
+    }
 
   /**
    * Compares the request path to the server's security policy to determine which permissions are required
    * by the user and accepts or denies the request accordingly.
-   *
-   * @param path      The path of the HTTP request.
-   * @param method    The HTTP method of the request.
-   * @param userRoles The permissions of the user.
    */
-  def authorizeRequest(path: Path, method: HttpMethod, userRoles: List[String])(implicit cId: UUID): Boolean = {
-    val matchedPaths = findMatchingPaths(extractSegmentsFromPath(path), paths)
+  override def authorizeRequest(request: AuthRequest)(implicit cId: UUID): Boolean = {
+    val matchedPaths = findMatchingPaths(extractPath(request.path), paths)
 
     lazy val methodAllowed = matchedPaths.exists { p =>
 
       lazy val hasWildCardRole = p.methodRoles
         .find(_.method == Methods.All)
-        .exists(_.evaluateUserAccess(userRoles = userRoles))
+        .exists(_.evaluateUserAccess(userRoles = request.userRoles))
 
-      val hasMethodRole = p.methodRoles.find(_.method.value == method.value)
-        .exists(_.evaluateUserAccess(userRoles = userRoles))
+      val hasMethodRole = p.methodRoles.find(_.method.value == request.method)
+        .exists(_.evaluateUserAccess(userRoles = request.userRoles))
 
       hasMethodRole || hasWildCardRole
     }
@@ -80,7 +80,7 @@ final case class PathAuthorization(service: String,
       case _   => methodAllowed
     }
 
-    if (!result) Logging.authorizationPathDenied(cId, method, path)
+    if (!result) Logging.authorizationPathDenied(cId, request.method, request.path)
     result
   }
 }
@@ -88,10 +88,21 @@ final case class PathAuthorization(service: String,
 
 object PathAuthorization {
 
+  private val validUuid: Regex = """[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}""".r
+
   final case class Create(service: String,
                           enforcementMode: PolicyEnforcementMode,
                           paths: List[PathRule.Create],
                           segments: List[AuthSegment])
+
+  /**
+   * @param path        The path of the HTTP request.
+   * @param method      The HTTP method of the request.
+   * @param userRoles   The permissions of the user.
+   */
+  final case class AuthRequest(path: String,
+                               method: String,
+                               userRoles: List[String])
 
   /**
    * Apply that converts certain simplifications in the json config object into the required case class

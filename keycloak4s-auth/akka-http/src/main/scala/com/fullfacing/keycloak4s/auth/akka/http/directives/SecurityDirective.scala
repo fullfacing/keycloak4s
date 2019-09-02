@@ -2,9 +2,9 @@ package com.fullfacing.keycloak4s.auth.akka.http.directives
 
 import akka.http.scaladsl.server.Directive1
 import com.fullfacing.keycloak4s.auth.akka.http.directives.magnets.SecurityMagnet
-import com.fullfacing.keycloak4s.auth.akka.http.models.AuthPayload
+import com.fullfacing.keycloak4s.auth.core.models.AuthPayload
 
-trait SecurityDirectives extends ValidationDirective {
+object SecurityDirective {
 
   /**
    * Authorization directive that secures all inner routes.

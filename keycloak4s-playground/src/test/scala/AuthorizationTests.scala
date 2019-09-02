@@ -3,7 +3,9 @@ import java.util.concurrent.atomic.AtomicReference
 
 import akka.http.scaladsl.model.HttpMethods
 import akka.http.scaladsl.model.Uri.Path
-import com.fullfacing.keycloak4s.auth.akka.http.authorization.{PathAuthorization, PolicyBuilders}
+import com.fullfacing.keycloak4s.auth.core.PolicyBuilders
+import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
+import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization.AuthRequest
 import com.fullfacing.keycloak4s.core.models.enums.PolicyEnforcementModes
 import org.scalatest.{FlatSpec, Matchers}
 import utils.AuthTestData
@@ -42,7 +44,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.GET
     val userRoles = List("read")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe true
   }
@@ -52,7 +54,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.HEAD
     val userRoles = List("wildcard-role")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe true
   }
@@ -62,7 +64,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.HEAD
     val userRoles = List("delete")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe false
   }
@@ -72,7 +74,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.HEAD
     val userRoles = List("wildcard-role")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe false
   }
@@ -82,7 +84,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.PATCH
     val userRoles = List("read")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe false
   }
@@ -92,7 +94,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.GET
     val userRoles = List("read")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe false
   }
@@ -102,7 +104,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.DELETE
     val userRoles = List("read", "write")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe false
   }
@@ -112,7 +114,7 @@ class AuthorizationTests extends FlatSpec with Matchers {
     val method    = HttpMethods.GET
     val userRoles = List("no")
 
-    val result = config.get().authorizeRequest(path, method, userRoles)
+    val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe false
   }

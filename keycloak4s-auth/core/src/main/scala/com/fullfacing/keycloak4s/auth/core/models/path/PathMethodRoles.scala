@@ -1,8 +1,10 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models.path
+package com.fullfacing.keycloak4s.auth.core.models.path
 
-import com.fullfacing.keycloak4s.auth.akka.http.Logging
+import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.core.models.enums.Method
 import org.json4s.JsonAST.{JArray, JObject, JString, JValue}
+
+import scala.annotation.tailrec
 
 /**
  * Object containing roles required for access to be granted to the request path using the specified HTTP method.
@@ -21,6 +23,7 @@ final case class PathMethodRoles(method: Method,
 
   case class Done[A](result: A) extends Check[A]
 
+  @tailrec
   def execute[A](evalProcess: Check[A]): A = evalProcess match {
     case Done(a) => a
     case c: Continue[A] => execute(c.next)

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.auth.akka.http.models
+package com.fullfacing.keycloak4s.auth.core.models
 
 import com.nimbusds.jose.Payload
 

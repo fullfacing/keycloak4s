@@ -1,7 +1,7 @@
 package utils
 
-import com.fullfacing.keycloak4s.auth.akka.http.models.path.{And, Or, PathMethodRoles, PathRule}
-import com.fullfacing.keycloak4s.auth.akka.http.validation.TokenValidator
+import com.fullfacing.keycloak4s.auth.core.models.path.{And, Or, PathMethodRoles, PathRule}
+import com.fullfacing.keycloak4s.auth.core.validation.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakConfig
 import com.fullfacing.keycloak4s.core.models.enums.Methods
 
