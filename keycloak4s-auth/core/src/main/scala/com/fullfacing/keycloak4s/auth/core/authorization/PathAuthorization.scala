@@ -22,7 +22,7 @@ import scala.util.matching.Regex
  */
 final case class PathAuthorization(service: String,
                                    enforcementMode: PolicyEnforcementMode,
-                                   paths: List[PathRule]) extends Authorization {
+                                   paths: List[PathRule]) extends Authorization[AuthRequest] {
 
   /**
    * Runs through the relevant segments of the request path and collects all rules that apply to the request.
@@ -59,22 +59,18 @@ final case class PathAuthorization(service: String,
   /**
    * Compares the request path to the server's security policy to determine which permissions are required
    * by the user and accepts or denies the request accordingly.
-   *
-   * @param requestPath The path of the HTTP request.
-   * @param method      The HTTP method of the request.
-   * @param userRoles   The permissions of the user.
    */
-  override def authorizeRequest(requestPath: String, method: String, userRoles: List[String])(implicit cId: UUID): Boolean = {
-    val matchedPaths = findMatchingPaths(extractPath(requestPath), paths)
+  override def authorizeRequest(request: AuthRequest)(implicit cId: UUID): Boolean = {
+    val matchedPaths = findMatchingPaths(extractPath(request.path), paths)
 
     lazy val methodAllowed = matchedPaths.exists { p =>
 
       lazy val hasWildCardRole = p.methodRoles
         .find(_.method == Methods.All)
-        .exists(_.evaluateUserAccess(userRoles = userRoles))
+        .exists(_.evaluateUserAccess(userRoles = request.userRoles))
 
-      val hasMethodRole = p.methodRoles.find(_.method.value == method)
-        .exists(_.evaluateUserAccess(userRoles = userRoles))
+      val hasMethodRole = p.methodRoles.find(_.method.value == request.method)
+        .exists(_.evaluateUserAccess(userRoles = request.userRoles))
 
       hasMethodRole || hasWildCardRole
     }
@@ -84,7 +80,7 @@ final case class PathAuthorization(service: String,
       case _   => methodAllowed
     }
 
-    if (!result) Logging.authorizationPathDenied(cId, method, requestPath)
+    if (!result) Logging.authorizationPathDenied(cId, request.method, request.path)
     result
   }
 }
@@ -98,6 +94,15 @@ object PathAuthorization {
                           enforcementMode: PolicyEnforcementMode,
                           paths: List[PathRule.Create],
                           segments: List[AuthSegment])
+
+  /**
+   * @param path        The path of the HTTP request.
+   * @param method      The HTTP method of the request.
+   * @param userRoles   The permissions of the user.
+   */
+  final case class AuthRequest(path: String,
+                               method: String,
+                               userRoles: List[String])
 
   /**
    * Apply that converts certain simplifications in the json config object into the required case class

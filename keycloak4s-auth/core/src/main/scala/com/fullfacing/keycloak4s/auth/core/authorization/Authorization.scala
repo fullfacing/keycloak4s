@@ -4,16 +4,13 @@ import java.util.UUID
 
 import com.fullfacing.keycloak4s.auth.core.models.common.PolicyEnforcement
 
-trait Authorization extends PolicyEnforcement {
+/**
+ * @tparam A Type containing params used in implementation of the auth function.
+ */
+trait Authorization[A] extends PolicyEnforcement {
 
   val service: String
 
-  /**
-   * Abstract function to handle authorization of a request.
-   *
-   * @param requestPath The path of the HTTP request.
-   * @param method      The HTTP method of the request.
-   * @param userRoles   The permissions of the user.
-   */
-  def authorizeRequest(requestPath: String, method: String, userRoles: List[String])(implicit cId: UUID): Boolean
+  /** Abstract function to handle authorization of a request. */
+  def authorizeRequest(request: A)(implicit cId: UUID): Boolean
 }
