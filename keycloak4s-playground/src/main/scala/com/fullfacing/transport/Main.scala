@@ -6,7 +6,7 @@ import cats.effect.ExitCode
 import com.fullfacing.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak => KeycloakM, KeycloakClient => KeycloakClientM}
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.transport.backends.AkkaHttpBackendL
 import com.fullfacing.transport.handles.Akka
@@ -31,7 +31,7 @@ object Main extends TaskApp {
   val adminSecret: String = "???" //Secret of adminClient.
 
   val authConfig  = KeycloakConfig.Secret(adminRealm, adminClient, adminSecret)
-  val config      = KeycloakConfig("http", host, port, targetRealm, authConfig)
+  val config      = ConfigWithAuth("http", host, port, targetRealm, authConfig)
 
   def run(args: List[String]): Task[ExitCode] = Akka.connect().flatMap { _ =>
 

@@ -16,7 +16,7 @@ import utils.{Errors, IntegrationSpec}
 @DoNotDiscover
 class AttackDetectionTests extends IntegrationSpec {
 
-  private val adKeycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "AttackRealm", authConfig)
+  private val adKeycloakConfig  = ConfigWithAuth("http", "127.0.0.1", 8080, "AttackRealm", authConfig)
   private val adClient: KeycloakClient[T] = new KeycloakClient(adKeycloakConfig)
 
   override val clientService: Clients[T] = Keycloak.Clients[ByteString](adClient)

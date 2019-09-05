@@ -12,7 +12,7 @@ import monix.reactive.Observable
 import scala.collection.immutable.Seq
 import scala.reflect._
 
-class KeycloakClient[T](config: KeycloakConfig)(implicit client: SttpBackend[Task, Observable[T]]) extends KeycloakClientA[Task, Observable[T]](config) {
+class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Task, Observable[T]]) extends KeycloakClientA[Task, Observable[T]](config) {
 
   /**
    * Used for calls that return a sequence of items, this sequentially makes calls to retrieve and process
