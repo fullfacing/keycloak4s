@@ -1,6 +1,6 @@
 package com.fullfacing.keycloak4s.core.models
 
-trait KeycloakConfig {
+sealed trait KeycloakConfig {
   val scheme: String
   val host: String
   val port: Int
