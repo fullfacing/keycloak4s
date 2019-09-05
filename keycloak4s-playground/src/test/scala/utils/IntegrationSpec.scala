@@ -4,7 +4,7 @@ import akka.util.ByteString
 import com.fullfacing.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
 import com.softwaremill.sttp.SttpBackend
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -19,7 +19,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
 
   /* Keycloak Server Configuration **/
   val authConfig      = KeycloakConfig.Secret("master", "admin-cli", ServerInitializer.clientSecret)
-  val keycloakConfig  = KeycloakConfig("http", "127.0.0.1", 8080, "master", authConfig)
+  val keycloakConfig  = ConfigWithAuth("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
   implicit val context: Scheduler = monix.execution.Scheduler.global

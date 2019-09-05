@@ -19,7 +19,7 @@ import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.util.control.NonFatal
 
-class KeycloakClient[F[+_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S]) extends TokenManager[F, S](config) {
+class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S]) extends TokenManager[F, S](config) {
 
   val realm: String = config.realm
 

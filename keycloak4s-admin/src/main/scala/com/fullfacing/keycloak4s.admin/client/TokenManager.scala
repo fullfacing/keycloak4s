@@ -11,12 +11,12 @@ import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse
 import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, KeycloakSttpException, RequestInfo}
+import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, ConfigWithAuth, KeycloakSttpException, RequestInfo}
 import com.softwaremill.sttp.json4s.asJson
 import com.softwaremill.sttp.{SttpBackend, _}
 import org.json4s.jackson.Serialization
 
-abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(implicit client: SttpBackend[F, S]) {
+abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S]) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
@@ -52,12 +52,12 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: KeycloakConfig)(impli
     uri"${config.scheme}://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/token"
 
   private val password = config.authn match {
-    case KeycloakConfig.Password(_, clientId, username, password) =>
+    case KeycloakConfig.Password(_, clientId, username, pass) =>
       Map(
         "grant_type"    -> "password",
         "client_id"     -> clientId,
         "username"      -> username,
-        "password"      -> password
+        "password"      -> pass
       )
     case KeycloakConfig.Secret(_, clientId, clientSecret) =>
       Map(

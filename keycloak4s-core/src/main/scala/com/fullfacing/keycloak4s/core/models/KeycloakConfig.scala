@@ -1,11 +1,22 @@
 package com.fullfacing.keycloak4s.core.models
 
-final case class KeycloakConfig(scheme: String,
+sealed trait KeycloakConfig {
+  val scheme: String
+  val host: String
+  val port: Int
+  val realm: String
+}
+
+final case class ConfigWithAuth(scheme: String,
                                 host: String,
                                 port: Int,
                                 realm: String,
-                                authn: KeycloakConfig.Auth)
+                                authn: KeycloakConfig.Auth) extends KeycloakConfig
 
+final case class ConfigWithoutAuth(scheme: String,
+                                   host: String,
+                                   port: Int,
+                                   realm: String) extends KeycloakConfig
 
 object KeycloakConfig {
 

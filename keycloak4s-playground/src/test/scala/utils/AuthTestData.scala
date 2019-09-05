@@ -2,7 +2,7 @@ package utils
 
 import com.fullfacing.keycloak4s.auth.core.models.path.{And, Or, PathMethodRoles, PathRule}
 import com.fullfacing.keycloak4s.auth.core.validation.TokenValidator
-import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+import com.fullfacing.keycloak4s.core.models.ConfigWithoutAuth
 import com.fullfacing.keycloak4s.core.models.enums.Methods
 
 object AuthTestData {
@@ -12,8 +12,7 @@ object AuthTestData {
   val port    = 8080
   val realm   = "test"
 
-  val authConfig     = KeycloakConfig.Secret("", "", "")
-  val keycloakConfig = KeycloakConfig(scheme, host, port, realm, authConfig)
+  val keycloakConfig = ConfigWithoutAuth(scheme, host, port, realm)
 
   implicit val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, keycloakConfig)
   val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"
