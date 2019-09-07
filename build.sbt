@@ -91,7 +91,7 @@ val monixVersion          = "3.0.0-RC2"
 val nimbusVersion         = "7.8"
 val scalaTestVersion      = "3.0.8"
 val sttpAkkaMonixVersion  = "1.0.1"
-val sttpVersion           = "1.6.5"
+val sttpVersion           = "1.6.6"
 
 // -------------------------------------- //
 //          Library Dependencies          //
