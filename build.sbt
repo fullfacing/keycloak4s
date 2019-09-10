@@ -82,7 +82,7 @@ val scalacOpts = Seq(
 // ---------------------------------- //
 val akkaHttpVersion       = "10.1.9"
 val akkaStreamsVersion    = "2.5.25"
-val catsCoreVersion       = "1.6.1"
+val catsCoreVersion       = "2.0.0"
 val catsEffectVersion     = "1.4.0"
 val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
