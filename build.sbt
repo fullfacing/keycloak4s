@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "1.2.0",
+    version       := "1.2.1",
     scalaVersion  := "2.12.8",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts,
@@ -82,12 +82,12 @@ val scalacOpts = Seq(
 // ---------------------------------- //
 val akkaHttpVersion       = "10.1.9"
 val akkaStreamsVersion    = "2.5.25"
-val catsCoreVersion       = "1.6.1"
 val catsEffectVersion     = "2.0.0"
+val catsCoreVersion       = "2.0.0"
 val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
-val monixVersion          = "3.0.0-RC2"
+val monixVersion          = "3.0.0"
 val nimbusVersion         = "7.8"
 val scalaTestVersion      = "3.0.8"
 val sttpAkkaMonixVersion  = "1.0.1"
