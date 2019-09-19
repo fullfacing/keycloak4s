@@ -4,8 +4,8 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "1.2.1",
-    scalaVersion  := "2.12.8",
+    version       := "1.2.2",
+    scalaVersion  := "2.13.0",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts,
 
@@ -61,7 +61,6 @@ val scalacOpts = Seq(
   "-Ywarn-unused:params",
   "-Ywarn-unused:patvars",
   "-Ywarn-unused:privates",
-  "-Ypartial-unification",
   "-deprecation",
   "-encoding", "UTF-8",
   "-feature",
@@ -70,11 +69,9 @@ val scalacOpts = Seq(
   "-language:implicitConversions",
   "-unchecked",
   "-Xlint",
-  "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Xfuture"
+  "-Ywarn-value-discard"
 )
 
 // ---------------------------------- //
@@ -90,7 +87,7 @@ val logbackVersion        = "1.2.3"
 val monixVersion          = "3.0.0"
 val nimbusVersion         = "7.8"
 val scalaTestVersion      = "3.0.8"
-val sttpAkkaMonixVersion  = "1.0.1"
+val sttpAkkaMonixVersion  = "1.0.2"
 val sttpVersion           = "1.6.7"
 
 // -------------------------------------- //
@@ -137,11 +134,10 @@ val scalaTest: Seq[ModuleID] = Seq(
 )
 
 val sttpAkka: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "akka-http-backend"              % sttpVersion,
-  "com.softwaremill.sttp" %% "async-http-client-backend-cats" % sttpVersion,
-  "com.softwaremill.sttp" %% "core"                           % sttpVersion,
-  "com.softwaremill.sttp" %% "json4s"                         % sttpVersion,
-  "com.typesafe.akka"     %% "akka-stream"                    % akkaStreamsVersion
+  "com.softwaremill.sttp" %% "akka-http-backend" % sttpVersion,
+  "com.softwaremill.sttp" %% "core"              % sttpVersion,
+  "com.softwaremill.sttp" %% "json4s"            % sttpVersion,
+  "com.typesafe.akka"     %% "akka-stream"       % akkaStreamsVersion
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
@@ -149,9 +145,8 @@ val sttpAkkaMonix: Seq[ModuleID] = Seq(
 )
 
 val sttpMonix: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "async-http-client-backend-monix" % sttpVersion,
-  "com.softwaremill.sttp" %% "core"                            % sttpVersion,
-  "com.softwaremill.sttp" %% "json4s"                          % sttpVersion
+  "com.softwaremill.sttp" %% "core"   % sttpVersion,
+  "com.softwaremill.sttp" %% "json4s" % sttpVersion
 )
 
 // --------------------------------------------- //
@@ -210,7 +205,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 lazy val playgroundDependencies: Seq[ModuleID] = scalaTest ++ sttpAkkaMonix ++ akkaTestKit
 
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-  .settings(scalaVersion  := "2.12.8")
+  .settings(scalaVersion  := "2.13.0")
   .settings(libraryDependencies ++= playgroundDependencies)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)

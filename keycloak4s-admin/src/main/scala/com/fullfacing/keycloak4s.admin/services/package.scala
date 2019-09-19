@@ -33,10 +33,10 @@ package object services {
   }
 
   /** Creates a sequence of sttp KeyValues representing query parameters. */
-  def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = {
+  def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = ImmutableSeq.from {
     queries.flatMap { case (key, value) =>
       value.map(v => KeyValue(key, v.toString))
-    }.to[ImmutableSeq]
+    }
   }
 
   /** Creates a Multipart from a file. */
