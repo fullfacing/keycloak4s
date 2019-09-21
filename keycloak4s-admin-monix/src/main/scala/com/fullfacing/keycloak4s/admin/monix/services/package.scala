@@ -7,10 +7,11 @@ import scala.collection.immutable.Seq
 
 package object services {
 
-  def createQuery(queries: (String, Option[Any])*): Seq[KeyValue] =
+  def createQuery(queries: (String, Option[Any])*): Seq[KeyValue] = Seq.from {
     queries.flatMap { case (key, value) =>
       value.map(v => KeyValue(key, v.toString))
-    }.to[Seq]
+    }
+  }
 
   def toCsvList(list: Option[List[String]]): Option[String] = list.map(_.mkString(","))
 

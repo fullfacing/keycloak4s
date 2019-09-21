@@ -1,7 +1,6 @@
 package com.fullfacing.keycloak4s.auth.core
 
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
-import com.fullfacing.keycloak4s.core.Exceptions
 
 import scala.io.{BufferedSource, Source}
 
