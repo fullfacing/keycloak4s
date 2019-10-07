@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "1.2.2",
+    version       := "1.2.3",
     scalaVersion  := "2.13.0",
     organization  := "com.fullfacing",
     scalacOptions ++= scalacOpts,
