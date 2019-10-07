@@ -69,11 +69,21 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
 
   val ref: AtomicReference[Token] = new AtomicReference()
 
-  private def refresh(token: Token): Map[String, String] = Map(
-    "client_id"     -> config.authn.clientId,
-    "refresh_token" -> token.refresh,
-    "grant_type"    -> "refresh_token"
-  )
+  private def refresh(token: Token): Map[String, String] = config.authn match {
+    case KeycloakConfig.Secret(_, _, clientSecret) =>
+      Map(
+        "client_id"     -> config.authn.clientId,
+        "refresh_token" -> token.refresh,
+        "client_secret" -> clientSecret,
+        "grant_type"    -> "refresh_token"
+      )
+    case _: KeycloakConfig.Password =>
+      Map(
+        "client_id"     -> config.authn.clientId,
+        "refresh_token" -> token.refresh,
+        "grant_type"    -> "refresh_token"
+      )
+  }
 
   /**
     * Authenticate the application with Keycloak, returning an access and refresh token.
@@ -102,13 +112,14 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
   }
 
   private def refreshAccessToken(t: Token)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
-    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+    val body = refresh(t)
+    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
 
     val sendF = Concurrent[F].unit.flatMap { _ =>
       Logging.tokenRefresh(config.realm, cId)
 
       sttp.post(tokenEndpoint)
-        .body(refresh(t))
+        .body(body)
         .response(asJson[TokenResponse])
         .mapResponse(mapToToken)
         .send()
