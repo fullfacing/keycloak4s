@@ -60,6 +60,13 @@ class GroupsTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
+  it should "correctly handle error when attempting to create a duplicate Group" in {
+    groupService.createAndRetrieve(Group.Create("Group 4")).map(_.map { group =>
+      group4.set(group.id)
+    })
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+
+
   "fetchGroups" should "successfully retrieve all groups" in {
     groupService.fetch().map(_.map { response =>
       storedGroups.set(response)

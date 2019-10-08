@@ -3,9 +3,9 @@ package com.fullfacing.keycloak4s.admin.services
 import java.util.UUID
 
 import cats.effect.Concurrent
+import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
-import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
@@ -23,10 +23,9 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Compound function that creates and then retrieves a new user. */
   def createAndRetrieve(user: User.Create): R[Either[KeycloakError, User]] =
-    Concurrent[R].flatMap(create(user)) { _ =>
-      Concurrent[R].map(fetch(username = Some(user.username))) { response =>
-        response.flatMap(_.headOption.toRight(Exceptions.RESOURCE_NOT_FOUND("User")))
-      }
+    Concurrent[R].flatMap(create(user)) {
+      case Right(id) => fetchById(id)
+      case Left(err) => Concurrent[R].pure(err.asLeft)
     }
 
   /** Fetches all users in the realm filtered according to the given parameters. */

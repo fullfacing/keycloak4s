@@ -72,6 +72,13 @@ class ClientsTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
+  it should "fail correctly when creating a duplicate client" in {
+    clientService.createAndRetrieve(Client.Create("Client 5")).map(_.map { client =>
+      client5.set(client.id)
+    })
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+
+
   "fetchClients" should "successfully retrieve all clients" in {
     clientService.fetch().map { response =>
       response.map(clients => storedClients.set(clients))
