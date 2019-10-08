@@ -141,11 +141,23 @@ class RolesTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
+  it should "correctly handle error when attempting to create a duplicate Realm Role" in {
+    realmRoleService.createAndRetrieve(rRole3Create).map(_.map { role =>
+      rRole3.set(role.id)
+    })
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+
   it should "create a client level role and subsequently return it" in {
     clientRoleService.createAndRetrieve(clientUuid.get(), cRole3Create).map(_.map { role =>
       cRole3.set(role.id)
     })
   }.shouldReturnSuccess
+
+  it should "correctly handle error when attempting to create a duplicate Client Role" in {
+    clientRoleService.createAndRetrieve(clientUuid.get(), cRole3Create).map(_.map { role =>
+      cRole3.set(role.id)
+    })
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
 
   "Fetch" should "successfully fetch the previously created realm roles" in {
     val task =

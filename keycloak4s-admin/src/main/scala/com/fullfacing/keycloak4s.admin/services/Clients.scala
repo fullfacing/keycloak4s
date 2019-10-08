@@ -4,11 +4,11 @@ import java.io.File
 import java.util.UUID
 
 import cats.effect.Concurrent
+import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
-import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 import com.fullfacing.keycloak4s.core.models.enums.{InstallationProvider, InstallationProviders}
+import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
@@ -39,10 +39,9 @@ class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Composite of create and fetch. */
   def createAndRetrieve(nClient: Client.Create): R[Either[KeycloakError, Client]] =
-    Concurrent[R].flatMap(create(nClient)) { _ =>
-      Concurrent[R].map(fetch(clientId = Some(nClient.clientId))) { response =>
-        response.flatMap(_.headOption.toRight(Exceptions.RESOURCE_NOT_FOUND("Client")))
-      }
+    Concurrent[R].flatMap(create(nClient)) {
+      case Right(id) => fetchById(id)
+      case Left(err) => Concurrent[R].pure(err.asLeft)
     }
 
   /** Retrieves a client by id. */

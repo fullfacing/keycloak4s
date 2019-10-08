@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.admin.services
 import java.util.UUID
 
 import cats.effect.Concurrent
+import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
@@ -30,8 +31,9 @@ class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Composite of create and fetch. */
   def createAndRetrieve(realm: Realm.Create): R[Either[KeycloakError, Realm]] =
-    Concurrent[R].flatMap(create(realm)) { _ =>
-      fetch(realm.realm)
+    Concurrent[R].flatMap(create(realm)) {
+      case Right(_)  => fetch(realm.realm)
+      case Left(err) => Concurrent[R].pure(err.asLeft)
     }
 
   /** Updates a realm. Ignores User, role or client information. */

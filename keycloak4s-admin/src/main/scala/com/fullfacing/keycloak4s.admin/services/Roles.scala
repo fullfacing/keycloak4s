@@ -3,6 +3,7 @@ package com.fullfacing.keycloak4s.admin.services
 import java.util.UUID
 
 import cats.effect.Concurrent
+import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
@@ -25,8 +26,9 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
     /** Creates and then fetches a new client level role for the given client. */
     def createAndRetrieve(clientId: UUID, role: Role.Create): R[Either[KeycloakError, Role]] =
-      Concurrent[R].flatMap(create(clientId, role)) { _ =>
-        fetchByName(clientId, role.name)
+      Concurrent[R].flatMap(create(clientId, role)) {
+        case Right(_)  => fetchByName(clientId, role.name)
+        case Left(err) => Concurrent[R].pure(err.asLeft)
       }
 
     /** Retrieve all roles from the given client. */
@@ -134,8 +136,9 @@ class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
     /** Create and fetch a new realm level role. */
     def createAndRetrieve(role: Role.Create): R[Either[KeycloakError, Role]] =
-      Concurrent[R].flatMap(create(role)) { _ =>
-        fetchByName(role.name)
+      Concurrent[R].flatMap(create(role)) {
+        case Right(_)  => fetchByName(role.name)
+        case Left(err) => Concurrent[R].pure(err.asLeft)
       }
 
     /** Retrieve all realm level roles in the realm */
