@@ -3,9 +3,9 @@ package com.fullfacing.keycloak4s.admin.services
 import java.util.UUID
 
 import cats.effect.Concurrent
+import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
-import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
@@ -43,10 +43,9 @@ class Groups[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
 
   /** Composite of create and fetch. */
   def createAndRetrieve(group: Group.Create): R[Either[KeycloakError, Group]] =
-    Concurrent[R].flatMap(create(group)) { _ =>
-      Concurrent[R].map(fetch(search = Some(group.name))) { response =>
-        response.flatMap(_.find(_.name == group.name).toRight(Exceptions.RESOURCE_NOT_FOUND("Group")))
-      }
+    Concurrent[R].flatMap(create(group)) {
+      case Right(id) => fetchById(id)
+      case Left(err) => Concurrent[R].pure(err.asLeft)
     }
 
   /** Updates a group. */

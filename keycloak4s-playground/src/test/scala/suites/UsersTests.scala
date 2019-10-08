@@ -60,6 +60,10 @@ class UsersTests extends IntegrationSpec {
     userService.create(User.Create(username = "test_user1", enabled = true))
   }.shouldReturnSuccess
 
+  it should "correctly handle error when attempting to create a duplicate User" in {
+    userService.create(User.Create(username = "test_user1", enabled = true))
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+
   "create" should "create a User" in {
     for {
       _     <- EitherT(userService.create(User.Create(username = "test_user2", enabled = true)))

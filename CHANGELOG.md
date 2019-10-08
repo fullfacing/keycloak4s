@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.2.3] - 2019-10-07
 ### Fixed
 - Fixed issue causing refresh token requests to fail when using the client secret credential type.
+- Fixed bug in createAndRetrieve functions not short-circuiting when the create operation fails.
 
 ## [1.2.2] - 2019-09-19
 ### Changed
