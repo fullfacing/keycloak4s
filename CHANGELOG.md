@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.2.4] - 2019-11-20
 ### Changed
 - Dependancy updates
-- Support for cross compiling added so that a Scala 2.12 and 2.13 version can be published.
+- Support for cross compiling added so that Scala 2.12 and 2.13 versions can be published.
 
 ## [1.2.3] - 2019-10-07
 ### Fixed
