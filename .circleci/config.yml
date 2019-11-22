@@ -1,43 +1,10 @@
 version: 2
 jobs:
-  compile:
-    working_directory: /code
-    docker:
-      - image: openjdk:10
-    environment:
-      - SBT_VERSION: 1.2.8
-    steps:
-      - run:
-          name: Install SBT
-          command: |
-            apt update && apt install -y curl
-            curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
-            dpkg -i sbt-$SBT_VERSION.deb
-            rm sbt-$SBT_VERSION.deb
-            apt-get update
-            apt-get install -y sbt git
-            apt-get clean && apt-get autoclean
-      - checkout
-      - restore_cache:
-          key: sbt-cache
-      - run:
-          name: Create Artifact Directory
-          command: |
-            mkdir -p workspace
-      - run:
-          name: Compile JAR
-          command: sbt clean update compile
-      - save_cache:
-          key: sbt-cache
-          paths:
-            - "~/.m2"
-            - "~/.sbt"
-            - "~/.ivy2/cache"
-  test:
+  test_213:
     working_directory: /code
     docker:
         - image: openjdk:10
-        - image: jboss/keycloak:latest
+        - image: jboss/keycloak:7.0.1
           environment:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
@@ -65,16 +32,52 @@ jobs:
          command: dockerize -wait tcp://localhost:8080 -timeout 5m
       - run:
           name: Run Tests
-          command: sbt clean coverage test coverageReport
+          command: sbt ++2.13.1! test
       - run:
           name: Upload Reports
           command: |
             bash <(curl -s https://codecov.io/bash)
+  test_212:
+    working_directory: /code
+    docker:
+      - image: openjdk:10
+      - image: jboss/keycloak:7.0.1
+        environment:
+          KEYCLOAK_USER: "admin"
+          KEYCLOAK_PASSWORD: "admin"
+    environment:
+      - SBT_VERSION: 1.2.8
+    steps:
+      - run:
+          name: Install SBT
+          command: |
+            apt update && apt install -y curl
+            curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
+            dpkg -i sbt-$SBT_VERSION.deb
+            rm sbt-$SBT_VERSION.deb
+            apt-get update
+            apt-get install -y sbt git
+            apt-get clean && apt-get autoclean
+      - checkout
+      - run:
+          name: Install Dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run:
+          name: Wait for Keycloak Server
+          command: dockerize -wait tcp://localhost:8080 -timeout 5m
+      - run:
+          name: Run Tests
+          command: sbt ++2.12.10! clean coverage test coverageReport
+      - run:
+          name: Upload Reports
+          command: |
+            bash <(curl -s https://codecov.io/bash)
+
 workflows:
   version: 2
   deployment:
     jobs:
-      - compile
-      - test:
-          requires:
-            - compile
+      - test_212
+      - test_213
