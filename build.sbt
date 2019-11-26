@@ -11,6 +11,7 @@ lazy val global = {
       case Some((2, n)) if n <= 12 => scalac212Opts
       case _                       => scalac213Opts
     }),
+
     crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
@@ -207,6 +208,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.0")
+  .settings(skip in publish := true)
   .settings(libraryDependencies ++= scalaTest ++ akkaTestKit)
   .settings {
     //TODO: cross compile sttp-akka-monix aswell
@@ -231,6 +233,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
+  .settings(skip in publish := true)
   .aggregate(
     `keycloak4s-core`,
     `keycloak4s-admin`,
