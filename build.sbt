@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "1.2.4",
+    version       := "1.2.5",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -16,6 +16,8 @@ lazy val global = {
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
+
+    publishTo := sonatypePublishToBundle.value,
 
     // Sonatype Nexus Credentials
     credentials += Credentials(Path.userHome / ".sbt" / "1.0" / ".credentials"),
