@@ -256,12 +256,6 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[List[UserSession]](path)
   }
 
-  /** Remove temporary one time pin from the user */
-  def removeTotp(userId: UUID): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "users", userId.toString, "remove-totp")
-    client.put[Unit](path)
-  }
-
   /** Set up a new password for the user. */
   def resetPassword(userId: UUID, credential: Credential): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "users", userId.toString, "reset-password")

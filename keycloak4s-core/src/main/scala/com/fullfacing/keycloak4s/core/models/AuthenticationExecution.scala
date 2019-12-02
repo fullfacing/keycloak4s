@@ -13,5 +13,4 @@ final case class AuthenticationExecution(authenticator: String,
                                          enabled: Boolean,
                                          disabled: Boolean,
                                          required: Boolean,
-                                         optional: Boolean,
                                          alternative: Boolean)

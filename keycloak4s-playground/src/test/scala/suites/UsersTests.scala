@@ -372,17 +372,9 @@ class UsersTests extends IntegrationSpec {
     } yield ()
   }.value.shouldReturnSuccess
 
-  "removeTotp" should "disable time-based one-time password for a User" in {
-    userService.removeTotp(storedTestUser1.get().id)
-  }.shouldReturnSuccess
-
   "resetPassword" should "reset the password for a User" in {
     val cred = Credential(`type` = CredentialTypes.Password, value = "test_pass")
     userService.resetPassword(storedTestUser1.get().id, cred)
-  }.shouldReturnSuccess
-
-  "disableUserCredentials" should "disable the specified credential types for a User" in {
-    userService.disableUserCredentials(storedTestUser1.get().id, List("password"))
   }.shouldReturnSuccess
 
   "logout" should "log out a User" in {
