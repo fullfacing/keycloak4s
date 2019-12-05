@@ -4,7 +4,7 @@ jobs:
     working_directory: /code
     docker:
         - image: openjdk:10
-        - image: jboss/keycloak:latest
+        - image: jboss/keycloak:7.0.1
           environment:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
@@ -41,7 +41,7 @@ jobs:
     working_directory: /code
     docker:
       - image: openjdk:10
-      - image: jboss/keycloak:latest
+      - image: jboss/keycloak:7.0.1
         environment:
           KEYCLOAK_USER: "admin"
           KEYCLOAK_PASSWORD: "admin"

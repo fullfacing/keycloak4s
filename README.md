@@ -5,7 +5,7 @@
 
 **A Scala-based middleware API for
 [Keycloak](https://www.keycloak.org/)**<br/>
-*Supports version 7.0.0*
+*Supports version 7.0.1*
 
 keycloak4s is an opinionated Scala-built API that serves as a bridge between any Scala project and a Keycloak server. It allows access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html), and provides adapters that validates Keycloak's bearer tokens. It authorizes requests via a JSON config file inspired by their [policy enforcement configuration][Policy-Configuration].
 
@@ -31,10 +31,10 @@ The project is split into the following modules, each as a separate dependency:
 ## Installation
 
 Each module can be pulled into a project separately using the following SBT dependencies:
-* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "1.2.3"`
-* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "1.2.3"`
-* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-admin-monix" % "1.2.3"`
-* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "1.2.3"`
+* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "1.2.5"`
+* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "1.2.5"`
+* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-admin-monix" % "1.2.5"`
+* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "1.2.5"`
 
 The core module is a dependency for all other modules, and is automatically pulled in when using any other module.
 
