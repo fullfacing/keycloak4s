@@ -32,7 +32,7 @@ class AttackDetectionTests extends IntegrationSpec {
   )
 
   val clientCreate = Client.Create(clientId = "AttackClient")
-  val userCredentials = Credential(CredentialTypes.Password, "attackpassword")
+  val userCredentials = Credential(`type` = Some(CredentialTypes.Password), value = Some("attackpassword"))
   val userCreate   = User.Create("attackuser", enabled = true, credentials = List(userCredentials))
 
   val tClient = new AtomicReference[Client]()
@@ -75,7 +75,7 @@ class AttackDetectionTests extends IntegrationSpec {
   "fetchUserStatus" should "retrieve an object documenting all invalid login attempts by the given user" in {
     val task =
       for {
-        _ <- EitherT.right(login(password = userCredentials.value))
+        _ <- EitherT.right(login(password = userCredentials.value.getOrElse("")))
         b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)

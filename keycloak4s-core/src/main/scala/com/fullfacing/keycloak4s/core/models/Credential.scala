@@ -1,17 +1,15 @@
 package com.fullfacing.keycloak4s.core.models
 
+import java.util.UUID
+
 import com.fullfacing.keycloak4s.core.models.enums.CredentialType
 
-final case class Credential(`type`: CredentialType,
-                            value: String,
-                            algorithm: Option[String] = None,
-                            config: Option[MultivaluedHashMap] = None,
-                            counter: Option[Int] = None,
+final case class Credential(id: Option[UUID] = None,
+                            `type`: Option[CredentialType] = None,
                             createdDate: Option[Long] = None,
-                            device: Option[String] = None,
-                            digits: Option[Int] = None,
-                            hashIterations: Option[Int] = None,
-                            hashedSaltedValue: Option[String] = None,
-                            period: Option[Int] = None,
-                            salt: Option[String] = None,
-                            temporary: Option[Boolean] = None)
+                            credentialData: Option[String] = None,
+                            userLabel: Option[String] = None,
+                            priority: Option[Int] = None,
+                            secretData: Option[String] = None,
+                            temporary: Option[Boolean] = None,
+                            value: Option[String] = None)

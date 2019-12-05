@@ -27,6 +27,10 @@ object BodyMagnet {
     def apply: Result = request => request
   }
 
+  implicit def plainText(text: String): BodyMagnet = new BodyMagnet {
+     def apply: Result = request => request.contentType(ContentTypes.TextPlain).body(text)
+  }
+
   implicit def fromAnyRef[A <: AnyRef](a: A): BodyMagnet = new BodyMagnet {
     def apply: Result = request => request.contentType(ContentTypes.Json).body(a)
   }

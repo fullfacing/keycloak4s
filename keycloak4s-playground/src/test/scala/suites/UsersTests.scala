@@ -31,6 +31,8 @@ class UsersTests extends IntegrationSpec {
   val storedTestUser1: AtomicReference[User]      = new AtomicReference[User]()
   val storedTestUser2: AtomicReference[User]      = new AtomicReference[User]()
   val storedTestUser3: AtomicReference[User]      = new AtomicReference[User]()
+  val storedTestUser4: AtomicReference[UUID]      = new AtomicReference[UUID]()
+  val user4credential: AtomicReference[UUID]      = new AtomicReference[UUID]()
 
   "fetch" should "retrieve a list of Users with at least one User" in {
     userService.fetch().map(_.map { response =>
@@ -199,6 +201,45 @@ class UsersTests extends IntegrationSpec {
       num     <- EitherT(userService.countGroups(user.id))
       _       <- EitherT(deleteGroups)
     } yield num shouldBe Count(0)
+  }.value.shouldReturnSuccess
+
+  "fetchCredentials" should "fetch all the credentials of a user" in {
+    val user = User.Create("test_user4", enabled = true, credentials = List(Credential(value = Some("password"))))
+    for {
+      u <- EitherT(userService.createAndRetrieve(user))
+      c <- EitherT(userService.fetchCredentials(u.id))
+    } yield {
+      storedTestUser4.set(u.id)
+      storedUsers.set(storedUsers.get() :+ u)
+      c should not be empty
+      user4credential.set(c.headOption.flatMap(_.id).get)
+    }
+  }.value.shouldReturnSuccess
+
+  "updateCredentialLabel" should "set the label of the specified credential of the user" in {
+    for {
+      _ <- EitherT(userService.updateCredentialLabel(storedTestUser4.get(), user4credential.get(), "Updated Label"))
+      c <- EitherT(userService.fetchCredentials(storedTestUser4.get()))
+    } yield {
+      val label = c.headOption.flatMap(_.userLabel)
+      label shouldBe Some("Updated Label")
+    }
+  }.value.shouldReturnSuccess
+
+  "moveCredentialToFirst" should "set the specified credential as the head of the user's credential list" in {
+    userService.moveCredentialToFirst(storedTestUser4.get(), user4credential.get())
+  }.shouldReturnSuccess
+
+  "moveCredential" should "return a success" in {
+    // TODO Figure out how to add more than one credential to test this properly
+    userService.moveCredential(storedTestUser4.get(), user4credential.get(), UUID.randomUUID())
+  }.shouldReturnSuccess
+
+  "revokeCredential" should "remove the credential from the user's credential list" in {
+    for {
+      _ <- EitherT(userService.revokeCredential(storedTestUser4.get(), user4credential.get()))
+      c <- EitherT(userService.fetchCredentials(storedTestUser4.get()))
+    } yield c shouldBe empty
   }.value.shouldReturnSuccess
 
   "createFederatedIdentity" should "link a federated identity to a User" in {
@@ -373,7 +414,7 @@ class UsersTests extends IntegrationSpec {
   }.value.shouldReturnSuccess
 
   "resetPassword" should "reset the password for a User" in {
-    val cred = Credential(`type` = CredentialTypes.Password, value = "test_pass")
+    val cred = Credential(`type` = Some(CredentialTypes.Password), value = Some("test_pass"))
     userService.resetPassword(storedTestUser1.get().id, cred)
   }.shouldReturnSuccess
 
