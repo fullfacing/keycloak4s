@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "1.2.5",
+    version       := "2.0.0",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
