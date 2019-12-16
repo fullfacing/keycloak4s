@@ -212,7 +212,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
     //TODO: cross compile sttp-akka-monix aswell
     libraryDependencies += (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => "com.fullfacing" %% "sttp-akka-monix" % "1.0.1"
-      case _                       => "com.fullfacing" %% "sttp-akka-monix" % "1.0.2"
+      case _                       => "com.fullfacing" %% "sttp-akka-monix" % "1.0.3"
     })
   }
   .settings(coverageEnabled := false)
