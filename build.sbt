@@ -152,6 +152,10 @@ val sttpMonix: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp" %% "json4s" % sttpVersion
 )
 
+val sttpAkkaMonix: Seq[ModuleID] = Seq(
+  "com.fullfacing" %% "sttp-akka-monix" % "1.0.3"
+)
+
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
 // --------------------------------------------- //
@@ -207,14 +211,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.0")
-  .settings(libraryDependencies ++= scalaTest ++ akkaTestKit)
-  .settings {
-    //TODO: cross compile sttp-akka-monix aswell
-    libraryDependencies += (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, n)) if n <= 12 => "com.fullfacing" %% "sttp-akka-monix" % "1.0.1"
-      case _                       => "com.fullfacing" %% "sttp-akka-monix" % "1.0.3"
-    })
-  }
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
