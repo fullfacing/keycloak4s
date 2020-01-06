@@ -112,7 +112,7 @@ object ServerInitializer {
       .response(asJson[Credential])
       .mapResponse(_.value)
       .send()
-      .map(_.body)
+      .map(_.body.map(_.get))
   }
 
   /**
