@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed `User.Update` case class - made all fields optional and defaulted to `None`.
 
 ## [1.2.5] - 2019-11-27
+### Updated
+- SBT Plugins
+
+## [1.2.4] - 2019-11-20
 ### Changed
 - Dependency updates
 - Support for cross compiling added so that Scala 2.12 and 2.13 versions can be published.

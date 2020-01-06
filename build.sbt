@@ -11,10 +11,13 @@ lazy val global = {
       case Some((2, n)) if n <= 12 => scalac212Opts
       case _                       => scalac213Opts
     }),
+
     crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
+
+    publishTo := sonatypePublishToBundle.value,
 
     // Sonatype Nexus Credentials
     credentials += Credentials(Path.userHome / ".sbt" / "1.0" / ".credentials"),
@@ -211,7 +214,15 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.0")
+  .settings(skip in publish := true)
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
+  .settings {
+    //TODO: cross compile sttp-akka-monix aswell
+    libraryDependencies += (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, n)) if n <= 12 => "com.fullfacing" %% "sttp-akka-monix" % "1.0.1"
+      case _                       => "com.fullfacing" %% "sttp-akka-monix" % "1.0.2"
+    })
+  }
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -228,6 +239,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
+  .settings(skip in publish := true)
   .aggregate(
     `keycloak4s-core`,
     `keycloak4s-admin`,
