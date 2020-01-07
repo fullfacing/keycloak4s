@@ -95,6 +95,45 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.delete[Unit](path)
   }
 
+  // -------------------------------------------------------------------------------------------------------- //
+  // ---------------------------------------------- Credentials --------------------------------------------- //
+  // -------------------------------------------------------------------------------------------------------- //
+
+  /** Fetch a user's credentials. */
+  def fetchCredentials(userId: UUID): R[Either[KeycloakError, List[Credential]]] = {
+    val path = Seq(client.realm, "users", userId.toString, "credentials")
+    client.get[List[Credential]](path)
+  }
+
+  /** Remove the given credential from a user. */
+  def revokeCredential(userId: UUID, credentialId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(client.realm, "users", userId.toString, "credentials", credentialId.toString)
+    client.delete[Unit](path)
+  }
+
+  /**
+   * Move a credential to a position after another credential.
+   *
+   * @param bCredentialId The credential that will be the previous element in the list.
+   *                      If set to null, the moved credential will be the first element in the list.
+   */
+  def moveCredential(userId: UUID, credentialId: UUID, bCredentialId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(client.realm, "users", userId.toString, "credentials", credentialId.toString, "moveAfter", bCredentialId.toString)
+    client.post[Unit](path)
+  }
+
+  /** Move a credential to the first position of the user's credential list. */
+  def moveCredentialToFirst(userId: UUID, credentialId: UUID): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(client.realm, "users", userId.toString, "credentials", credentialId.toString, "moveToFirst")
+    client.post[Unit](path)
+  }
+
+  /** Update the label of a user's credential. */
+  def updateCredentialLabel(userId: UUID, credentialId: UUID, label: String): R[Either[KeycloakError, Unit]] = {
+    val path = Seq(client.realm, "users", userId.toString, "credentials", credentialId.toString, "userLabel")
+    client.put[Unit](path, label)
+  }
+
   // -------------------------------------------------------------------------------------------------------------------- //
   // ------------------------------------------------ Federated Identity ------------------------------------------------ //
   // -------------------------------------------------------------------------------------------------------------------- //
@@ -256,22 +295,10 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
     client.get[List[UserSession]](path)
   }
 
-  /** Remove temporary one time pin from the user */
-  def removeTotp(userId: UUID): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "users", userId.toString, "remove-totp")
-    client.put[Unit](path)
-  }
-
   /** Set up a new password for the user. */
   def resetPassword(userId: UUID, credential: Credential): R[Either[KeycloakError, Unit]] = {
     val path = Seq(client.realm, "users", userId.toString, "reset-password")
     client.put[Unit](path, credential)
-  }
-
-  /** Disable a user's credentials of the specified types. */
-  def disableUserCredentials(userId: UUID, credentialTypes: List[String]): R[Either[KeycloakError, Unit]] = {
-    val path = Seq(client.realm, "users", userId.toString, "disable-credential-types")
-    client.put[Unit](path, credentialTypes)
   }
 
   /** Impersonate the user */

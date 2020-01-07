@@ -12,6 +12,7 @@ case object Requirements extends StringEnum[Requirement] {
   case object Required    extends Requirement("REQUIRED")
   case object Optional    extends Requirement("OPTIONAL")
   case object Alternative extends Requirement("ALTERNATIVE")
+  case object Conditional extends Requirement("CONDITIONAL")
 
   val values: immutable.IndexedSeq[Requirement] = findValues
 }

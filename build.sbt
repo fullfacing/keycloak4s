@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "1.2.5",
+    version       := "2.0.0",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -88,16 +88,16 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.1.10"
-val akkaStreamsVersion    = "2.6.0"
+val akkaHttpVersion       = "10.1.11"
+val akkaStreamsVersion    = "2.6.1"
 val catsEffectVersion     = "2.0.0"
-val catsCoreVersion       = "2.0.0"
+val catsCoreVersion       = "2.1.0"
 val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.2.1"
-val scalaTestVersion      = "3.0.8"
+val nimbusVersion         = "8.4"
+val scalaTestVersion      = "3.1.0"
 val sttpVersion           = "1.7.2"
 
 // -------------------------------------- //
@@ -153,6 +153,10 @@ val sttpAkka: Seq[ModuleID] = Seq(
 val sttpMonix: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp" %% "core"   % sttpVersion,
   "com.softwaremill.sttp" %% "json4s" % sttpVersion
+)
+
+val sttpAkkaMonix: Seq[ModuleID] = Seq(
+  "com.fullfacing" %% "sttp-akka-monix" % "1.0.3"
 )
 
 // --------------------------------------------- //
@@ -211,7 +215,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.0")
   .settings(skip in publish := true)
-  .settings(libraryDependencies ++= scalaTest ++ akkaTestKit)
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings {
     //TODO: cross compile sttp-akka-monix aswell
     libraryDependencies += (CrossVersion.partialVersion(scalaVersion.value) match {

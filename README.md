@@ -2,6 +2,7 @@
 [![CircleCI](https://circleci.com/gh/fullfacing/keycloak4s.svg?style=shield&circle-token=0788f14be0abb7f8ab8194fbd2cd179122b3ee85)](https://circleci.com/gh/fullfacing/keycloak4s)
 [![codecov](https://codecov.io/gh/fullfacing/keycloak4s/branch/master/graph/badge.svg?token=WKbJaagGhz)](https://codecov.io/gh/fullfacing/keycloak4s)
 [![Maven Central](https://img.shields.io/maven-central/v/com.fullfacing/keycloak4s-core_2.13.svg)](https://search.maven.org/search?q=a:keycloak4s-core_2.13)
+[![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 
 **A Scala-based middleware API for
 [Keycloak](https://www.keycloak.org/)**<br/>
@@ -31,10 +32,10 @@ The project is split into the following modules, each as a separate dependency:
 ## Installation
 
 Each module can be pulled into a project separately using the following SBT dependencies:
-* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "1.2.4"`
-* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "1.2.4"`
-* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-admin-monix" % "1.2.4"`
-* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "1.2.4"`
+* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "1.2.5"`
+* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "1.2.5"`
+* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-admin-monix" % "1.2.5"`
+* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "1.2.5"`
 
 The core module is a dependency for all other modules, and is automatically pulled in when using any other module.
 
