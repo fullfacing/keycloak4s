@@ -5,9 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [1.2.6] - 2020-01-29
 ### Fixed
-- User case class was using incorrect type for `requiredActions` field.
 - Renamed `RequiredAction` case class to `AuthRequiredAction` due to naming conflict with an enum.
-- `Users.sendActionsEmail` - changed actions parameter to take a list `RequiredAction` enum.
+- `User` case class no longer uses incorrect type for `requiredActions` field.
+- `Users.sendActionsEmail` - changed `actions` parameter to `List[RequiredAction]`.
 
 ## [1.2.5] - 2019-11-27
 ### Changed
