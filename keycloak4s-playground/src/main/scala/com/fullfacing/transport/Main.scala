@@ -1,11 +1,14 @@
 package com.fullfacing.transport
 
+import java.util.UUID
+
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.effect.ExitCode
 import com.fullfacing.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak => KeycloakM, KeycloakClient => KeycloakClientM}
+import com.fullfacing.keycloak4s.core.models.enums.RequiredActions
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.transport.backends.AkkaHttpBackendL
