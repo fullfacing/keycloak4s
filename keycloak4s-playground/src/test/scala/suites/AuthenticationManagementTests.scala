@@ -154,7 +154,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "registerRequiredAction" should "register a Required Action" in {
-    val action = RequiredAction(name = "test_action", providerId = "test_action_provider")
+    val action = AuthRequiredAction(name = "test_action", providerId = "test_action_provider")
 
     authMgmt.registerRequiredAction(action)
   }.shouldReturnSuccess
