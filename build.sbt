@@ -216,13 +216,6 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.0")
   .settings(skip in publish := true)
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
-  .settings {
-    //TODO: cross compile sttp-akka-monix aswell
-    libraryDependencies += (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, n)) if n <= 12 => "com.fullfacing" %% "sttp-akka-monix" % "1.0.1"
-      case _                       => "com.fullfacing" %% "sttp-akka-monix" % "1.0.2"
-    })
-  }
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {

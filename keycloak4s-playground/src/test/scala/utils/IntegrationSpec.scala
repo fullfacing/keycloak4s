@@ -10,6 +10,7 @@ import monix.eval.Task
 import monix.execution.Scheduler
 import monix.reactive.Observable
 import org.scalatest._
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future
 
