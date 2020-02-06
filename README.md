@@ -144,9 +144,9 @@ This module is a client adapter for Akka-HTTP that allows the service to validat
 With the adapter plugged in, all requests are expected to contain an authorization header with a bearer token. Additionally, an ID token can be passed along with the header `Id-Token`.
 
 The tokens are first parsed, and then validated for the following:
-* The token cannot be expired.  
+* The token must not be expired.  
 (`exp` field (mandatory) is checked)
-* The token cannot be used before its not-before date.  
+* The token must not be used before its not-before date.  
 (`nbf` field (optional) is checked, however validation passes if the field is absent)
 * The token's issuer must match the Keycloak server's URL.  
 (`iss` field (mandatory) is checked)
