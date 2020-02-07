@@ -49,13 +49,16 @@ It is important to note that the KeycloakConfig model contains the Keycloak serv
 
 *Example:*
 ```scala
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+import com.fullfacing.keycloak4s.core.models.ConfigWithAuth
+
 val authConfig = KeycloakConfig.Secret(
     realm         = "master",
     clientId      = "admin-cli",
     clientSecret  = "b753f3ba-c4e7-4f3f-ac16-a074d4d89353"
 )
    
-val keycloakConfig = KeycloakConfig(
+val keycloakConfig = ConfigWithAuth(
     scheme  = "http",
     host    = "fullfacing.com/keycloak",
     port    = 8080,
