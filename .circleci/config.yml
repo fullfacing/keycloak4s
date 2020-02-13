@@ -3,7 +3,7 @@ jobs:
   test_213:
     working_directory: /code
     docker:
-        - image: openjdk:10
+        - image: openjdk:11
         - image: jboss/keycloak:latest
           environment:
             KEYCLOAK_USER: "admin"
@@ -40,7 +40,7 @@ jobs:
   test_212:
     working_directory: /code
     docker:
-      - image: openjdk:10
+      - image: openjdk:11
       - image: jboss/keycloak:latest
         environment:
           KEYCLOAK_USER: "admin"
