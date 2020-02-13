@@ -215,6 +215,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
+  .settings(skip in publish := true)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, n)) if n <= 12 => scalac212Opts
     case _                       => scalac213Opts
