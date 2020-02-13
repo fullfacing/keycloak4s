@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2020-02-13
+### Changed
+- `issueAccessToken` function in `TokenManager` made public.
+### Fixed
+- Renamed `RequiredAction` case class to `AuthRequiredAction` due to naming conflict with an enum.
+- `User` case class no longer uses incorrect type for `requiredActions` field.
+- `Users.sendActionsEmail` - changed `actions` parameter to `List[RequiredAction]`.
+
 ## [2.0.0] - 2019-12-06
 #### The following changes were made to support Keycloak 8.0.0:
 - Added `plainText` implicit def to `BodyMagnet` to support sending text/plain contentType.
@@ -12,14 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added `Conditional` value to the `Requirements` enum.
 - Updated `Credential` case class.
 
-### Changed
-- Fixed `User.Update` case class - made all fields optional and defaulted to `None`.
-
 ## [1.2.5] - 2019-11-27
-### Updated
-- SBT Plugins
-
-## [1.2.4] - 2019-11-20
 ### Changed
 - Dependency updates
 - Support for cross compiling added so that Scala 2.12 and 2.13 versions can be published.
