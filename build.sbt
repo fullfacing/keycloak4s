@@ -229,6 +229,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
+  .settings(skip in publish := true)
   .aggregate(
     `keycloak4s-core`,
     `keycloak4s-admin`,
