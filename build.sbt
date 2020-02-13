@@ -15,6 +15,7 @@ lazy val global = {
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
+    publishTo := sonatypePublishToBundle.value,
 
     // Sonatype Nexus Credentials
     credentials += Credentials(Path.userHome / ".sbt" / "1.0" / ".credentials"),
