@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added `Conditional` value to the `Requirements` enum.
 - Updated `Credential` case class.
 
+### Changed
+- Fixed `User.Update` case class - made all fields optional and defaulted to `None`.
+
 ## [1.2.5] - 2019-11-27
 ### Changed
 - Dependency updates
