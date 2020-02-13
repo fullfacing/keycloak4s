@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "2.0.0",
+    version       := "2.0.1",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -89,14 +89,14 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.1.11"
-val akkaStreamsVersion    = "2.6.1"
-val catsEffectVersion     = "2.0.0"
+val akkaStreamsVersion    = "2.6.3"
+val catsEffectVersion     = "2.1.1"
 val catsCoreVersion       = "2.1.0"
 val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.4"
+val nimbusVersion         = "8.6"
 val scalaTestVersion      = "3.1.0"
 val sttpVersion           = "1.7.2"
 
@@ -216,13 +216,6 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.0")
   .settings(skip in publish := true)
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
-  .settings {
-    //TODO: cross compile sttp-akka-monix aswell
-    libraryDependencies += (CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, n)) if n <= 12 => "com.fullfacing" %% "sttp-akka-monix" % "1.0.1"
-      case _                       => "com.fullfacing" %% "sttp-akka-monix" % "1.0.2"
-    })
-  }
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {

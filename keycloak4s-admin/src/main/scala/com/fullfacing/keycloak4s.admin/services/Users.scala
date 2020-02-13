@@ -6,6 +6,7 @@ import cats.effect.Concurrent
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
+import com.fullfacing.keycloak4s.core.models.enums.RequiredAction
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
@@ -177,8 +178,11 @@ class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
    * The redirectUri and clientId parameters are optional. If no redirect is given, then there will be no link back to
    * click after actions have completed. The Redirect URI must be a valid URI for the particular clientId.
    */
-  def sendActionsEmail(userId: UUID, clientId: Option[String] = None, lifespan: Option[Int] = None,
-                       redirectUri: Option[String], actions: List[String]): R[Either[KeycloakError, Unit]] = {
+  def sendActionsEmail(userId: UUID,
+                       actions: List[RequiredAction],
+                       clientId: Option[String] = None,
+                       lifespan: Option[Int] = None,
+                       redirectUri: Option[String] = None): R[Either[KeycloakError, Unit]] = {
     val query = createQuery(("client_id", clientId), ("lifespan", lifespan), ("redirect_uri", redirectUri))
     val path = Seq(client.realm, "users", userId.toString, "execute-actions-email")
     client.put[Unit](path, actions, query)

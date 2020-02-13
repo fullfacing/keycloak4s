@@ -9,7 +9,7 @@ jobs:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
     environment:
-      - SBT_VERSION: 1.2.8
+      - SBT_VERSION: 1.3.7
     steps:
       - run:
           name: Install SBT
@@ -46,7 +46,7 @@ jobs:
           KEYCLOAK_USER: "admin"
           KEYCLOAK_PASSWORD: "admin"
     environment:
-      - SBT_VERSION: 1.2.8
+      - SBT_VERSION: 1.3.7
     steps:
       - run:
           name: Install SBT

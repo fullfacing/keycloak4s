@@ -90,7 +90,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     *
     * @return
     */
-  private def issueAccessToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
+  def issueAccessToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
 
     val sendF = Concurrent[F].unit.flatMap { _ =>
