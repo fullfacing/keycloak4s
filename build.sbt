@@ -98,7 +98,7 @@ val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
 val nimbusVersion         = "8.8"
 val scalaTestVersion      = "3.1.1"
-val sttpVersion           = "1.7.2"
+val sttpVersion           = "2.0.4"
 
 // -------------------------------------- //
 //          Library Dependencies          //
