@@ -144,9 +144,9 @@ val scalaTest: Seq[ModuleID] = Seq(
 )
 
 val sttpAkka: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "akka-http-backend" % sttpVersion,
-  "com.softwaremill.sttp" %% "core"              % sttpVersion,
-  "com.softwaremill.sttp" %% "json4s"            % sttpVersion,
+  "com.softwaremill.sttp.client" %% "akka-http-backend" % sttpVersion,
+  "com.softwaremill.sttp.client" %% "core"              % sttpVersion,
+  "com.softwaremill.sttp.client" %% "json4s"            % sttpVersion,
   "com.typesafe.akka"     %% "akka-stream"       % akkaStreamsVersion
 )
 
