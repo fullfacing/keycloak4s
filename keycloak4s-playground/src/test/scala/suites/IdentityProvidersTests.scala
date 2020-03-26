@@ -31,7 +31,8 @@ class IdentityProvidersTests extends IntegrationSpec {
       "authorizationUrl"  -> "http://localhost/test/oidc",
       "tokenUrl"          -> "http://localhost/test/oidc",
       "clientId"          -> "test_id",
-      "clientSecret"      -> "test_secret"
+      "clientSecret"      -> "test_secret",
+      "clientAuthMethod"  -> "client_secret_basic"
     )
 
     val identityProvider = IdentityProvider.Create(
@@ -61,7 +62,7 @@ class IdentityProvidersTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "update" should "update an existing Identity Provider" in {
-    val update = IdentityProvider.Update("test_oidc", trustEmail = Some(true))
+    val update = IdentityProvider.Update("test_oidc", enabled = Some(false))
 
     for {
       _       <- EitherT(idProvService.update("test_oidc", update))

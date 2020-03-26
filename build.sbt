@@ -96,7 +96,7 @@ val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.10"
+val nimbusVersion         = "8.11"
 val scalaTestVersion      = "3.1.1"
 val sttpVersion           = "2.0.6"
 
@@ -156,7 +156,7 @@ val sttpMonix: Seq[ModuleID] = Seq(
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix" % "1.0.3"
+  "com.fullfacing" %% "sttp-akka-monix" % "1.1.0"
 )
 
 // --------------------------------------------- //
@@ -215,7 +215,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.1")
   .settings(skip in publish := true)
-  .settings(libraryDependencies ++= /*sttpAkkaMonix ++*/ scalaTest ++ akkaTestKit)
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
