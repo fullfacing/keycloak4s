@@ -98,7 +98,7 @@ val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
 val nimbusVersion         = "8.8"
 val scalaTestVersion      = "3.1.1"
-val sttpVersion           = "2.0.4"
+val sttpVersion           = "2.0.6"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -151,8 +151,8 @@ val sttpAkka: Seq[ModuleID] = Seq(
 )
 
 val sttpMonix: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp" %% "core"   % sttpVersion,
-  "com.softwaremill.sttp" %% "json4s" % sttpVersion
+  "com.softwaremill.sttp.client" %% "core"   % sttpVersion,
+  "com.softwaremill.sttp.client" %% "json4s" % sttpVersion
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
@@ -213,9 +213,9 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-  .settings(scalaVersion  := "2.13.0")
+  .settings(scalaVersion  := "2.13.1")
   .settings(skip in publish := true)
-  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
+  .settings(libraryDependencies ++= /*sttpAkkaMonix ++*/ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {

@@ -1,6 +1,5 @@
 package com.fullfacing.keycloak4s.admin.client
 
-import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
@@ -10,17 +9,20 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse}
 import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
+import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig, KeycloakSttpException, RequestInfo}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import com.fullfacing.keycloak4s.core.models.{KeycloakConfig, ConfigWithAuth, KeycloakSttpException, RequestInfo}
-import com.softwaremill.sttp.json4s.asJson
-import com.softwaremill.sttp.{SttpBackend, _}
 import org.json4s.jackson.Serialization
+import sttp.client.json4s._
+import sttp.client.monad.MonadError
+import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, _}
 
-abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S]) {
+abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S, NothingT]) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
   protected val F: MonadError[F] = client.responseMonad
+
+  type SttpResponse[A] = Either[ResponseError[Exception], A]
 
   protected def buildRequestInfo(path: Seq[String], protocol: String, body: Any): RequestInfo = {
     RequestInfo(
@@ -34,18 +36,18 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     )
   }
 
-  protected def buildError(response: Response[_], requestInfo: RequestInfo): KeycloakSttpException = {
+  protected def buildError(response: Response[_], leftBody: String, requestInfo: RequestInfo): KeycloakSttpException = {
     KeycloakSttpException(
-      code        = response.code,
-      headers     = response.headers,
-      body        = response.rawErrorBody.fold(new String(_, StandardCharsets.UTF_8), _ => "N/A"),
+      code        = response.code.code,
+      headers     = response.headers.map(h => h.name -> h.value),
+      body        = leftBody,
       statusText  = response.statusText,
       requestInfo = requestInfo
     )
   }
 
-  protected def liftM[A](response: Response[A], requestInfo: RequestInfo): Either[KeycloakSttpException, A] = {
-    response.body.leftMap(_ => buildError(response, requestInfo))
+  protected def liftM[A](response: Response[Either[String, A]], requestInfo: RequestInfo): Either[KeycloakSttpException, A] = {
+    response.body.leftMap(l => buildError(response, l, requestInfo))
   }
 
   private val tokenEndpoint =
@@ -96,7 +98,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     val sendF = Concurrent[F].unit.flatMap { _ =>
       Logging.tokenRequest(config.realm, cId)
 
-      sttp.post(tokenEndpoint)
+      basicRequest.post(tokenEndpoint)
         .body(password)
         .response(asJson[TokenResponse])
         .mapResponse(mapToToken)
@@ -118,7 +120,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     val sendF = Concurrent[F].unit.flatMap { _ =>
       Logging.tokenRefresh(config.realm, cId)
 
-      sttp.post(tokenEndpoint)
+      basicRequest.post(tokenEndpoint)
         .body(body)
         .response(asJson[TokenResponse])
         .mapResponse(mapToToken)
@@ -139,15 +141,15 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     * @param response the oidc token response.
     * @return a new token instance.
     */
-  private def mapToToken(response: TokenResponse): Token = {
+  private def mapToToken(response: SttpResponse[TokenResponse]): Either[String, Token] = response.map { res =>
     val instant = Instant.now()
     Token(
-      access          = response.access_token,
-      refresh         = response.refresh_token,
-      refreshAt       = instant.plusSeconds(response.expires_in),
-      authenticateAt  = instant.plusSeconds(response.refresh_expires_in)
+      access          = res.access_token,
+      refresh         = res.refresh_token,
+      refreshAt       = instant.plusSeconds(res.expires_in),
+      authenticateAt  = instant.plusSeconds(res.refresh_expires_in)
     )
-  }
+  }.leftMap(_.body)
 
   /**
     * Inspect the status of the token, reissuing a new access token using the password
@@ -180,7 +182,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     }
   }
 
-  def withAuth[A](request: RequestT[Id, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Id, A, Nothing]]] = {
+  def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
     Concurrent[F].map(validateToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 }

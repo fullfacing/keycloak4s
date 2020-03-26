@@ -5,7 +5,7 @@ import com.fullfacing.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
-import com.softwaremill.sttp.SttpBackend
+import sttp.client.{NothingT, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.reactive.Observable
@@ -24,7 +24,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
 
   /* Keycloak Client Implicits **/
   implicit val context: Scheduler = monix.execution.Scheduler.global
-  implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
+  implicit val backend: SttpBackend[Task, Observable[ByteString], NothingT] = AkkaMonixHttpBackend()
   implicit val client: KeycloakClient[T] = new KeycloakClient(keycloakConfig)
 
   /* Keycloak Services **/

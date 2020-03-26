@@ -65,7 +65,7 @@ class RealmsTests extends IntegrationSpec {
 
   "fetchAll" should "retrieve all Realms" in {
     realmService.fetchAll().map(_.map { realms =>
-      realms.map(_.id) should contain only ("master", "test_realm", "test_realm2")
+      realms.map(_.id) should contain allOf ("master", "test_realm", "test_realm2")
     })
   }.shouldReturnSuccess
 
