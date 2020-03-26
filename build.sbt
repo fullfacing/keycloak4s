@@ -89,14 +89,14 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.1.11"
-val akkaStreamsVersion    = "2.6.3"
-val catsEffectVersion     = "2.1.1"
-val catsCoreVersion       = "2.1.0"
+val akkaStreamsVersion    = "2.6.4"
+val catsEffectVersion     = "2.1.2"
+val catsCoreVersion       = "2.1.1"
 val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.8"
+val nimbusVersion         = "8.10"
 val scalaTestVersion      = "3.1.1"
 val sttpVersion           = "2.0.6"
 
