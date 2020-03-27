@@ -14,13 +14,6 @@ object BodyMagnet {
 
   type Result = Request[Either[String, String], Nothing] => RequestT[Identity, Either[String, String], Nothing]
 
-  implicit def fromMap(m: Map[Any, Any]): BodyMagnet = new BodyMagnet {
-    def apply: Result = request => request.contentType(ContentTypes.UrlEncoded)
-      .body {
-        m.map { case (k, v) => k.toString -> v.toString }
-      }
-  }
-
   implicit def fromMultipart(mp: Part[BasicRequestBody]): BodyMagnet = new BodyMagnet {
     def apply: Result = request => request.contentType(ContentTypes.Multipart).multipartBody(mp)
   }

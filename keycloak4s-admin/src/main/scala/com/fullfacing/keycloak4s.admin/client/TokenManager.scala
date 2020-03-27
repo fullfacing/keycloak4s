@@ -22,8 +22,6 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
 
   protected val F: MonadError[F] = client.responseMonad
 
-  type SttpResponse[A] = Either[ResponseError[Exception], A]
-
   protected def buildRequestInfo(path: Seq[String], protocol: String, body: Any): RequestInfo = {
     RequestInfo(
       path      = path.mkString("/"),
@@ -141,7 +139,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     * @param response the oidc token response.
     * @return a new token instance.
     */
-  private def mapToToken(response: SttpResponse[TokenResponse]): Either[String, Token] = response.map { res =>
+  private def mapToToken(response: Either[ResponseError[Exception], TokenResponse]): Either[String, Token] = response.map { res =>
     val instant = Instant.now()
     Token(
       access          = res.access_token,
