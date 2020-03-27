@@ -6,8 +6,8 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.TokenManager.TokenResponse
 import com.fullfacing.keycloak4s.core.models.{Client, Credential, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import com.softwaremill.sttp._
-import com.softwaremill.sttp.json4s.asJson
+import sttp.client.json4s.asJson
+import sttp.client._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.write
 
@@ -17,7 +17,7 @@ object ServerInitializer {
   private implicit val serializer: Serialization.type = org.json4s.jackson.Serialization
 
   /* Simplistic Synchronous Sttp Backend **/
-  private implicit val backend: SttpBackend[Id, Nothing] = HttpURLConnectionBackend()
+  private implicit val backend: SttpBackend[Identity, Nothing, Nothing] = HttpURLConnectionBackend()
 
   /* Step 1: Retrieve an access token for the admin user. **/
   private def fetchToken(): Either[String, String] = {
@@ -28,24 +28,24 @@ object ServerInitializer {
       "password"    -> "admin"  // Modify if necessary.
     )
 
-    sttp
+    basicRequest
       .post(uri"http://localhost:8080/auth/realms/master/protocol/openid-connect/token")
       .body(form)
       .response(asJson[TokenResponse])
-      .mapResponse(_.access_token)
+      .mapResponse(_.map(_.access_token).leftMap(_.body))
       .send()
       .map(_.body)
   }
 
   /* Step 2: Retrieve the ID of the admin-cli client. **/
   private def fetchClientId(token: String): Either[String, UUID] = {
-    sttp
+    basicRequest
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients?clientId=admin-cli")
       .header("Authorization", s"Bearer $token")
       .response(asJson[List[Client]])
-      .mapResponse(clients => Either.fromOption(clients.headOption.map(_.id), "No Clients Found"))
+      .mapResponse(_.leftMap(_.body).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
       .send
-      .map(_.body.flatten)
+      .map(_.body)
   }
 
   /* Step 3: Update admin-cli to disable public access and enable service accounts. **/
@@ -57,7 +57,7 @@ object ServerInitializer {
       serviceAccountsEnabled  = Some(true)
     )
 
-    sttp
+    basicRequest
       .put(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId")
       .header("Authorization", s"Bearer $token")
       .contentType("application/json")
@@ -68,22 +68,22 @@ object ServerInitializer {
 
   /* Step 4: Retrieve the ID of the service account user. (Steps 4 and 5 can be swapped or executed asynchronously) **/
   private def fetchServiceAccountUserId(token: String, clientId: UUID): Either[String, UUID] = {
-    sttp
+    basicRequest
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/service-account-user")
       .header("Authorization", s"Bearer $token")
       .response(asJson[User])
-      .mapResponse(_.id)
+      .mapResponse(_.map(_.id).leftMap(_.body))
       .send()
       .map(_.body)
   }
 
   /* Step 5: Retrieve the ID of the admin role. (Steps 4 and 5 can be swapped or executed asynchronously) **/
   private def fetchAdminRoleId(token: String): Either[String, UUID] = {
-    sttp
+    basicRequest
       .get(uri"http://localhost:8080/auth/admin/realms/master/roles/admin")
       .header("Authorization", s"Bearer $token")
       .response(asJson[Role])
-      .mapResponse(_.id)
+      .mapResponse(_.map(_.id).leftMap(_.body))
       .send()
       .map(_.body)
   }
@@ -95,7 +95,7 @@ object ServerInitializer {
       name  = "admin"
     )
 
-    sttp
+    basicRequest
       .post(uri"http://localhost:8080/auth/admin/realms/master/users/$accountId/role-mappings/realm")
       .header("Authorization", s"Bearer $token")
       .contentType("application/json")
@@ -106,13 +106,13 @@ object ServerInitializer {
 
   /* Step 7: Retrieve admin-cli's client secret. **/
   private def fetchClientSecret(token: String, clientId: UUID): Either[String, String] = {
-    sttp
+    basicRequest
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/client-secret")
       .header("Authorization", s"Bearer $token")
       .response(asJson[Credential])
-      .mapResponse(_.value)
+      .mapResponse(_.leftMap(_.body).flatMap(_.value.toRight("Client Secret Missing")))
       .send()
-      .map(_.body.map(_.get))
+      .map(_.body)
   }
 
   /**

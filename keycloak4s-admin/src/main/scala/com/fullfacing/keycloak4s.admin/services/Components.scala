@@ -6,7 +6,7 @@ import cats.effect.Concurrent
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
+import sttp.model.Uri.QuerySegment.KeyValue
 
 import scala.collection.immutable.Seq
 
