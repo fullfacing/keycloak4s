@@ -156,7 +156,7 @@ val sttpMonix: Seq[ModuleID] = Seq(
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix" % "1.0.3"
+  "com.fullfacing" %% "sttp-akka-monix" % "1.1.0"
 )
 
 // --------------------------------------------- //
