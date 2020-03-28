@@ -12,11 +12,12 @@ import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.nimbusds.jwt.SignedJWT
 import org.json4s.jackson.Serialization._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 import utils.AuthTestData._
 import utils.TestData._
 
-class AuthDirectiveTests extends FlatSpec with Matchers with ScalatestRouteTest {
+class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTest {
 
   val configEnforcing: PathAuthorization = PolicyBuilders.buildPathAuthorization("config.json")
   val configDisabled: PathAuthorization = PolicyBuilders.buildPathAuthorization("config_disabled.json")

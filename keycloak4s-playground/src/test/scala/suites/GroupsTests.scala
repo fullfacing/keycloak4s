@@ -119,11 +119,11 @@ class GroupsTests extends IntegrationSpec {
     val task =
       (for {
         group <- EitherT(groupService.fetchById(group1.get()))
-        _     <- EitherT(groupService.update(group1.get(), Group.Update(Some("Group 4"))))
+        _     <- EitherT(groupService.update(group1.get(), Group.Update(Some("Group 4 NewName"))))
         ug    <- EitherT(groupService.fetchById(group1.get()))
     } yield {
         group.name should not be ug.name
-        ug.name should equal("Group 4")
+        ug.name should equal("Group 4 NewName")
       }).value
     task.shouldReturnSuccess
   }

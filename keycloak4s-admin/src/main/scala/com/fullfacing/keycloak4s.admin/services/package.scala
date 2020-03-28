@@ -8,9 +8,10 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakError
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
-import com.softwaremill.sttp.{Multipart, multipart}
-
+import sttp.client.BasicRequestBody
+import sttp.model.Part
+import sttp.model.Uri.QuerySegment.KeyValue
+import sttp.client._
 import scala.collection.immutable.{Seq => ImmutableSeq}
 import scala.util.Try
 
@@ -40,13 +41,13 @@ package object services {
   }
 
   /** Creates a Multipart from a file. */
-  def createMultipart(file: File): Multipart = {
+  def createMultipart(file: File): Part[BasicRequestBody] = {
     val byteArray = Files.readAllBytes(file.toPath)
     multipart("file-part", byteArray)
   }
 
   /** Creates a Multipart from a Map. */
-  def createMultipart(formData: Map[String, String]): Multipart = multipart("form", formData)
+  def createMultipart(formData: Map[String, String]): Part[BasicRequestBody] = multipart("form", formData)
 
   def toCsvList(list: Option[List[String]]): Option[String] = list.map(_.mkString(","))
 
