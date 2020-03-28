@@ -20,6 +20,25 @@ class IdentityProvidersTests extends IntegrationSpec {
 
   val storedMapper: AtomicReference[IdentityProviderMapper] = new AtomicReference[IdentityProviderMapper]()
 
+  val savedIdentityProvider: AtomicReference[IdentityProvider] = new AtomicReference[IdentityProvider]()
+
+  def mapToUpdate(idp: IdentityProvider): IdentityProvider.Update = {
+    IdentityProvider.Update(
+      alias = idp.alias,
+      providerId = Some(idp.providerId),
+      config = Some(idp.config),
+      addReadTokenRoleOnCreate = Some(idp.addReadTokenRoleOnCreate),
+      displayName = idp.displayName,
+      enabled = Some(idp.enabled),
+      firstBrokerLoginFlowAlias = Some(idp.firstBrokerLoginFlowAlias),
+      internalId = Some(idp.internalId),
+      linkOnly = Some(idp.linkOnly),
+      postBrokerLoginFlowAlias = idp.postBrokerLoginFlowAlias,
+      storeToken = Some(idp.storeToken),
+      trustEmail = Some(idp.trustEmail),
+    )
+  }
+
   "fetch" should "return an empty list of identity provider" in {
     idProvService.fetch().map(_.map { providers =>
       providers shouldBe empty
@@ -31,21 +50,26 @@ class IdentityProvidersTests extends IntegrationSpec {
       "authorizationUrl"  -> "http://localhost/test/oidc",
       "tokenUrl"          -> "http://localhost/test/oidc",
       "clientId"          -> "test_id",
-      "clientSecret"      -> "test_secret"
+      "clientSecret"      -> "test_secret",
+      "clientAuthMethod"  -> "client_secret_basic"
     )
 
     val identityProvider = IdentityProvider.Create(
       config      = config,
       alias       = "test_oidc",
       providerId  = ProviderTypes.Oidc,
-      trustEmail  = Some(false)
+      trustEmail  = Some(false),
+      internalId  = Some("somestring")
     )
 
     for {
       _       <- EitherT(idProvService.create(identityProvider))
       idProvs <- EitherT(idProvService.fetch())
       idProv  <- EitherT.fromOption[Task](idProvs.headOption, Errors.NO_IDPROVS_FOUND)
-    } yield {println("ProviderId: " + idProv.providerId); idProv.alias shouldBe "test_oidc"}
+    } yield {
+      savedIdentityProvider.set(idProv)
+      idProv.alias shouldBe "test_oidc"
+    }
   }.value.shouldReturnSuccess
 
   "fetch" should "also be able to retrieve an Identity Provider by its alias" in {
@@ -61,7 +85,8 @@ class IdentityProvidersTests extends IntegrationSpec {
   }.shouldReturnSuccess
 
   "update" should "update an existing Identity Provider" in {
-    val update = IdentityProvider.Update("test_oidc", trustEmail = Some(true))
+    val update = mapToUpdate(savedIdentityProvider.get())
+      .copy(trustEmail = Some(true))
 
     for {
       _       <- EitherT(idProvService.update("test_oidc", update))

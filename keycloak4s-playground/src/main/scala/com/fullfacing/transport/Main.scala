@@ -10,12 +10,13 @@ import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.transport.backends.AkkaHttpBackendL
 import com.fullfacing.transport.handles.Akka
-import com.softwaremill.sttp.SttpBackend
-import com.softwaremill.sttp.akkahttp.AkkaHttpBackend
+import sttp.client.SttpBackend
 import monix.eval.{Task, TaskApp}
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import org.json4s.jackson.Serialization.writePretty
+import sttp.client.NothingT
+import sttp.client.akkahttp.AkkaHttpBackend
 
 object Main extends TaskApp {
   
@@ -43,7 +44,7 @@ object Main extends TaskApp {
 
     /* Monix-specific alternative for Admin API calls. Includes additional Observable functionality. **/
     lazy val monixClient: KeycloakClientM[ByteString] = {
-      implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
+      implicit val backend: SttpBackend[Task, Observable[ByteString], NothingT] = AkkaMonixHttpBackend()
       new KeycloakClientM[ByteString](config)
     }
 

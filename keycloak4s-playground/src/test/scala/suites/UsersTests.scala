@@ -5,11 +5,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 import cats.data.EitherT
 import cats.implicits._
-import utils.{Errors, IntegrationSpec}
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.{CredentialTypes, ProviderTypes}
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
+import utils.{Errors, IntegrationSpec}
 
 @DoNotDiscover
 class UsersTests extends IntegrationSpec {
@@ -376,7 +376,7 @@ class UsersTests extends IntegrationSpec {
     for {
       _     <- EitherT(userService.addClientRoles(storedClientId.get(), user.id, List(Role.Mapping(storedRoleId.get(), "test_role"))))
       roles <- EitherT(userService.fetchAvailableClientRoles(storedClientId.get(), user.id))
-    } yield roles shouldBe empty
+    } yield roles.map(_.id) should not contain storedRoleId.get()
   }.value.shouldReturnSuccess
 
   "removeClientRoles" should "unmap a Client Role from a User" in {

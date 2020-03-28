@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.admin.monix
 
-import com.softwaremill.sttp.Uri.QueryFragment.KeyValue
 import monix.reactive.Consumer
+import sttp.model.Uri.QuerySegment.KeyValue
 
 import scala.collection.immutable.Seq
 
