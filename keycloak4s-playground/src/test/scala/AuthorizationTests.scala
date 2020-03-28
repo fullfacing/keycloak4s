@@ -7,10 +7,11 @@ import com.fullfacing.keycloak4s.auth.core.PolicyBuilders
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization.AuthRequest
 import com.fullfacing.keycloak4s.core.models.enums.PolicyEnforcementModes
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import utils.AuthTestData
 
-class AuthorizationTests extends FlatSpec with Matchers {
+class AuthorizationTests extends AnyFlatSpec with Matchers {
 
   implicit val cId: UUID = UUID.randomUUID()
 

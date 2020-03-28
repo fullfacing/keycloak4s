@@ -11,10 +11,12 @@ import com.nimbusds.jose.JWSSigner
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
-import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.PrivateMethodTester
+import org.scalatest.matchers.should.Matchers
 import utils.TestData
 
-class ValidationTests extends FlatSpec with Matchers with PrivateMethodTester with ClaimValidators {
+class ValidationTests extends AnyFlatSpec with Matchers with PrivateMethodTester with ClaimValidators {
 
   val scheme  = "http"
   val host    = "localhost"
