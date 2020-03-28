@@ -6,7 +6,7 @@
 
 **A Scala-based middleware API for
 [Keycloak](https://www.keycloak.org/)**<br/>
-*Supports version 8.0.1*
+*Supports version 9.0.0*
 
 keycloak4s is an opinionated Scala-built API that serves as a bridge between any Scala project and a Keycloak server. It allows access to the server's [Admin API](https://www.keycloak.org/docs-api/6.0/rest-api/index.html), and provides adapters that validates Keycloak's bearer tokens. It authorizes requests via a JSON config file inspired by their [policy enforcement configuration][Policy-Configuration].
 
