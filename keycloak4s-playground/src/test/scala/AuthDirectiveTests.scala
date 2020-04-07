@@ -125,7 +125,7 @@ class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTe
     }
   }
 
-  it should "reqject a request when the unmatched path does not match a policy rule and pathMatchingMode is set to Unmatched" in {
+  it should "reject a request when the unmatched path does not match a policy rule and pathMatchingMode is set to Unmatched" in {
     val token = validToken(List("action-role")).serialize()
     val request = Request(POST, "/v1/segment/8fc41595-982f-4b00-a094-c71515cd1778/action", token)
 
