@@ -4,7 +4,7 @@ import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val global = {
   Seq(
-    version       := "2.0.2",
+    version       := "2.1.0",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -96,9 +96,9 @@ val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.11"
+val nimbusVersion         = "8.12"
 val scalaTestVersion      = "3.1.1"
-val sttpVersion           = "2.0.6"
+val sttpVersion           = "2.0.7"
 
 // -------------------------------------- //
 //          Library Dependencies          //

@@ -9,7 +9,8 @@ import sttp.client.{NothingT, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.reactive.Observable
-import org.scalatest._
+import org.scalatest.{Assertion, Inspectors}
+import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.Future

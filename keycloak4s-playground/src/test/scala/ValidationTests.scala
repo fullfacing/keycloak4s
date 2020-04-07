@@ -12,8 +12,8 @@ import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import org.scalatest.PrivateMethodTester
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import utils.TestData
 
 class ValidationTests extends AnyFlatSpec with Matchers with PrivateMethodTester with ClaimValidators {
