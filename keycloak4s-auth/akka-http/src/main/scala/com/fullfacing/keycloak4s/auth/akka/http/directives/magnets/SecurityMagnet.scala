@@ -34,7 +34,7 @@ object SecurityMagnet {
       if (securityConfig.policyDisabled()) {
         provide(authPayload)
       } else {
-        authorizeResourceServerAccess(authPayload, securityConfig.service)(cId).flatMap { case (path, method, userRoles) =>
+        authorizeResourceServerAccess(authPayload, securityConfig.service, securityConfig.pathMatchingMode)(cId).flatMap { case (path, method, userRoles) =>
           val isAuthorized = securityConfig.authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))(cId)
 
           if (isAuthorized) {

@@ -22,6 +22,7 @@ class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTe
   val configEnforcing: PathAuthorization = PolicyBuilders.buildPathAuthorization("config.json")
   val configDisabled: PathAuthorization = PolicyBuilders.buildPathAuthorization("config_disabled.json")
   val configPermissive: PathAuthorization = PolicyBuilders.buildPathAuthorization("config_permissive.json")
+  val configFullPathMatching: PathAuthorization = PolicyBuilders.buildPathAuthorization("config_full_path.json")
 
   def context: Directive1[UUID] = provide(UUID.randomUUID())
   val api1: Route =
@@ -32,6 +33,12 @@ class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTe
     }
   val api2: Route = secure(configDisabled) { _ => complete("Authorized!") }
   val api3: Route = secure(configPermissive) { _ => complete("Authorized!") }
+  val api4: Route = pathPrefix("v1" / "segment") {
+    secure(configEnforcing) { _ => complete("Authorized!") }
+  }
+  val api5: Route = pathPrefix("v1" / "segment") {
+    secure(configFullPathMatching) { _ => complete("Authorized!") }
+  }
 
   def permissionsBuilder(roles: List[String], service: String = "api-test"): String = write(service -> ("roles" -> roles))
 
@@ -108,4 +115,33 @@ class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTe
     }
   }
 
+  it should "correctly authorize a request where the unmatched path is empty" in {
+    val token = validToken(List("admin")).serialize()
+    val request = Request(GET, "/v1/segment", token)
+
+    request ~> api4 ~> check {
+      responseAs[String] should be ("Authorized!")
+      status shouldBe StatusCodes.OK
+    }
+  }
+
+  it should "reqject a request when the unmatched path does not match a policy rule and pathMatchingMode is set to Unmatched" in {
+    val token = validToken(List("action-role")).serialize()
+    val request = Request(POST, "/v1/segment/8fc41595-982f-4b00-a094-c71515cd1778/action", token)
+
+    request ~> api4 ~> check {
+      responseAs[String] should not be "Authorized!"
+      status shouldBe StatusCodes.Forbidden
+    }
+  }
+
+  it should "accept a request when the full path matches a policy rule and pathMatchingMode is set to Full" in {
+    val token = validToken(List("action-role")).serialize()
+    val request = Request(POST, "/v1/segment/8fc41595-982f-4b00-a094-c71515cd1778/action", token)
+
+    request ~> api5 ~> check {
+      responseAs[String] should be ("Authorized!")
+      status shouldBe StatusCodes.OK
+    }
+  }
 }
