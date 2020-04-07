@@ -16,6 +16,7 @@ object EnumSerializers {
     Json4s.serializer(CredentialTypes),
     Json4s.serializer(Directions),
     Json4s.serializer(InstallationProviders),
+    enumeratum.Json4s.serializer(PathMatchingModes),
     Json4s.serializer(Protocols),
     Json4s.serializer(RequiredActions),
     Json4s.serializer(TokenTypes),

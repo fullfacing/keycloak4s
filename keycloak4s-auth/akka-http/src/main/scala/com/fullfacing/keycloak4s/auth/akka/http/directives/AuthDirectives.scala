@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethod, HttpResponse}
-import akka.http.scaladsl.server.Directives.{complete, extractMethod, extractUnmatchedPath, provide}
+import akka.http.scaladsl.server.Directives.{complete, extractMatchedPath, extractMethod, extractUnmatchedPath, provide}
 import akka.http.scaladsl.server.StandardRoute.toDirective
 import akka.http.scaladsl.server.util.Tuple.yes
 import akka.http.scaladsl.server.{Directive, Directive1, StandardRoute}
@@ -12,6 +12,7 @@ import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.PayloadImplicits._
 import com.fullfacing.keycloak4s.auth.core.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
+import com.fullfacing.keycloak4s.core.models.enums.{PathMatchingMode, PathMatchingModes}
 
 object AuthDirectives {
 
@@ -37,11 +38,14 @@ object AuthDirectives {
    * @param parsedToken     The user's access token containing their permissions.
    * @param resourceServer  The name of the secured API, as represented by the Keycloak Client.
    */
-  def authorizeResourceServerAccess(parsedToken: AuthPayload, resourceServer: String)(implicit cId: UUID): Directive1[(Path, HttpMethod, List[String])] =
+  def authorizeResourceServerAccess(parsedToken: AuthPayload, resourceServer: String, mode: PathMatchingMode)(implicit cId: UUID): Directive1[(Path, HttpMethod, List[String])] =
     extractMethod.flatMap { method =>
-      extractUnmatchedPath.flatMap { path =>
-        Logging.requestAuthorizing(cId, path.toString(), method.value)
-        checkPermissions(resourceServer, parsedToken, r => provide((path, method, r.roles)))
+      extractMatchedPath.flatMap { matched =>
+        extractUnmatchedPath.flatMap { unmatched =>
+          val path = if (mode == PathMatchingModes.Full) matched ++ unmatched else unmatched
+          Logging.requestAuthorizing(cId, path.toString(), method.value)
+          checkPermissions(resourceServer, parsedToken, r => provide((path, method, r.roles)))
+        }
       }
     }
 
