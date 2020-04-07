@@ -6,7 +6,7 @@ import cats.data.Validated.{invalidNel, valid}
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.core.validation.{ClaimValidators, TokenValidator}
 import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models.ConfigWithoutAuth
+import com.fullfacing.keycloak4s.core.models.{ConfigWithoutAuth, KeycloakConfig}
 import com.nimbusds.jose.JWSSigner
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.RSAKey
@@ -23,7 +23,7 @@ class ValidationTests extends AnyFlatSpec with Matchers with PrivateMethodTester
   val port    = 8080
   val realm   = "test"
 
-  val config      = ConfigWithoutAuth(scheme, host, port, realm)
+  val config: KeycloakConfig = ConfigWithoutAuth(scheme, host, port, realm)
 
   val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, config)
   val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"
