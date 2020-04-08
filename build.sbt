@@ -35,6 +35,8 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
+
     crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
