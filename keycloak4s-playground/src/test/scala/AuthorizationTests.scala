@@ -17,7 +17,7 @@ class AuthorizationTests extends AnyFlatSpec with Matchers {
 
   val config: AtomicReference[PathAuthorization] = new AtomicReference[PathAuthorization]()
   val config2: AtomicReference[PathAuthorization] = new AtomicReference[PathAuthorization]()
-
+  val config3: AtomicReference[PathAuthorization] = new AtomicReference[PathAuthorization]()
 
   "apply" should "successfully retrieve config.json and convert it into a PathAuthorization object" in {
     val auth = PolicyBuilders.buildPathAuthorization("config.json")
@@ -40,6 +40,16 @@ class AuthorizationTests extends AnyFlatSpec with Matchers {
     config2.set(auth)
   }
 
+  it should "successfully retrieve config_empty_paths.json and convert it into a PathAuthorization object" in {
+    val auth = PolicyBuilders.buildPathAuthorization("config_empty_paths.json")
+
+    auth.service shouldBe "api-test"
+    auth.enforcementMode shouldBe PolicyEnforcementModes.Enforcing
+    auth.paths.size shouldBe 1
+
+    config3.set(auth)
+  }
+
   "authorizeRequest" should "accept a valid request for which the user has access" in {
     val path      = Path("/v1/segment")
     val method    = HttpMethods.GET
@@ -58,6 +68,20 @@ class AuthorizationTests extends AnyFlatSpec with Matchers {
     val result = config.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
 
     result shouldBe true
+  }
+
+  it should "correctly authorise an empty unmatched path using a `*` policy path " in {
+    val path = Path("")
+    val method = HttpMethods.GET
+    val userRoles = List("wildcard-role")
+
+    val result1 = config3.get().authorizeRequest(AuthRequest(path.toString(), method.value, userRoles))
+    val result2 = config3.get().authorizeRequest(AuthRequest(Path("test").toString(), method.value, userRoles))
+    val result3 = config3.get().authorizeRequest(AuthRequest(path.toString(), method.value, List("wrong")))
+
+    result1 shouldBe true
+    result2 shouldBe true
+    result3 shouldBe false
   }
 
   it should "reject a request where the user does not have the permissions expected for the matching path" in {
