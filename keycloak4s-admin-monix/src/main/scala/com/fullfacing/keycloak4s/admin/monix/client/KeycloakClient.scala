@@ -1,8 +1,6 @@
 package com.fullfacing.keycloak4s.admin.monix.client
 
-import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.{KeycloakClient => KeycloakClientA}
-import com.fullfacing.keycloak4s.admin.monix.utilities.ObservableExtensions.ObservableExtensions
 import com.fullfacing.keycloak4s.core.models._
 import monix.eval.Task
 import monix.reactive.Observable
@@ -29,23 +27,21 @@ class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Tas
       get[Seq[A]](path, q).map(_.fold(throw _, res => res))
     }
 
-    Observable.walk[Seq[A]](offset)(fetchResources(call, batch, limit)).flatMap(Observable.fromIterable)
+    Observable.unfoldEval(offset)(fetchResources(call, batch, limit)).flatMap(Observable.fromIterable)
   }
 
-  /** Created by https://github.com/Executioner1939
-   *
-   * Generator functions for the `fromAsyncStateAction` on `Observable`. This function continually fetches
-   * the next set of resources until a result set less than the batch size is returned.
+  /**
+   * This function continually fetches the next set of resources until a result set less than the batch size is returned.
    *
    * @param source a function that fetches the next batch of resources.
    * @return the next state and element to be pushed downstream.
    */
-  def fetchResources[A](source: Int => Task[Seq[A]], batchSize: Int, limit: Int): Int => Task[Either[Seq[A], (Seq[A], Int)]] = { offset =>
-    source(offset).map { resources =>
-      if (resources.size >= batchSize && resources.size + offset < limit) {
-        (resources, offset + resources.size).asRight
+  def fetchResources[A](source: Int => Task[Seq[A]], batchSize: Int, limit: Int): Int => Task[Option[(Seq[A], Int)]] = { offset =>
+    source(offset).map { results =>
+      if (results.size >= batchSize && results.size + offset <= limit) {
+        Some((results, results.size + offset))
       } else {
-        resources.asLeft
+        None
       }
     }
   }
