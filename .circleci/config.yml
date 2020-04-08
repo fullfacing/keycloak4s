@@ -29,7 +29,6 @@ jobs:
           KEYCLOAK_USER: "admin"
           KEYCLOAK_PASSWORD: "admin"
     steps:
-      - run:
       - checkout
       - run:
           name: Wait for Keycloak Server
