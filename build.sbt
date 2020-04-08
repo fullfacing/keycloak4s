@@ -35,6 +35,8 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
+    credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
+
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
     crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
@@ -43,6 +45,8 @@ lazy val global = {
     sonatypeProfileName := "com.fullfacing",
 
     publishTo := sonatypePublishToBundle.value,
+    publishConfiguration := publishConfiguration.value.withOverwrite(true),
+    publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
 
     // Sonatype Nexus Credentials
     credentials += Credentials(Path.userHome / ".sbt" / "1.0" / ".credentials"),
