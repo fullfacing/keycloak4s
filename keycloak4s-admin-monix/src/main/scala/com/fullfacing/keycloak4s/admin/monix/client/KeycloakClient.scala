@@ -22,7 +22,17 @@ class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Tas
    */
   def getList[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue], offset: Int = 0, limit: Int, batch: Int = 100): Observable[A] = {
     val call = { i: Int =>
-      val max = if (i + batch >= limit) limit - i else batch
+
+      val max = {
+        if (i == -1) { // Stop the Loop
+          Task.now(Right(Seq.empty[A]))
+        } else if (i + batch >= limit) {
+          limit - i
+        } else {
+          batch
+        }
+      }
+
       val q = (query :+ KeyValue("first", s"$i")) :+ KeyValue("max", s"$max")
       get[Seq[A]](path, q).map(_.fold(throw _, res => res))
     }
@@ -38,7 +48,9 @@ class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Tas
    */
   def fetchResources[A](source: Int => Task[Seq[A]], batchSize: Int, limit: Int): Int => Task[Option[(Seq[A], Int)]] = { offset =>
     source(offset).map { results =>
-      if (results.size >= batchSize && results.size + offset <= limit) {
+      if (results.size < batchSize) {
+        Some((results, -1)) // We still want to return Some with the partial set, to indicate we are done we return -1.
+      } else if (results.size == batchSize && results.size + offset <= limit) {
         Some((results, results.size + offset))
       } else {
         None
