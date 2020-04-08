@@ -1,4 +1,5 @@
 import sbt.Keys.{credentials, publishMavenStyle}
+import ReleaseTransformations._
 import sbt.{Credentials, url}
 import xerial.sbt.Sonatype.GitHubHosting
 
