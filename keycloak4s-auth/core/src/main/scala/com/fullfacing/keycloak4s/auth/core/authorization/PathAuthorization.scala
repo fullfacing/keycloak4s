@@ -4,24 +4,28 @@ import java.util.UUID
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.core.Logging
+import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization._
 import com.fullfacing.keycloak4s.auth.core.models.common.{AuthSegment, MethodRoles}
 import com.fullfacing.keycloak4s.auth.core.models.path._
-import com.fullfacing.keycloak4s.core.models.enums.{Methods, PolicyEnforcementMode}
+import com.fullfacing.keycloak4s.core.models.enums.{Methods, PathMatchingMode, PathMatchingModes, PolicyEnforcementMode}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
-import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization._
+
 import scala.annotation.tailrec
 import scala.util.matching.Regex
 
 /**
  * Security configuration for a top level authorization directive.
  *
- * @param service         Name of the server being secured.
- * @param enforcementMode Determines how requests with no matching sec policy are handled.
- * @param paths           The configured policies.
+ * @param service          Name of the server being secured.
+ * @param enforcementMode  Determines how requests with no matching sec policy are handled.
+ * @param pathMatchingMode Full - compares the policies against the full request path.
+ *                         Unmatched - compares the policies against the path segments below the security implementation.
+ * @param paths            The configured policies.
  */
 final case class PathAuthorization(service: String,
                                    enforcementMode: PolicyEnforcementMode,
+                                   pathMatchingMode: PathMatchingMode,
                                    paths: List[PathRule]) extends Authorization[AuthRequest] {
 
   /**
@@ -35,7 +39,13 @@ final case class PathAuthorization(service: String,
   @tailrec
   private def findMatchingPaths(reqPath: List[String], cfgPaths: List[PathRule], d: Int = 0, acc: List[PathRule] = List.empty): List[PathRule] = reqPath match {
     //Return the accumulated wildcard paths, as well as the remaining path that matches the request
-    case Nil    => acc ++ cfgPaths.filter(_.path.drop(d).isEmpty)
+    case Nil    =>
+      val nilPaths = cfgPaths.filter { p =>
+        val s = p.path.drop(d)
+        s.isEmpty || s.headOption.contains("*")
+      }
+      acc ++ nilPaths
+
     case h :: t =>
       //Look for a configured wildcard path at the current segment
       val wildcard = acc ++ cfgPaths.find(_.path.drop(d).headOption.contains("*")).toList
@@ -92,6 +102,7 @@ object PathAuthorization {
 
   final case class Create(service: String,
                           enforcementMode: PolicyEnforcementMode,
+                          pathMatchingMode: PathMatchingMode = PathMatchingModes.Unmatched,
                           paths: List[PathRule.Create],
                           segments: List[AuthSegment])
 
@@ -122,9 +133,10 @@ object PathAuthorization {
     }
 
     PathAuthorization(
-      service         = create.service,
-      enforcementMode = create.enforcementMode,
-      paths           = pathRoles
+      service          = create.service,
+      enforcementMode  = create.enforcementMode,
+      pathMatchingMode = create.pathMatchingMode,
+      paths            = pathRoles
     )
   }
 

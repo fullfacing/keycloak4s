@@ -1,16 +1,41 @@
 import sbt.Keys.{credentials, publishMavenStyle}
+import ReleaseTransformations._
 import sbt.{Credentials, url}
 import xerial.sbt.Sonatype.GitHubHosting
 
+val baseScalaOpts = Seq(
+  "-Ywarn-unused:implicits",
+  "-Ywarn-unused:imports",
+  "-Ywarn-unused:locals",
+  "-Ywarn-unused:params",
+  "-Ywarn-unused:patvars",
+  "-Ywarn-unused:privates",
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-Xlint",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard"
+)
+
+val scalac213Opts = baseScalaOpts
+val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
+
 lazy val global = {
   Seq(
-    version       := "2.1.0",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
       case _                       => scalac213Opts
     }),
+
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
     crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
 
@@ -57,33 +82,23 @@ lazy val global = {
         email = "neil@fullfacing.com",
         url   = url("https://www.fullfacing.com/")
       )
+    ),
+
+    releaseIgnoreUntrackedFiles := true,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+    releaseCrossBuild := true,
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      setReleaseVersion,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
+      setNextVersion,
     )
   )
 }
-
-val baseScalaOpts = Seq(
-  "-Ywarn-unused:implicits",
-  "-Ywarn-unused:imports",
-  "-Ywarn-unused:locals",
-  "-Ywarn-unused:params",
-  "-Ywarn-unused:patvars",
-  "-Ywarn-unused:privates",
-  "-deprecation",
-  "-encoding", "UTF-8",
-  "-feature",
-  "-language:existentials",
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xlint",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard"
-)
-
-
-val scalac213Opts = baseScalaOpts
-val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 // ---------------------------------- //
 //          Library Versions          //
@@ -96,9 +111,9 @@ val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.7"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.11"
+val nimbusVersion         = "8.14"
 val scalaTestVersion      = "3.1.1"
-val sttpVersion           = "2.0.6"
+val sttpVersion           = "2.0.7"
 
 // -------------------------------------- //
 //          Library Dependencies          //
