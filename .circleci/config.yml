@@ -1,26 +1,14 @@
 version: 2
 jobs:
   test_213:
-    working_directory: /code
+    working_directory: ~/code
     docker:
-        - image: openjdk:11
+        - image: circleci/openjdk:latest
         - image: jboss/keycloak:latest
           environment:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
-    environment:
-      - SBT_VERSION: 1.3.7
     steps:
-      - run:
-          name: Install SBT
-          command: |
-            apt update && apt install -y curl
-            curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
-            dpkg -i sbt-$SBT_VERSION.deb
-            rm sbt-$SBT_VERSION.deb
-            apt-get update
-            apt-get install -y sbt git
-            apt-get clean && apt-get autoclean
       - checkout
       - run:
          name: Install Dockerize
@@ -38,26 +26,14 @@ jobs:
           command: |
             bash <(curl -s https://codecov.io/bash)
   test_212:
-    working_directory: /code
+    working_directory: ~/code
     docker:
-      - image: openjdk:11
+      - image: circleci/openjdk:latest
       - image: jboss/keycloak:latest
         environment:
           KEYCLOAK_USER: "admin"
           KEYCLOAK_PASSWORD: "admin"
-    environment:
-      - SBT_VERSION: 1.3.7
     steps:
-      - run:
-          name: Install SBT
-          command: |
-            apt update && apt install -y curl
-            curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
-            dpkg -i sbt-$SBT_VERSION.deb
-            rm sbt-$SBT_VERSION.deb
-            apt-get update
-            apt-get install -y sbt git
-            apt-get clean && apt-get autoclean
       - checkout
       - run:
           name: Install Dockerize
@@ -74,10 +50,47 @@ jobs:
           name: Upload Reports
           command: |
             bash <(curl -s https://codecov.io/bash)
-
+  Publish-And-Release:
+    docker:
+      - image: circleci/openjdk:latest
+      - image: jboss/keycloak:latest
+        environment:
+          KEYCLOAK_USER: "admin"
+          KEYCLOAK_PASSWORD: "admin"
+    working_directory: ~/code
+    steps:
+      - checkout
+      - restore_cache:
+          key: sbt-cache-0
+      - run:
+          name: Import PGP Key
+          command: |
+            sudo rm -rf /var/lib/apt/lists/* && sudo apt-get update
+            sudo apt-get install -y dos2unix
+            echo -e "$PGP_KEY" > key.asc
+            dos2unix key.asc
+            gpg --import key.asc
+      - run:
+          name: Compile JAR
+          command: sbt 'release with-defaults'
+      - run:
+          name: Upload Reports
+          command: |
+            bash <(curl -s https://codecov.io/bash)
+      - save_cache:
+          key: sbt-cache-0
+          paths:
+            - "~/.m2"
+            - "~/.sbt"
+            - "~/.ivy2/cache"
 workflows:
   version: 2
   deployment:
     jobs:
       - test_212
       - test_213
+      - Publish-And-Release:
+          filters:
+            branches:
+              only:
+                - master

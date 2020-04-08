@@ -2,9 +2,31 @@ import sbt.Keys.{credentials, publishMavenStyle}
 import sbt.{Credentials, url}
 import xerial.sbt.Sonatype.GitHubHosting
 
+val baseScalaOpts = Seq(
+  "-Ywarn-unused:implicits",
+  "-Ywarn-unused:imports",
+  "-Ywarn-unused:locals",
+  "-Ywarn-unused:params",
+  "-Ywarn-unused:patvars",
+  "-Ywarn-unused:privates",
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-Xlint",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard"
+)
+
+val scalac213Opts = baseScalaOpts
+val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
+
 lazy val global = {
   Seq(
-    version       := "2.1.0",
     scalaVersion  := "2.13.1",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -57,33 +79,24 @@ lazy val global = {
         email = "neil@fullfacing.com",
         url   = url("https://www.fullfacing.com/")
       )
+    ),
+
+    releaseIgnoreUntrackedFiles := true,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+    releaseCrossBuild := true,
+    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
+      setNextVersion,
     )
   )
 }
-
-val baseScalaOpts = Seq(
-  "-Ywarn-unused:implicits",
-  "-Ywarn-unused:imports",
-  "-Ywarn-unused:locals",
-  "-Ywarn-unused:params",
-  "-Ywarn-unused:patvars",
-  "-Ywarn-unused:privates",
-  "-deprecation",
-  "-encoding", "UTF-8",
-  "-feature",
-  "-language:existentials",
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xlint",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard"
-)
-
-
-val scalac213Opts = baseScalaOpts
-val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 // ---------------------------------- //
 //          Library Versions          //
