@@ -92,7 +92,6 @@ lazy val global = {
       checkSnapshotDependencies,
       inquireVersions,
       runClean,
-      runTest,
       setReleaseVersion,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeBundleRelease"),
