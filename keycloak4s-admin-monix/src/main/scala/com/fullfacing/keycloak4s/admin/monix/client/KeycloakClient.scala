@@ -50,6 +50,8 @@ class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Tas
     source(offset).map { results =>
       if (results.size < batchSize) {
         Some((results, -1)) // We still want to return Some with the partial set, to indicate we are done we return -1.
+      } else if (results.size == batchSize && results.size == limit) {
+        Some((results, -1))
       } else if (results.size == batchSize && results.size + offset <= limit) {
         Some((results, results.size + offset))
       } else {
