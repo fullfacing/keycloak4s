@@ -76,8 +76,16 @@ jobs:
 workflows:
   deployment:
     jobs:
-      - test_212
-      - test_213
+      - test_212:
+          filters:
+            branches:
+              ignore:
+                - master
+      - test_213:
+          filters:
+            branches:
+              ignore:
+                - master
       - Publish-And-Release:
           filters:
             branches:
