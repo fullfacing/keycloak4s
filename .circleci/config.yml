@@ -8,8 +8,6 @@ jobs:
           environment:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
-    environment:
-      - _JAVA_OPTIONS: -XX:MaxMetaspaceSize=1536m
     steps:
       - checkout
       - run:
