@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [2.2.0] - 2020-04-08
 ### Added
 -  sbt release to handle automatic releases to Maven Central
+### Changed
+- `PathAuthorization` - Added parameter to determine whether to match the full request path or unmatched request path against the configured policy rules.
+### Fixed
+- `PathAuthorization` - Fixed bug with wildcard paths when an empty request path is evaluated. 
 
 ## [2.1.0] - 2020-03-28
 ### Changed

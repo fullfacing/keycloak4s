@@ -24,7 +24,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   val keycloakConfig: ConfigWithAuth    = ConfigWithAuth("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
-  implicit val context: Scheduler = monix.execution.Scheduler.global
+  implicit val context: Scheduler = monix.execution.Scheduler.fixedPool("fixed", 8)
   implicit val backend: SttpBackend[Task, Observable[ByteString], NothingT] = AkkaMonixHttpBackend()
   implicit val client: KeycloakClient[T] = new KeycloakClient(keycloakConfig)
 
