@@ -10,11 +10,9 @@ import com.fullfacing.transport.Implicits._
 
 object ClientsApi {
 
-  val api: Route =
+  lazy val api: Route =
     contextFromPostman { correlationId =>
       secure((pathClientsConfig, correlationId)) { _ =>
-        ClientsRoutes.api ~
-          AccountRoutes.api ~
           SiteRoutes.api
       }
     }
