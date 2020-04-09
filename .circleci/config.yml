@@ -3,7 +3,7 @@ jobs:
   test_213:
     working_directory: ~/code
     docker:
-        - image: circleci/openjdk:11
+        - image: circleci/openjdk:latest
         - image: jboss/keycloak:latest
           environment:
             KEYCLOAK_USER: "admin"
@@ -15,7 +15,7 @@ jobs:
           command: dockerize -wait tcp://localhost:8080 -timeout 5m
       - run:
           name: Run Tests
-          command: sbt ++2.13.1! test
+          command: sbt ++2.13.1! clean test
       - run:
           name: Upload Reports
           command: |
