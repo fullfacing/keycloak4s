@@ -21,39 +21,35 @@ class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Tas
    * @param batch  The amount of items each call should return.
    */
   def getList[A <: Any : Manifest](path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue], offset: Int = 0, limit: Int, batch: Int = 100): Observable[A] = {
-    val call = { i: Int =>
-
-      val max = {
-        if (i == -1) { // Stop the Loop
-          Task.now(Right(Seq.empty[A]))
-        } else if (i + batch >= limit) {
-          limit - i
-        } else {
-          batch
-        }
-      }
-
-      val q = (query :+ KeyValue("first", s"$i")) :+ KeyValue("max", s"$max")
-      get[Seq[A]](path, q).map(_.fold(throw _, res => res))
-    }
-
-    Observable.unfoldEval(offset)(fetchResources(call, batch, limit)).flatMap(Observable.fromIterable)
+    Observable.unfoldEval(offset)(fetchResources(_, batch, limit, path, query)).flatMap(Observable.fromIterable)
   }
 
   /**
    * This function continually fetches the next set of resources until a result set less than the batch size is returned.
    *
-   * @param source a function that fetches the next batch of resources.
    * @return the next state and element to be pushed downstream.
    */
-  def fetchResources[A](source: Int => Task[Seq[A]], batchSize: Int, limit: Int): Int => Task[Option[(Seq[A], Int)]] = { offset =>
-    source(offset).map { results =>
-      if ((results.nonEmpty && results.size < batchSize) || results.size == limit) {
-        Some((results, -1)) // We still want to return Some with the partial set, to indicate we are done we return -1.
-      } else if (results.size == batchSize && results.size + offset <= limit) {
-        Some((results, results.size + offset))
-      } else {
-        None
+  def fetchResources[A <: Any : Manifest](offset: Int, batchSize: Int, limit: Int, path: Seq[String], query: Seq[KeyValue] = Seq.empty[KeyValue]): Task[Option[(Seq[A], Int)]] = {
+    if (offset == -1) { // Offset of -1 means we have nothing more to fetch
+      Task.now(None)
+
+    } else {
+      val q = (query :+ KeyValue("first", s"$offset")) :+ KeyValue("max", s"$batchSize")
+      get[Seq[A]](path, q).map(_.fold(throw _, res => res)).map { results =>
+
+        // Result set is less than batch size
+        // Result set is equal to limit
+        if (results.nonEmpty && (results.size < batchSize) || results.size == limit) { // No more to fetch
+          Some((results, -1))
+
+        // Result set is equal to batch size
+        } else if (results.size == batchSize) { // More to Fetch
+          Some((results, offset + results.size))
+
+        // Result set is empty
+        } else {
+          None
+        }
       }
     }
   }
