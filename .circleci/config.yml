@@ -3,7 +3,7 @@ jobs:
   test_213:
     working_directory: ~/code
     docker:
-        - image: circleci/openjdk:latest
+        - image: circleci/openjdk:11
         - image: jboss/keycloak:latest
           environment:
             KEYCLOAK_USER: "admin"
