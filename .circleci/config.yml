@@ -3,33 +3,15 @@ jobs:
   test_213:
     working_directory: ~/code
     docker:
-        - image: openjdk:11
+        - image: circleci/openjdk:latest
         - image: jboss/keycloak:latest
           environment:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
     environment:
-      - SBT_VERSION: 1.3.8
+      - _JAVA_OPTIONS: -XX:MaxMetaspaceSize=1536m
     steps:
-      - run:
-          name: Install SBT
-          command: |
-            apt update && apt install -y curl
-            curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
-            dpkg -i sbt-$SBT_VERSION.deb
-            rm sbt-$SBT_VERSION.deb
-            apt-get update
-            apt-get install -y sbt git
-            apt-get clean && apt-get autoclean
       - checkout
-      - run:
-         name: Install Dockerize
-         command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-         environment:
-           DOCKERIZE_VERSION: v0.3.0
-      - run:
-          name: Wait for Keycloak Server
-          command: dockerize -wait tcp://localhost:8080 -timeout 5m
       - run:
           name: Run Tests
           command: sbt ++2.13.1! clean test
