@@ -35,6 +35,8 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
+    credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
+
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
     crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
@@ -43,9 +45,8 @@ lazy val global = {
     sonatypeProfileName := "com.fullfacing",
 
     publishTo := sonatypePublishToBundle.value,
-
-    // Sonatype Nexus Credentials
-    credentials += Credentials(Path.userHome / ".sbt" / "1.0" / ".credentials"),
+    publishConfiguration := publishConfiguration.value.withOverwrite(true),
+    publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
 
     // To sync with Maven central, you need to supply the following information:
     publishMavenStyle := true,
@@ -158,16 +159,13 @@ val scalaTest: Seq[ModuleID] = Seq(
   "org.scalatest" %% "scalatest" % scalaTestVersion % Test
 )
 
-val sttpAkka: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "akka-http-backend" % sttpVersion,
-  "com.softwaremill.sttp.client" %% "core"              % sttpVersion,
-  "com.softwaremill.sttp.client" %% "json4s"            % sttpVersion,
-  "com.typesafe.akka"     %% "akka-stream"       % akkaStreamsVersion
-)
-
-val sttpMonix: Seq[ModuleID] = Seq(
+val sttp: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp.client" %% "core"   % sttpVersion,
   "com.softwaremill.sttp.client" %% "json4s" % sttpVersion
+)
+
+val sttpAkka: Seq[ModuleID] = Seq(
+  "com.softwaremill.sttp.client" %% "akka-http-backend" % sttpVersion
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
@@ -187,22 +185,18 @@ lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
 // ---------------------------------------------- //
 // Project and configuration for keycloak4s-admin //
 // ---------------------------------------------- //
-lazy val adminDependencies: Seq[ModuleID] = sttpAkka
-
 lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= adminDependencies)
+  .settings(libraryDependencies ++= sttp)
   .settings(name := "keycloak4s-admin", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
 // ---------------------------------------------------- //
 // Project and configuration for keycloak4s-admin-monix //
 // ---------------------------------------------------- //
-lazy val monixDependencies: Seq[ModuleID] = sttpMonix ++ monix
-
 lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= monixDependencies)
+  .settings(libraryDependencies ++= monix)
   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
   .dependsOn(`keycloak4s-admin`)
 
@@ -230,7 +224,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.1")
   .settings(skip in publish := true)
-  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
