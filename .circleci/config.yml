@@ -13,6 +13,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Wait for Keycloak Server
+          command: dockerize -wait tcp://localhost:8080 -timeout 5m
+      - run:
           name: Run Tests
           command: sbt ++2.13.1! clean test
   test_212:
