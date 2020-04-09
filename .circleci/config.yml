@@ -16,10 +16,6 @@ jobs:
       - run:
           name: Run Tests
           command: sbt ++2.13.1! clean test
-      - run:
-          name: Upload Reports
-          command: |
-            bash <(curl -s https://codecov.io/bash)
   test_212:
     working_directory: ~/code
     docker:
