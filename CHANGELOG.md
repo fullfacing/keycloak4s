@@ -3,9 +3,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] - 2020-03-28
+## [2.2.1] - 2020-04-09
+### Changed
+- `Observable.walk` to use `Observable.unfoldEval`
+### Removed
+- `Observable.walk` extension function.
+- `AsyncState` used by `Observable.walk`
+- unnecessary Akka dependencies from `keycloak4s-admin` and `keycloak4s-admin-monix` modules.
+
+## [2.2.0] - 2020-04-08
 ### Added
 -  sbt release to handle automatic releases to Maven Central
+### Changed
+- `PathAuthorization` - Added parameter to determine whether to match the full request path or unmatched request path against the configured policy rules.
+### Fixed
+- `PathAuthorization` - Fixed bug with wildcard paths when an empty request path is evaluated. 
+
+## [2.1.0] - 2020-03-28
 ### Changed
 - updated various dependencies
 ### Fixed

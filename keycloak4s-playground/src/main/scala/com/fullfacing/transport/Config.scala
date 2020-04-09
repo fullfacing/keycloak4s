@@ -5,5 +5,5 @@ import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 
 object Config {
 
-  val pathClientsConfig: PathAuthorization = PolicyBuilders.buildPathAuthorization("clients_configB.json")
+  lazy val pathClientsConfig: PathAuthorization = PolicyBuilders.buildPathAuthorization("clients_configB.json")
 }
