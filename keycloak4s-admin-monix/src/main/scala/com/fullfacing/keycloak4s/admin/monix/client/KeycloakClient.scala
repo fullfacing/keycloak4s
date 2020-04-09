@@ -38,8 +38,7 @@ class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Tas
       get[Seq[A]](path, q).map(_.fold(throw _, res => res)).map { results =>
 
         // Result set is less than batch size
-        // Result set is equal to limit
-        if (results.nonEmpty && (results.size < batchSize) || results.size == limit) { // No more to fetch
+        if (results.size < batchSize) { // No more to fetch
           Some((results, -1))
 
         // Result set is equal to batch size
