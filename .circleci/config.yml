@@ -70,6 +70,12 @@ jobs:
             dos2unix key.asc
             gpg --import key.asc
       - run:
+          name: Set Git Config
+          command: |
+            git push --set-upstream origin master
+            git config --global user.email "shadowrhyder@gmail.com"
+            git config --global user.name "Richard"
+      - run:
           name: Compile JAR
           command: sbt 'release with-defaults'
       - save_cache:

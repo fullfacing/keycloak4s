@@ -1,6 +1,7 @@
 import sbt.Keys.{credentials, publishMavenStyle}
 import ReleaseTransformations._
 import sbt.{Credentials, url}
+import sbtrelease.Version.Bump.Bugfix
 import xerial.sbt.Sonatype.GitHubHosting
 
 val baseScalaOpts = Seq(
@@ -88,17 +89,37 @@ lazy val global = {
     releaseIgnoreUntrackedFiles := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseCrossBuild := true,
-    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseVersionBump := Bugfix,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
       runClean,
       setReleaseVersion,
+      tagRelease,
+      pushChanges,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeBundleRelease"),
+      swapToDevelopAction,
       setNextVersion,
+      commitNextVersion,
+      pushChanges
     )
   )
+}
+
+import sbtrelease.Git
+import sbtrelease.ReleasePlugin.autoImport._
+import sbtrelease.Utilities._
+
+def swapToDevelop: State => State = { st: State =>
+  val git = st.extract.get(releaseVcs).get.asInstanceOf[Git]
+  git.cmd("checkout", "develop") ! st.log
+  st
+}
+
+lazy val swapToDevelopAction = { st: State =>
+  val newState = swapToDevelop(st)
+  newState
 }
 
 // ---------------------------------- //
