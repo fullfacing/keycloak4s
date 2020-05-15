@@ -11,7 +11,7 @@ import com.fullfacing.keycloak4s.core.models.KeycloakException
 
 import scala.util.{Failure, Success}
 
-object ValidationDirective {
+trait ValidationDirectives {
 
   type AuthPayloadWithId = (UUID, AuthPayload)
 

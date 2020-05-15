@@ -1,6 +1,7 @@
 import sbt.Keys.{credentials, publishMavenStyle}
 import ReleaseTransformations._
 import sbt.{Credentials, url}
+import sbtrelease.Version.Bump.Bugfix
 import xerial.sbt.Sonatype.GitHubHosting
 
 val baseScalaOpts = Seq(
@@ -88,33 +89,53 @@ lazy val global = {
     releaseIgnoreUntrackedFiles := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseCrossBuild := true,
-    releaseVersionBump := sbtrelease.Version.Bump.Minor,
+    releaseVersionBump := Bugfix,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
       runClean,
       setReleaseVersion,
+      tagRelease,
+      pushChanges,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeBundleRelease"),
+      swapToDevelopAction,
       setNextVersion,
+      commitNextVersion,
+      pushChanges
     )
   )
+}
+
+import sbtrelease.Git
+import sbtrelease.ReleasePlugin.autoImport._
+import sbtrelease.Utilities._
+
+def swapToDevelop: State => State = { st: State =>
+  val git = st.extract.get(releaseVcs).get.asInstanceOf[Git]
+  git.cmd("checkout", "develop") ! st.log
+  st
+}
+
+lazy val swapToDevelopAction = { st: State =>
+  val newState = swapToDevelop(st)
+  newState
 }
 
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.1.11"
-val akkaStreamsVersion    = "2.6.4"
-val catsEffectVersion     = "2.1.2"
+val akkaHttpVersion       = "10.1.12"
+val akkaStreamsVersion    = "2.6.5"
+val catsEffectVersion     = "2.1.3"
 val catsCoreVersion       = "2.1.1"
-val enumeratumVersion     = "1.5.15"
-val json4sVersion         = "3.6.7"
+val enumeratumVersion     = "1.6.0"
+val json4sVersion         = "3.6.8"
 val logbackVersion        = "1.2.3"
-val monixVersion          = "3.1.0"
-val nimbusVersion         = "8.14"
-val scalaTestVersion      = "3.1.1"
-val sttpVersion           = "2.0.7"
+val monixVersion          = "3.2.1"
+val nimbusVersion         = "8.17"
+val scalaTestVersion      = "3.1.2"
+val sttpVersion           = "2.1.1"
 
 // -------------------------------------- //
 //          Library Dependencies          //
