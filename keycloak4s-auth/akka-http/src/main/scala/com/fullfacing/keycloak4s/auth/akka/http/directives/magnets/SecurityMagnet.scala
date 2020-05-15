@@ -4,8 +4,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.provide
-import com.fullfacing.keycloak4s.auth.akka.http.directives.AuthDirectives._
-import com.fullfacing.keycloak4s.auth.akka.http.directives.ValidationDirective._
+import com.fullfacing.keycloak4s.auth.akka.http.directives.{AuthDirectives, ValidationDirectives}
 import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization.AuthRequest
@@ -16,7 +15,7 @@ trait SecurityMagnet {
   def apply(): Directive1[AuthPayload]
 }
 
-object SecurityMagnet {
+object SecurityMagnet extends AuthDirectives with ValidationDirectives {
 
   /* Authorizes a request with a correlation ID passed through. **/
   implicit def run(parameters: (PathAuthorization, UUID))(implicit tokenValidator: TokenValidator): SecurityMagnet = { () =>

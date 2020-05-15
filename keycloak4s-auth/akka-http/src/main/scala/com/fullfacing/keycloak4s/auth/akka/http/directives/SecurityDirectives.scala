@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directive1
 import com.fullfacing.keycloak4s.auth.akka.http.directives.magnets.SecurityMagnet
 import com.fullfacing.keycloak4s.auth.core.models.AuthPayload
 
-object SecurityDirective {
+trait SecurityDirectives {
 
   /**
    * Authorization directive that secures all inner routes.

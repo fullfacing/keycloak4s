@@ -6,18 +6,18 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirective._
+import com.fullfacing.keycloak4s.auth.akka.http.directives.SecurityDirectives
 import com.fullfacing.keycloak4s.auth.core.PolicyBuilders
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.nimbusds.jwt.SignedJWT
 import org.json4s.jackson.Serialization._
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import utils.AuthTestData._
 import utils.TestData._
 
-class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTest {
+class AuthDirectiveTests extends AnyFlatSpec with Matchers with ScalatestRouteTest with SecurityDirectives {
 
   val configEnforcing: PathAuthorization = PolicyBuilders.buildPathAuthorization("config.json")
   val configDisabled: PathAuthorization = PolicyBuilders.buildPathAuthorization("config_disabled.json")
