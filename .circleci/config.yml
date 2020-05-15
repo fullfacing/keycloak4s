@@ -46,6 +46,9 @@ jobs:
       - checkout
       - restore_cache:
           key: sbt-cache-0
+      - add_ssh_keys:
+          fingerprints:
+            - "87:c4:7d:c6:43:42:40:6c:38:54:75:72:79:6d:e0:de"
       - run:
           name: Import PGP Key
           command: |
