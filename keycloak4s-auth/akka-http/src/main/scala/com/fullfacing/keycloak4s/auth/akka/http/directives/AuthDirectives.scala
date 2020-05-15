@@ -14,7 +14,7 @@ import com.fullfacing.keycloak4s.auth.core.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
 import com.fullfacing.keycloak4s.core.models.enums.{PathMatchingMode, PathMatchingModes}
 
-object AuthDirectives {
+trait AuthDirectives {
 
   /**
    * Looks for the requested resource in the user's permissions from the validated access token.
