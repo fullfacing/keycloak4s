@@ -133,7 +133,7 @@ val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.8"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.2.1"
-val nimbusVersion         = "8.17.1"
+val nimbusVersion         = "8.18"
 val scalaTestVersion      = "3.1.2"
 val sttpVersion           = "2.1.5"
 
