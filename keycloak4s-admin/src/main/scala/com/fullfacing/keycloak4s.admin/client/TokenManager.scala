@@ -4,6 +4,7 @@ import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
+import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse}
@@ -149,6 +150,9 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     )
   }.leftMap(_.body)
 
+  private def getToken: F[Option[Token]] = Concurrent[F].delay(Option(ref.get))
+  private def setToken(token: Token): F[Unit] = Concurrent[F].delay(ref.set(token))
+
   /**
     * Inspect the status of the token, reissuing a new access token using the password
     * credentials grant type, or refreshing the existing token using the refresh_token grant type.
@@ -158,26 +162,21 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     */
   private def validateToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
 
-    def setToken(a: Either[KeycloakSttpException, Token]): Either[KeycloakSttpException, Token] = {
-      a.map { nToken =>
-        ref.set(nToken)
-        nToken
-      }
-    }
+    def setTokenF(token: Token): EitherT[F, KeycloakSttpException, Unit] = EitherT.liftF(setToken(token))
+    def issueAccessTokenF: EitherT[F, KeycloakSttpException, Token] = EitherT(issueAccessToken()).flatTap(setTokenF)
+    def issueRefreshTokenF(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT(refreshAccessToken(token)).flatTap(setTokenF)
+    def pure(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT.pure(token)
 
-    val token = ref.get()
-    if (token == null) {
-      Concurrent[F].map(issueAccessToken())(setToken)
-    } else {
-      val epoch = Instant.now()
-      if (epoch.isAfter(token.authenticateAt)) {
-        Concurrent[F].map(issueAccessToken())(setToken)
-      } else if (epoch.isAfter(token.refreshAt)) {
-        Concurrent[F].map(refreshAccessToken(token))(setToken)
-      } else {
-        Concurrent[F].pure(token.asRight)
+    (for {
+      current <- EitherT.liftF(getToken)
+      epoch  = Instant.now()
+      res <- current match {
+        case None => issueAccessTokenF
+        case Some(token) if epoch.isAfter(token.authenticateAt) => issueAccessTokenF
+        case Some(token) if epoch.isAfter(token.refreshAt) => issueRefreshTokenF(token) orElse issueAccessTokenF
+        case Some(token) => pure(token)
       }
-    }
+    } yield res).value
   }
 
   def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
