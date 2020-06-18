@@ -383,7 +383,7 @@ To gain access to the extractors, the implicits need to be in scope. After it ha
 
 *Example:*<br/>
 ```scala
-import com.fullfacing.keycloak4s.auth.akka.http.PayloadImplicits._
+import com.fullfacing.keycloak4s.auth.core.PayloadImplicits._
 
 val payload: Payload = ... // truncated
 

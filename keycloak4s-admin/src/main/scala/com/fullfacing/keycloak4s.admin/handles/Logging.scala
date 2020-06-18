@@ -31,7 +31,7 @@ object Logging {
     logger.logTrace(s"${cIdLog(cId)}Access Token refreshed for Realm $gr$realm$cy.$rs")
 
   def tokenRefreshFailed(realm: String, cId: UUID, ex: Throwable): Unit =
-    logger.error(s"${cIdErr(cId)}Access Token could not be refreshed for Realm $realm.", ex)
+    logger.warn(s"${cIdErr(cId)}Access Token could not be refreshed for Realm $realm.", ex)
 
   /* ADMIN API REST LOGGING **/
 
