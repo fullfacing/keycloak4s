@@ -42,6 +42,10 @@ object Logging {
     logger.logTrace(s"${cIdLog(cId)}$gr${requestInfo.protocol} ${requestInfo.path}$cy request sent to Keycloak Admin API. $bodyTrace$rs")
   }
 
+  def retryUnauthorized(requestInfo: => RequestInfo, cId: => UUID): Unit = {
+    logger.warn(s"${cIdLog(cId)}$gr${requestInfo.protocol}$cy request failed with an authorization error. Retrying...$rs")
+  }
+
   def requestSuccessful(response: => String, cId: => UUID): Unit = {
     lazy val resp = if (response == "") "NoContent" else response
     logger.logDebugIff(s"${cIdLog(cId)}Request was successful.$rs")
