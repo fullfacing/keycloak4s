@@ -2,6 +2,7 @@ package com.fullfacing.keycloak4s.admin.client
 
 import java.util.UUID
 
+import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
@@ -12,7 +13,7 @@ import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
 import sttp.client.{Identity, NothingT, RequestT, SttpBackend, asString, _}
-import sttp.model.Uri
+import sttp.model.{StatusCode, Uri}
 import sttp.model.Uri.QuerySegment.KeyValue
 
 import scala.collection.immutable.Seq
@@ -28,7 +29,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
   private implicit def ma[A : Anything]: Manifest[A] = implicitly[Anything[A]].manifest
 
   /* URI Builder **/
-  private[client] def createUri(path: Seq[String], query: Seq[KeyValue]) = Uri.notValidated(
+  private[client] def createUri(path: Seq[String], query: Seq[KeyValue]) = Uri.apply(
     scheme         = config.scheme,
     userInfo       = None,
     host           = config.host,
@@ -40,8 +41,9 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
 
   /* HTTP Call Builders **/
 
-  private def setResponse[A <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing])(implicit tag: TypeTag[A], cId: UUID)
-  : F[Either[KeycloakSttpException, RequestT[Identity, Either[String, A], Nothing]]] = {
+  private def setResponse[A <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing])
+                                              (implicit tag: TypeTag[A], cId: UUID)
+  : RequestT[Identity, Either[String, A], Nothing] = {
 
     val respAs = asString.mapWithMetadata { case (raw, meta) =>
       raw.map { body =>
@@ -53,7 +55,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
       }
     }
 
-    withAuth(request.response(respAs))
+    request.response(respAs)
   }
 
   private def call[B <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
@@ -62,16 +64,27 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
     val resp = setResponse[B](request.header("Accept", "application/json"))
 
     def sendWithLogging(req: RequestT[Identity, Either[String, B], Nothing]) = {
-      Logging.requestSent(requestInfo, cId)
-      req.send()
+      F.unit(Logging.requestSent(requestInfo, cId))
+        .flatMap(_ => req.send())
     }
 
-    val response = F.flatMap(resp) {
-      case Right(r) => F.map(sendWithLogging(r))(liftM(_, requestInfo))
-      case Left(e)  => F.unit(e.asLeft[B])
+    def retryWithLogging(req: RequestT[Identity, Either[String, B], Nothing]) = {
+      F.unit(Logging.retryUnauthorized(requestInfo, cId))
+        .flatMap(_ => req.send())
     }
 
-    F.handleError[Either[KeycloakError, B]](response) {
+    val response = EitherT(withAuth(resp)).flatMap { r =>
+      EitherT(F.map(sendWithLogging(r))(liftM(_, requestInfo)))
+        .leftFlatMap {
+          case KeycloakSttpException(StatusCode.Unauthorized.code, _, _, _, _) =>
+            EitherT(withAuthNewToken(resp))
+              .flatMapF(r => F.map(retryWithLogging(r))(liftM(_, requestInfo)))
+          case ex =>
+            EitherT(F.unit(ex.asLeft[B]))
+        }
+    }
+
+    F.handleError[Either[KeycloakError, B]](response.value) {
       case NonFatal(ex) => F.unit(KeycloakThrowable(ex).asLeft[B])
     }.map(logLeft(_)(Logging.requestFailed(cId, _)))
   }
