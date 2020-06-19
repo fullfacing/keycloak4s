@@ -134,6 +134,20 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     }
   }
 
+  private def issueAndSetAccessToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
+    Concurrent[F].flatTap(issueAccessToken()) {
+      case Right(value) => setToken(value)
+      case _            => Concurrent[F].unit
+    }
+  }
+
+  private def refreshAndSetAccessToken(t: Token)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
+    Concurrent[F].flatTap(refreshAccessToken(t)) {
+      case Right(value) => setToken(value)
+      case _            => Concurrent[F].unit
+    }
+  }
+
   /**
     * Extract all the relevant data from the Keycloak Token Response.
     *
@@ -162,21 +176,25 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     */
   private def validateToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
 
-    def setTokenF(token: Token): EitherT[F, KeycloakSttpException, Unit] = EitherT.liftF(setToken(token))
-    def issueAccessTokenF: EitherT[F, KeycloakSttpException, Token] = EitherT(issueAccessToken()).flatTap(setTokenF)
-    def issueRefreshTokenF(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT(refreshAccessToken(token)).flatTap(setTokenF)
+    def issueAccessTokenF: EitherT[F, KeycloakSttpException, Token] = EitherT(issueAndSetAccessToken())
+    def issueRefreshTokenF(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT(refreshAndSetAccessToken(token))
     def pure(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT.pure(token)
 
     (for {
       current <- EitherT.liftF(getToken)
-      epoch  = Instant.now()
-      res <- current match {
+      epoch    = Instant.now()
+      res     <- current match {
         case None => issueAccessTokenF
         case Some(token) if epoch.isAfter(token.authenticateAt) => issueAccessTokenF
         case Some(token) if epoch.isAfter(token.refreshAt) => issueRefreshTokenF(token) orElse issueAccessTokenF
         case Some(token) => pure(token)
       }
     } yield res).value
+  }
+
+  protected def withAuthNewToken[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID)
+  : F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
+    Concurrent[F].map(issueAndSetAccessToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 
   def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
