@@ -77,7 +77,6 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
       EitherT(F.map(sendWithLogging(r))(liftM(_, requestInfo)))
         .leftFlatMap {
           case KeycloakSttpException(StatusCode.Unauthorized.code, _, _, _, _) =>
-            println("What??")
             EitherT(withAuthNewToken(resp))
               .flatMapF(r => F.map(retryWithLogging(r))(liftM(_, requestInfo)))
           case ex =>
