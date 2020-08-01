@@ -126,8 +126,8 @@ lazy val swapToDevelopAction = { st: State =>
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.1.12"
-val akkaStreamsVersion    = "2.6.8"
-val catsEffectVersion     = "2.1.3"
+val akkaStreamsVersion    = "2.6.7"
+val catsEffectVersion     = "2.1.4"
 val catsCoreVersion       = "2.1.1"
 val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.9"
@@ -135,7 +135,7 @@ val logbackVersion        = "1.2.3"
 val monixVersion          = "3.2.2"
 val nimbusVersion         = "8.19"
 val scalaTestVersion      = "3.2.0"
-val sttpVersion           = "2.2.0"
+val sttpVersion           = "2.2.3"
 
 // -------------------------------------- //
 //          Library Dependencies          //
