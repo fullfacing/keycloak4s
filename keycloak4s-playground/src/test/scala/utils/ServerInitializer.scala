@@ -32,7 +32,7 @@ object ServerInitializer {
       .post(uri"http://localhost:8080/auth/realms/master/protocol/openid-connect/token")
       .body(form)
       .response(asJson[TokenResponse])
-      .mapResponse(_.map(_.access_token).leftMap(_.body))
+      .mapResponse(_.map(_.access_token).leftMap(_.getMessage))
       .send()
       .map(_.body)
   }
@@ -43,7 +43,7 @@ object ServerInitializer {
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients?clientId=admin-cli")
       .header("Authorization", s"Bearer $token")
       .response(asJson[List[Client]])
-      .mapResponse(_.leftMap(_.body).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
+      .mapResponse(_.leftMap(_.getMessage).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
       .send
       .map(_.body)
   }
@@ -72,7 +72,7 @@ object ServerInitializer {
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/service-account-user")
       .header("Authorization", s"Bearer $token")
       .response(asJson[User])
-      .mapResponse(_.map(_.id).leftMap(_.body))
+      .mapResponse(_.map(_.id).leftMap(_.getMessage))
       .send()
       .map(_.body)
   }
@@ -83,7 +83,7 @@ object ServerInitializer {
       .get(uri"http://localhost:8080/auth/admin/realms/master/roles/admin")
       .header("Authorization", s"Bearer $token")
       .response(asJson[Role])
-      .mapResponse(_.map(_.id).leftMap(_.body))
+      .mapResponse(_.map(_.id).leftMap(_.getMessage))
       .send()
       .map(_.body)
   }
@@ -110,7 +110,7 @@ object ServerInitializer {
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/client-secret")
       .header("Authorization", s"Bearer $token")
       .response(asJson[Credential])
-      .mapResponse(_.leftMap(_.body).flatMap(_.value.toRight("Client Secret Missing")))
+      .mapResponse(_.leftMap(_.getMessage).flatMap(_.value.toRight("Client Secret Missing")))
       .send()
       .map(_.body)
   }
