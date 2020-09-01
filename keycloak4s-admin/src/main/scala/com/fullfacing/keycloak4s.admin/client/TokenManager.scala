@@ -162,7 +162,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
       refreshAt       = instant.plusSeconds(res.expires_in),
       authenticateAt  = instant.plusSeconds(res.refresh_expires_in)
     )
-  }.leftMap(_.body)
+  }.leftMap(_.getMessage)
 
   private def getToken: F[Option[Token]] = Concurrent[F].delay(Option(ref.get))
   private def setToken(token: Token): F[Unit] = Concurrent[F].delay(ref.set(token))
