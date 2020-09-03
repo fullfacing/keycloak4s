@@ -128,7 +128,7 @@ lazy val swapToDevelopAction = { st: State =>
 val akkaHttpVersion       = "10.1.12"
 val akkaStreamsVersion    = "2.6.8"
 val catsEffectVersion     = "2.1.4"
-val catsCoreVersion       = "2.1.1"
+val catsCoreVersion       = "2.2.0"
 val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.9"
 val logbackVersion        = "1.2.3"

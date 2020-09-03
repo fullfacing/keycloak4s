@@ -5,7 +5,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 import cats.effect.IO
-import cats.implicits._
+import cats.syntax.all._
 import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.Logging.logException
 import com.fullfacing.keycloak4s.core.Exceptions

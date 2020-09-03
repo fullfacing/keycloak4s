@@ -4,7 +4,7 @@ import java.util.{Date, UUID}
 
 import cats.data.EitherT
 import cats.effect.{ContextShift, IO}
-import cats.implicits._
+import cats.syntax.all._
 import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.Logging.logValidationEx
 import com.fullfacing.keycloak4s.auth.core.models.AuthPayload

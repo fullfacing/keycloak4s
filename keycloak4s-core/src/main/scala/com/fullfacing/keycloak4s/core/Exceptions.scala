@@ -1,7 +1,7 @@
 package com.fullfacing.keycloak4s.core
 
 import cats.data.NonEmptyList
-import cats.implicits._
+import cats.syntax.all._
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 
 object Exceptions {

@@ -2,7 +2,7 @@ package com.fullfacing.keycloak4s.auth.core.authorization
 
 import java.util.UUID
 
-import cats.implicits._
+import cats.syntax.all._
 import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.authorization.PathAuthorization._
 import com.fullfacing.keycloak4s.auth.core.models.common.{AuthSegment, MethodRoles}
