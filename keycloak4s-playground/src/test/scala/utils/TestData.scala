@@ -9,6 +9,7 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jose.jwk.{JWKSet, RSAKey}
 import com.nimbusds.jose.util.JSONObjectUtils
 import com.nimbusds.jwt.{JWTClaimsSet, SignedJWT}
+import net.minidev.json.JSONObject
 
 object TestData {
 
@@ -18,7 +19,7 @@ object TestData {
 
   val publicKey: RSAKey = rsaJwk.toPublicJWK
 
-  val obj = JSONObjectUtils.parse(s"""{"keys": [${publicKey.toJSONObject}]}""")
+  val obj = JSONObjectUtils.parse(s"""{"keys": [${JSONObject.toJSONString(publicKey.toJSONObject) }]}""")
 
   val jwkSet: JWKSet = JWKSet.parse(obj)
 
