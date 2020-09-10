@@ -36,6 +36,8 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full),
+
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
@@ -86,6 +88,8 @@ lazy val global = {
       )
     ),
 
+    releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
+    releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
     releaseIgnoreUntrackedFiles := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseCrossBuild := true,
@@ -99,27 +103,11 @@ lazy val global = {
       pushChanges,
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepCommand("sonatypeBundleRelease"),
-      swapToDevelopAction,
       setNextVersion,
       commitNextVersion,
       pushChanges
     )
   )
-}
-
-import sbtrelease.Git
-import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.Utilities._
-
-def swapToDevelop: State => State = { st: State =>
-  val git = st.extract.get(releaseVcs).get.asInstanceOf[Git]
-  git.cmd("checkout", "develop") ! st.log
-  st
-}
-
-lazy val swapToDevelopAction = { st: State =>
-  val newState = swapToDevelop(st)
-  newState
 }
 
 // ---------------------------------- //
@@ -133,6 +121,7 @@ val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.9"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.2.2"
+val monixBioVersion       = "1.0.0"
 val nimbusVersion         = "8.19"
 val scalaTestVersion      = "3.2.0"
 val sttpVersion           = "2.2.6"
@@ -172,6 +161,11 @@ val monix: Seq[ModuleID] = Seq(
   "io.monix" %% "monix" % monixVersion
 )
 
+val `monix-bio`: Seq[ModuleID] = Seq(
+  "io.monix" %% "monix-bio" % monixBioVersion,
+  "io.monix" %% "monix-reactive" % monixVersion
+)
+
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion
 )
@@ -190,7 +184,7 @@ val sttpAkka: Seq[ModuleID] = Seq(
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix" % "1.1.0"
+  "com.fullfacing" %% "sttp-akka-monix-task" % "1.5.0"
 )
 
 // --------------------------------------------- //
@@ -219,6 +213,15 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= monix)
   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
+  .dependsOn(`keycloak4s-admin`)
+
+// ---------------------------------------------------- //
+// Project and configuration for keycloak4s-admin-monix //
+// ---------------------------------------------------- //
+lazy val `keycloak4s-monix-bio` = (project in file("./keycloak4s-admin-monix-bio"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= `monix-bio`)
+  .settings(name := "keycloak4s-admin-monix-bio", publishArtifact := true)
   .dependsOn(`keycloak4s-admin`)
 
 // ------------------------------------------------------- //
