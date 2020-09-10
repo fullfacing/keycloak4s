@@ -3,7 +3,8 @@ package com.fullfacing.keycloak4s.auth.core
 import com.fullfacing.keycloak4s.auth.core.models.AuthRoles
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.nimbusds.jose.Payload
-import org.json4s.Formats
+import org.json4s.{Formats, _}
+import org.json4s.jackson.JsonMethods
 import org.json4s.jackson.Serialization.read
 
 /**
@@ -13,8 +14,8 @@ import org.json4s.jackson.Serialization.read
 object PayloadImplicits {
 
   /* A safe extraction method to extract any field's value from a Payload. **/
-  private def safeExtract(payload: Payload, key: String): Option[String] = Option {
-    payload.toJSONObject.getAsString(key)
+  private def safeExtract(payload: Payload, key: String): Option[String] = {
+    (JsonMethods.parse(payload.toString) \ key).extractOpt[String]
   }
 
   implicit class PayloadImpl(payload: Payload) {
@@ -22,7 +23,7 @@ object PayloadImplicits {
     /* Generic Extractors. **/
 
     def extract(key: String): Option[String] =
-      safeExtract(payload, key)
+      safeExtract(payload, key).map(read[String])
 
     def extractList(key: String): List[String] =
       safeExtract(payload, key).map(read[List[String]](_)).getOrElse(List.empty[String])
