@@ -23,7 +23,7 @@ object PayloadImplicits {
     /* Generic Extractors. **/
 
     def extract(key: String): Option[String] =
-      safeExtract(payload, key).map(read[String])
+      safeExtract(payload, key)
 
     def extractList(key: String): List[String] =
       safeExtract(payload, key).map(read[List[String]](_)).getOrElse(List.empty[String])
