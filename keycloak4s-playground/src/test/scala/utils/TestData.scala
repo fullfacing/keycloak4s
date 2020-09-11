@@ -19,7 +19,7 @@ object TestData {
 
   val publicKey: RSAKey = rsaJwk.toPublicJWK
 
-  val obj: JSONObject = JSONObjectUtils.parse(s"""{"keys": [${publicKey.toJSONObject}]}""")
+  val obj = JSONObjectUtils.parse(s"""{"keys": [${JSONObject.toJSONString(publicKey.toJSONObject) }]}""")
 
   val jwkSet: JWKSet = JWKSet.parse(obj)
 

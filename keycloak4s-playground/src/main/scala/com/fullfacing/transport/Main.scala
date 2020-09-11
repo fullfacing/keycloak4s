@@ -3,7 +3,7 @@ package com.fullfacing.transport
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import cats.effect.ExitCode
-import com.fullfacing.backend.AkkaMonixHttpBackend
+import com.fullfacing.akka.monix.task.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak => KeycloakM, KeycloakClient => KeycloakClientM}
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
