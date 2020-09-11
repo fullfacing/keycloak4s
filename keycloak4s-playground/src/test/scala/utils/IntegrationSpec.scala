@@ -1,7 +1,7 @@
 package utils
 
 import akka.util.ByteString
-import com.fullfacing.backend.AkkaMonixHttpBackend
+import com.fullfacing.akka.monix.task.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
