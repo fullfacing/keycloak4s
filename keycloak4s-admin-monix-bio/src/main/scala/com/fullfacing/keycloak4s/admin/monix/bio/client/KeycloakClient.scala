@@ -46,9 +46,9 @@ class KeycloakClient[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO
       raw.map { body =>
         Logging.requestSuccessful(body, cId)
 
-        if (tag.tpe =:= typeOf[Unit]) {println("1");read[A]("null")}
-        else if (tag.tpe =:= typeOf[Headers]) {println("2");meta.headers.map(h => h.name -> h.value).toMap.asInstanceOf[A]}
-        else {println("3");read[A](body)}
+        if (tag.tpe =:= typeOf[Unit]) read[A]("null")
+        else if (tag.tpe =:= typeOf[Headers]) meta.headers.map(h => h.name -> h.value).toMap.asInstanceOf[A]
+        else read[A](body)
       }
     }
 
