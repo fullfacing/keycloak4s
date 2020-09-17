@@ -34,7 +34,7 @@ package object services {
   }
 
   /** Creates a sequence of sttp KeyValues representing query parameters. */
-  def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = Seq {
+  def createQuery(queries: (String, Option[Any])*): ImmutableSeq[KeyValue] = ImmutableSeq {
     queries.flatMap { case (key, value) =>
       value.map(v => KeyValue(key, v.toString))
     }: _*
