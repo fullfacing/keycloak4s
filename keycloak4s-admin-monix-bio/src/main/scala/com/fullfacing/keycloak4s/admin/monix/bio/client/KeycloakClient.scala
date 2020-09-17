@@ -4,13 +4,14 @@ import java.util.UUID
 
 import com.fullfacing.keycloak4s.admin.client.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.handles.Logging
+import com.fullfacing.keycloak4s.admin.monix.bio.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}
 import org.json4s.jackson.Serialization.read
 import sttp.client.{Identity, NothingT, RequestT, Response, SttpBackend, asString, basicRequest}
 import sttp.model.Uri.QuerySegment.KeyValue
-import sttp.model.{Headers, StatusCode, Uri}
+import sttp.model.{StatusCode, Uri}
 
 import scala.collection.immutable.Seq
 import scala.reflect.Manifest
@@ -45,9 +46,11 @@ class KeycloakClient[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO
       raw.map { body =>
         Logging.requestSuccessful(body, cId)
 
-        if (tag.tpe =:= typeOf[Unit]) read[A]("null")
-        else if (tag.tpe =:= typeOf[Headers]) meta.headers.map(h => h.name -> h.value).toMap.asInstanceOf[A]
-        else read[A](body)
+        println(tag.tpe)
+
+        if (tag.tpe =:= typeOf[Unit]) {println("1");read[A]("null")}
+        else if (tag.tpe =:= typeOf[Headers]) {println("2");meta.headers.map(h => h.name -> h.value).toMap.asInstanceOf[A]}
+        else {println("3");read[A](body)}
       }
     }
 
