@@ -4,13 +4,14 @@ import java.util.UUID
 
 import com.fullfacing.keycloak4s.admin.client.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.handles.Logging
+import com.fullfacing.keycloak4s.admin.monix.bio.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}
 import org.json4s.jackson.Serialization.read
 import sttp.client.{Identity, NothingT, RequestT, Response, SttpBackend, asString, basicRequest}
 import sttp.model.Uri.QuerySegment.KeyValue
-import sttp.model.{Headers, StatusCode, Uri}
+import sttp.model.{StatusCode, Uri}
 
 import scala.collection.immutable.Seq
 import scala.reflect.Manifest
