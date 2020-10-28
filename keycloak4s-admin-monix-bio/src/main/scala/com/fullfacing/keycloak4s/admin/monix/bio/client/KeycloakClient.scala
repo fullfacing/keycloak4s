@@ -16,7 +16,6 @@ import sttp.model.{StatusCode, Uri}
 import scala.collection.immutable.Seq
 import scala.reflect.Manifest
 import scala.reflect.runtime.universe._
-import scala.util.control.NonFatal
 
 class KeycloakClient[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO[Throwable, *], S, NothingT]) extends TokenManager[S](config) {
 
@@ -68,22 +67,23 @@ class KeycloakClient[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO
       UIO(Logging.retryUnauthorized(requestInfo, cId)).flatMap(_ => req.send())
     }
 
-    val response = withAuth(resp).flatMap { r =>
-      sendWithLogging(r)
-        .flatMap(liftM(_, requestInfo))
-        .mapError {
-          case KeycloakSttpException(StatusCode.Unauthorized.code, _, _, _, _) =>
-            withAuthNewToken(resp).flatMap(r => retryWithLogging(r).map(liftM(_, requestInfo)))
-          case ex =>
-            IO.raiseError(ex)
-        }
-    }
-
-    response.mapError {
-      case NonFatal(ex) =>
+    (for {
+      auth <- withAuth(resp)
+      res  <- sendWithLogging(auth)
+      b    <- liftM(res, requestInfo)
+    } yield b)
+      .onErrorRecoverWith {
+        case KeycloakSttpException(StatusCode.Unauthorized.code, _, _, _, _) =>
+          for {
+            token <- withAuthNewToken(resp)
+            retry <- retryWithLogging(token)
+            b     <- liftM(retry, requestInfo)
+          } yield b
+      }
+      .mapError { ex =>
         Logging.requestFailed(cId, _)
         KeycloakThrowable(ex)
-    }
+      }
   }
 
   /* REST Protocol Calls **/
