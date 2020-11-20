@@ -36,7 +36,7 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.1" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
@@ -122,7 +122,7 @@ val json4sVersion         = "3.6.10"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.0"
+val nimbusVersion         = "9.1.2"
 val scalaTestVersion      = "3.2.3"
 val sttpVersion           = "2.2.9"
 

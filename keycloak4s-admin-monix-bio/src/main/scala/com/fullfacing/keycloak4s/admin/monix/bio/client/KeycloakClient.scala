@@ -30,7 +30,7 @@ class KeycloakClient[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO
     userInfo       = None,
     host           = config.host,
     port           = Some(config.port),
-    path           = Seq("auth", "admin", "realms") ++ path,
+    path           = config.basePath ++ Seq("admin", "realms") ++ path,
     querySegments  = query,
     fragment       = None
   )
