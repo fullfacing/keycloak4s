@@ -124,7 +124,7 @@ val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.0.0"
 val nimbusVersion         = "9.0"
 val scalaTestVersion      = "3.2.0"
-val sttpVersion           = "2.2.8"
+val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
 //          Library Dependencies          //
