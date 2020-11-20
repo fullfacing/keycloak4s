@@ -114,7 +114,7 @@ lazy val global = {
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.2.0"
-val akkaStreamsVersion    = "2.6.8"
+val akkaStreamsVersion    = "2.6.10"
 val catsEffectVersion     = "2.2.0"
 val catsCoreVersion       = "2.2.0"
 val enumeratumVersion     = "1.6.0"
