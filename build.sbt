@@ -118,13 +118,13 @@ val akkaStreamsVersion    = "2.6.8"
 val catsEffectVersion     = "2.2.0"
 val catsCoreVersion       = "2.2.0"
 val enumeratumVersion     = "1.6.0"
-val json4sVersion         = "3.6.9"
+val json4sVersion         = "3.6.10"
 val logbackVersion        = "1.2.3"
-val monixVersion          = "3.2.2"
-val monixBioVersion       = "1.0.0"
+val monixVersion          = "3.3.0"
+val monixBioVersion       = "1.1.0"
 val nimbusVersion         = "9.0"
-val scalaTestVersion      = "3.2.3"
-val sttpVersion           = "2.2.8"
+val scalaTestVersion      = "3.2.0"
+val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
 //          Library Dependencies          //
