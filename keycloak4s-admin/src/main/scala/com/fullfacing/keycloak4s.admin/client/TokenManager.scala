@@ -50,7 +50,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
   }
 
   private val tokenEndpoint =
-    uri"${config.scheme}://${config.host}:${config.port}/auth/realms/${config.authn.realm}/protocol/openid-connect/token"
+    uri"${config.buildBaseUri}/realms/${config.authn.realm}/protocol/openid-connect/token"
 
   private val password = config.authn match {
     case KeycloakConfig.Password(_, clientId, username, pass) =>

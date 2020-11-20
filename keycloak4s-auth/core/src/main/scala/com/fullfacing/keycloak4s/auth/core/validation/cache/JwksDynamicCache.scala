@@ -15,7 +15,7 @@ import com.nimbusds.jose.jwk.JWKSet
 trait JwksDynamicCache extends JwksCache {
 
   /* The URL to retrieve the Keycloak server's JWKS. **/
-  private val url = new URL(s"${config.scheme}://${config.host}:${config.port}/auth/realms/${config.realm}/protocol/openid-connect/certs")
+  private val url = new URL(s"${config.buildBaseUri}/realms/${config.realm}/protocol/openid-connect/certs")
 
   /* The cached response received from the Keycloak JWK set endpoint. **/
   protected val ref: AtomicReference[Either[KeycloakException, JWKSet]] = new AtomicReference[Either[KeycloakException, JWKSet]]()
