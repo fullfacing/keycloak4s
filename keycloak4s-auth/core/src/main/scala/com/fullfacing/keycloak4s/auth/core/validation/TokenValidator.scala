@@ -47,9 +47,9 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
     /* Keycloak's internal URL builder drops common ports from the issuer. **/
     /* TODO Determine all of the common ports Keycloak drops. **/
     val uri = if (config.port == 80 || config.port == 443) {
-      s"${config.scheme}://${config.host}/auth/realms/${config.realm}"
+      s"${config.scheme}://${config.host}${if (config.basePath.nonEmpty) s"/${config.basePath.mkString("/")}" else ""}/realms/${config.realm}"
     } else {
-      s"${config.scheme}://${config.host}:${config.port}/auth/realms/${config.realm}"
+      s"${config.buildBaseUri}/realms/${config.realm}"
     }
 
     val validationResults = List(

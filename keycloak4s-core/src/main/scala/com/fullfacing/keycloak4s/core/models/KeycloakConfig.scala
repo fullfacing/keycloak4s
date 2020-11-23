@@ -5,18 +5,23 @@ sealed trait KeycloakConfig {
   val host: String
   val port: Int
   val realm: String
+  val basePath: List[String]
+
+  def buildBaseUri: String = s"$scheme://$host:$port" + (if (basePath.nonEmpty) s"/${basePath.mkString("/")}" else "")
 }
 
 final case class ConfigWithAuth(scheme: String,
                                 host: String,
                                 port: Int,
                                 realm: String,
-                                authn: KeycloakConfig.Auth) extends KeycloakConfig
+                                authn: KeycloakConfig.Auth,
+                                basePath: List[String] = List("auth")) extends KeycloakConfig
 
 final case class ConfigWithoutAuth(scheme: String,
                                    host: String,
                                    port: Int,
-                                   realm: String) extends KeycloakConfig
+                                   realm: String,
+                                   basePath: List[String] = List("auth")) extends KeycloakConfig
 
 object KeycloakConfig {
 

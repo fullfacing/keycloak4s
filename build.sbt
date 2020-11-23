@@ -36,7 +36,7 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.1" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
@@ -113,18 +113,18 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.0"
-val akkaStreamsVersion    = "2.6.8"
+val akkaHttpVersion       = "10.2.1"
+val akkaStreamsVersion    = "2.6.10"
 val catsEffectVersion     = "2.2.0"
 val catsCoreVersion       = "2.2.0"
 val enumeratumVersion     = "1.6.0"
-val json4sVersion         = "3.6.9"
+val json4sVersion         = "3.6.10"
 val logbackVersion        = "1.2.3"
-val monixVersion          = "3.2.2"
-val monixBioVersion       = "1.0.0"
-val nimbusVersion         = "9.0"
-val scalaTestVersion      = "3.2.0"
-val sttpVersion           = "2.2.8"
+val monixVersion          = "3.3.0"
+val monixBioVersion       = "1.1.0"
+val nimbusVersion         = "9.1.2"
+val scalaTestVersion      = "3.2.3"
+val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -185,7 +185,7 @@ val sttpAkka: Seq[ModuleID] = Seq(
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix-task" % "1.5.0"
+  "com.fullfacing" %% "sttp-akka-monix-task" % "1.6.0"
 )
 
 // --------------------------------------------- //

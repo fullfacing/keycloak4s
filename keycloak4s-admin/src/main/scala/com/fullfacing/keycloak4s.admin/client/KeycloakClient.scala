@@ -34,7 +34,7 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
     userInfo       = None,
     host           = config.host,
     port           = Some(config.port),
-    path           = Seq("auth", "admin", "realms") ++ path,
+    path           = config.basePath ++ Seq("admin", "realms") ++ path,
     querySegments  = query,
     fragment       = None
   )
