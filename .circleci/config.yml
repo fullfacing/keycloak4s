@@ -44,6 +44,8 @@ jobs:
     docker:
       - image: circleci/openjdk:latest
     working_directory: ~/code
+    environment:
+      - _JAVA_OPTIONS: -XX:MaxMetaspaceSize=1536m
     steps:
       - checkout
       - restore_cache:
