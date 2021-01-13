@@ -36,7 +36,7 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.1" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.2" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
@@ -113,16 +113,16 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.1"
+val akkaHttpVersion       = "10.2.2"
 val akkaStreamsVersion    = "2.6.10"
-val catsEffectVersion     = "2.2.0"
-val catsCoreVersion       = "2.2.0"
+val catsEffectVersion     = "2.3.1"
+val catsCoreVersion       = "2.3.1"
 val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.10"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.1.2"
+val nimbusVersion         = "9.1.5"
 val scalaTestVersion      = "3.2.3"
 val sttpVersion           = "2.2.9"
 
@@ -221,9 +221,9 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
 // ---------------------------------------------------- //
 lazy val `keycloak4s-monix-bio` = (project in file("./keycloak4s-admin-monix-bio"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `monix-bio`)
+  .settings(libraryDependencies ++= `monix-bio` ++ sttp)
   .settings(name := "keycloak4s-admin-monix-bio", publishArtifact := true)
-  .dependsOn(`keycloak4s-admin`)
+  .dependsOn(`keycloak4s-core`)
 
 // ------------------------------------------------------- //
 // Project and configuration for keycloak4s-auth-core //
@@ -242,6 +242,13 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
   .settings(libraryDependencies ++= akkaHttp)
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
   .dependsOn(`keycloak4s-auth-core`)
+
+// ------------------------------------------------------- //
+// Project and configuration for keycloak4s-authz-client //
+// ------------------------------------------------------- //
+lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
+  .settings(global: _*)
+  .settings(name := "keycloak4s-authz-client", publishArtifact := true)
 
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
@@ -274,5 +281,6 @@ lazy val root = (project in file("."))
     `keycloak4s-monix-bio`,
     `keycloak4s-auth-core`,
     `keycloak4s-akka-http`,
+    `keycloak4s-authz`,
     `keycloak4s-playground`
   )

@@ -1,10 +1,8 @@
 package com.fullfacing.keycloak4s.admin.monix.bio.client
 
-import java.util.UUID
-
-import com.fullfacing.keycloak4s.admin.client.implicits.{Anything, BodyMagnet}
-import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.monix.bio.client.KeycloakClient.Headers
+import com.fullfacing.keycloak4s.admin.monix.bio.client.implicits.{Anything, BodyMagnet}
+import com.fullfacing.keycloak4s.admin.monix.bio.handles.Logging
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}
@@ -13,6 +11,7 @@ import sttp.client.{Identity, NothingT, RequestT, Response, SttpBackend, asStrin
 import sttp.model.Uri.QuerySegment.KeyValue
 import sttp.model.{StatusCode, Uri}
 
+import java.util.UUID
 import scala.collection.immutable.Seq
 import scala.reflect.Manifest
 import scala.reflect.runtime.universe._

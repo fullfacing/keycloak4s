@@ -1,13 +1,9 @@
 package com.fullfacing.keycloak4s.admin.client
 
-import java.time.Instant
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse}
+import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse, TokenWithRefresh, TokenWithoutRefresh}
 import com.fullfacing.keycloak4s.admin.handles.Logging
 import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig, KeycloakSttpException, RequestInfo}
@@ -16,6 +12,10 @@ import org.json4s.jackson.Serialization
 import sttp.client.json4s._
 import sttp.client.monad.MonadError
 import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, _}
+
+import java.time.Instant
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S, NothingT]) {
 
@@ -70,7 +70,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
 
   val ref: AtomicReference[Token] = new AtomicReference()
 
-  private def refresh(token: Token): Map[String, String] = config.authn match {
+  private def refresh(token: TokenWithRefresh): Map[String, String] = config.authn match {
     case KeycloakConfig.Secret(_, _, clientSecret) =>
       Map(
         "client_id"     -> config.authn.clientId,
@@ -112,7 +112,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     }
   }
 
-  private def refreshAccessToken(t: Token)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
+  private def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
     val body = refresh(t)
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
 
@@ -141,7 +141,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     }
   }
 
-  private def refreshAndSetAccessToken(t: Token)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
+  private def refreshAndSetAccessToken(t: TokenWithRefresh)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
     Concurrent[F].flatTap(refreshAccessToken(t)) {
       case Right(value) => setToken(value)
       case _            => Concurrent[F].unit
@@ -156,12 +156,19 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     */
   private def mapToToken(response: Either[ResponseError[Exception], TokenResponse]): Either[String, Token] = response.map { res =>
     val instant = Instant.now()
-    Token(
-      access          = res.access_token,
-      refresh         = res.refresh_token,
-      refreshAt       = instant.plusSeconds(res.expires_in),
-      authenticateAt  = instant.plusSeconds(res.refresh_expires_in)
-    )
+    res.refresh_token.fold[Token] {
+      TokenWithoutRefresh(
+        access         = res.access_token,
+        authenticateAt = instant.plusSeconds(res.expires_in)
+      )
+    } { refresh =>
+      TokenWithRefresh(
+        access          = res.access_token,
+        refresh         = refresh,
+        refreshAt       = instant.plusSeconds(res.expires_in),
+        authenticateAt  = instant.plusSeconds(res.refresh_expires_in)
+      )
+    }
   }.leftMap(_.getMessage)
 
   private def getToken: F[Option[Token]] = Concurrent[F].delay(Option(ref.get))
@@ -174,31 +181,31 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     * If the access token is still valid it simply returns the token unchanged.
     * @return
     */
-  private def validateToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
+  private def evaluateToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = getToken.flatMap { token =>
+    lazy val epoch = Instant.now()
+    token.fold {
+      issueAndSetAccessToken()
+    } {
+      case t if epoch.isAfter(t.authenticateAt) =>
+        issueAndSetAccessToken()
 
-    def issueAccessTokenF: EitherT[F, KeycloakSttpException, Token] = EitherT(issueAndSetAccessToken())
-    def issueRefreshTokenF(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT(refreshAndSetAccessToken(token))
-    def pure(token: Token): EitherT[F, KeycloakSttpException, Token] = EitherT.pure(token)
+      case t @ TokenWithRefresh(_, _, refreshAt, _) if epoch.isAfter(refreshAt) =>
+        EitherT(refreshAndSetAccessToken(t))
+          .orElse(EitherT(issueAndSetAccessToken()))
+          .value
 
-    (for {
-      current <- EitherT.liftF(getToken)
-      epoch    = Instant.now()
-      res     <- current match {
-        case None => issueAccessTokenF
-        case Some(token) if epoch.isAfter(token.authenticateAt) => issueAccessTokenF
-        case Some(token) if epoch.isAfter(token.refreshAt) => issueRefreshTokenF(token) orElse issueAccessTokenF
-        case Some(token) => pure(token)
-      }
-    } yield res).value
+      case t =>
+        Concurrent[F].pure(t.asRight)
+    }
   }
 
-  protected def withAuthNewToken[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID)
-  : F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
+  protected def withAuthNewToken[A](request: RequestT[Identity, A, Nothing])
+                                   (implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
     Concurrent[F].map(issueAndSetAccessToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 
   def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
-    Concurrent[F].map(validateToken())(_.map(tkn => request.auth.bearer(tkn.access)))
+    Concurrent[F].map(evaluateToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 }
 
@@ -207,15 +214,22 @@ object TokenManager {
   final case class TokenResponse(access_token: String,
                                  expires_in: Long,
                                  refresh_expires_in: Long,
-                                 refresh_token: String,
+                                 refresh_token: Option[String] = None,
                                  token_type: String,
                                  `not-before-policy`: Int,
-                                 session_state: String,
+                                 session_state: Option[String] = None,
                                  scope: String)
 
-  final case class Token(access: String,
-                         refresh: String,
-                         refreshAt: Instant,
-                         authenticateAt: Instant)
+  sealed trait Token {
+    val access: String
+    val authenticateAt: Instant
+  }
 
+  final case class TokenWithoutRefresh(access: String,
+                                       authenticateAt: Instant) extends Token
+
+  final case class TokenWithRefresh(access: String,
+                                    refresh: String,
+                                    refreshAt: Instant,
+                                    authenticateAt: Instant) extends Token
 }
