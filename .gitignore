@@ -6,6 +6,7 @@ target
 *.ipr
 *.iws
 .idea
+.bsp/
 
 # sbt specific
 .cache/
