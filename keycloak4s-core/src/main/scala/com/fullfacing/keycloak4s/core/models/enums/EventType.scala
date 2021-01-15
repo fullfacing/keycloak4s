@@ -7,6 +7,8 @@ import scala.collection.immutable
 sealed abstract class EventType(val value: String) extends StringEnumEntry
 
 case object EventTypes extends StringEnum[EventType] {
+  case object AccountDelete                       extends EventType("DELETE_ACCOUNT")
+  case object AccountDeleteError                  extends EventType("DELETE_ACCOUNT_ERROR")
   case object ClientDelete                        extends EventType("CLIENT_DELETE")
   case object ClientDeleteError                   extends EventType("CLIENT_DELETE_ERROR")
   case object ClientInfo                          extends EventType("CLIENT_INFO")

@@ -40,7 +40,6 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
   )
 
   /* HTTP Call Builders **/
-
   private def setResponse[A <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing])
                                               (implicit tag: TypeTag[A], cId: UUID)
   : RequestT[Identity, Either[String, A], Nothing] = {

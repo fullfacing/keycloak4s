@@ -10,8 +10,9 @@ object Akka {
   implicit val sys: ActorSystem = ActorSystem("ActorSystem", defaultExecutionContext = Some(global))
 
   def connect(): Task[Unit] = Task.deferFutureAction { implicit ctx =>
-    Http().bindAndHandle(ClientsApi.api, "0.0.0.0", 8192).map { binding =>
-      println(s"Bind Started: \n $binding")
-    }
+    Http()
+      .newServerAt("0.0.0.0", 8192)
+      .bind(ClientsApi.api)
+      .map(b => println(s"Bind Started: \n $b"))
   }
 }
