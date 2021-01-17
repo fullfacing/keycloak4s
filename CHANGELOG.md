@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2021-01-16
+### Support for Keycloak 12.0.1
+### Changed
+- `TokenManager` - Updated to handle client-credentials grant type where no refresh token is returned
+
 ## [2.2.4] - 2020-06-19
 ### Changed
 - `KeycloakClient` - Added automatically retrying, using a new access token, to requests that return a 401 unauthorized error
