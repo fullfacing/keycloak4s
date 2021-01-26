@@ -1,6 +1,7 @@
 package com.fullfacing.keycloak4s.admin.services
 
 import cats.effect.Concurrent
+import com.fullfacing.keycloak4s.admin.Utilities._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.core.models.enums.{Direction, TriggerSyncAction}
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, SimpleNameResponse, Synchronization}

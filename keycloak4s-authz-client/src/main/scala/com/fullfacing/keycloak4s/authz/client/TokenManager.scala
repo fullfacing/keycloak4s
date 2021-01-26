@@ -1,46 +1,24 @@
 package com.fullfacing.keycloak4s.authz.client
 
 import cats.implicits._
-import com.fullfacing.keycloak4s.authz.client.TokenManager.{Token, TokenResponse, TokenWithRefresh, TokenWithoutRefresh}
+import com.fullfacing.keycloak4s.admin.Logging
+import TokenManager._
+import com.fullfacing.keycloak4s.authz.client.models.ServerConfiguration
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}
 import org.json4s.jackson.Serialization
 import sttp.client.json4s._
-import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, _}
+import sttp.client.{Identity, NothingT, RequestT, SttpBackend, _}
+import sttp.model.Uri
 
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO[Throwable, *], S, NothingT]) {
+abstract class TokenManager[-S](config: ConfigWithAuth, server: ServerConfiguration)(implicit client: SttpBackend[IO[Throwable, *], S, NothingT]) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
-
-  protected def buildRequestInfo(path: Seq[String], protocol: String, body: Any): RequestInfo = {
-    RequestInfo(
-      path      = path.mkString("/"),
-      protocol  = protocol,
-      body      = body match {
-        case _: Unit  => None
-        case NoBody   => None
-        case a        => Some(a)
-      }
-    )
-  }
-
-  protected def buildError(response: Response[_], leftBody: String, requestInfo: RequestInfo): KeycloakSttpException = {
-    KeycloakSttpException(
-      code        = response.code.code,
-      headers     = response.headers.map(h => h.name -> h.value),
-      body        = leftBody,
-      statusText  = response.statusText,
-      requestInfo = requestInfo
-    )
-  }
-
-  private val tokenEndpoint =
-    uri"${config.buildBaseUri}/realms/${config.authn.realm}/protocol/openid-connect/token"
 
   private val password = config.authn match {
     case KeycloakConfig.Password(_, clientId, username, pass) =>
@@ -55,6 +33,14 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
         "grant_type"    -> "client_credentials",
         "client_id"     -> clientId,
         "client_secret" -> clientSecret
+      )
+    case KeycloakConfig.PasswordWithSecret(_, clientId, username, pass, secret) =>
+      Map(
+        "grant_type"    -> "password",
+        "client_id"     -> clientId,
+        "username"      -> username,
+        "password"      -> pass,
+        "client_secret" -> secret
       )
   }
 
@@ -74,17 +60,19 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
         "refresh_token" -> token.refresh,
         "grant_type"    -> "refresh_token"
       )
+    case KeycloakConfig.PasswordWithSecret(_, _, _, _, clientSecret) =>
+      Map(
+        "client_id"     -> config.authn.clientId,
+        "refresh_token" -> token.refresh,
+        "client_secret" -> clientSecret,
+        "grant_type"    -> "refresh_token"
+      )
   }
 
   def handleLogging[A](result: IO[Throwable, A])(implicit cId: UUID): IO[Throwable, A] = {
-//    result.map({ res => Logging.tokenReceived(config.realm, cId); res }).mapError { ex =>
-//      Logging.tokenRequestFailed(config.realm, cId, ex); ex
-//    }
-    ???
-  }
-
-  protected def liftM[A](response: Response[Either[String, A]], requestInfo: RequestInfo): IO[KeycloakError, A] = {
-    IO.fromEither(response.body).mapError(l => buildError(response, l, requestInfo))
+    result.map({ res => Logging.tokenReceived(config.realm, cId); res }).mapError { ex =>
+      Logging.tokenRequestFailed(config.realm, cId, ex); ex
+    }
   }
 
   /**
@@ -93,35 +81,35 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
    * @return
    */
   def issueAccessToken()(implicit cId: UUID): IO[KeycloakError, Token] = {
-    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+    val requestInfo = AuthzClient.buildRequestInfo(server.tokenEndpoint, "POST", password)
     val request = basicRequest
-      .post(tokenEndpoint)
+      .post(Uri.apply(server.tokenEndpoint))
       .body(password)
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
 
     for {
-//      _        <- UIO(Logging.tokenRequest(config.realm, cId))
+      _        <- UIO(Logging.tokenRequest(config.realm, cId))
       response <- handleLogging(request).mapError(KeycloakThrowable.apply)
-      token    <- liftM(response, requestInfo)
+      token    <- AuthzClient.liftM(response, requestInfo)
     } yield token
   }
 
-  private def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): IO[KeycloakError, Token] = {
+  def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): IO[KeycloakError, Token] = {
     val body = refresh(t)
-    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
+    val requestInfo = AuthzClient.buildRequestInfo(server.tokenEndpoint, "POST", body)
     val request = basicRequest
-      .post(tokenEndpoint)
+      .post(Uri.apply(server.tokenEndpoint))
       .body(body)
       .response(asJson[TokenResponse])
       .mapResponse(mapToToken)
       .send()
 
     for {
-//      _        <- UIO(Logging.tokenRefresh(config.realm, cId))
+      _        <- UIO(Logging.tokenRefresh(config.realm, cId))
       response <- handleLogging(request).mapError(KeycloakThrowable.apply)
-      token    <- liftM(response, requestInfo)
+      token    <- AuthzClient.liftM(response, requestInfo)
     } yield token
   }
 

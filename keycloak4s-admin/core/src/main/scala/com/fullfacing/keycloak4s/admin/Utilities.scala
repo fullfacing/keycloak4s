@@ -1,34 +1,32 @@
 package com.fullfacing.keycloak4s.admin
 
+import cats.implicits._
+import com.fullfacing.keycloak4s.core.Exceptions
+import com.fullfacing.keycloak4s.core.models.KeycloakError
+import sttp.client.{BasicRequestBody, _}
+import sttp.model.Part
+import sttp.model.Uri.QuerySegment.KeyValue
+
 import java.io.File
 import java.nio.file.Files
 import java.util.UUID
-
-import cats.implicits._
-import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
-import com.fullfacing.keycloak4s.core.Exceptions
-import com.fullfacing.keycloak4s.core.models.KeycloakError
-import sttp.client.BasicRequestBody
-import sttp.model.Part
-import sttp.model.Uri.QuerySegment.KeyValue
-import sttp.client._
 import scala.collection.immutable.{Seq => ImmutableSeq}
 import scala.util.Try
 
-package object services {
+object Utilities {
 
   /** Allows for implicit conversion of UUID to String in sequences. */
   type Path = ImmutableSeq[String]
   implicit def uuidToString: UUID => String = _.toString
 
-  def extractString(response: Either[KeycloakError, Headers]): Either[KeycloakError, String] = response.flatMap { headers =>
+  def extractString(response: Either[KeycloakError, Map[String, String]]): Either[KeycloakError, String] = response.flatMap { headers =>
     headers
       .get("Location")
       .flatMap(location => location.split('/').lastOption)
       .toRight(Exceptions.ID_NOT_FOUND)
   }
 
-  def extractUuid(response: Either[KeycloakError, Headers]): Either[KeycloakError, UUID] = extractString(response).flatMap { id =>
+  def extractUuid(response: Either[KeycloakError, Map[String, String]]): Either[KeycloakError, UUID] = extractString(response).flatMap { id =>
     Try(UUID.fromString(id))
       .fold(_ => Exceptions.ID_PARSE_FAILED.asLeft, _.asRight)
   }

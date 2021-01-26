@@ -1,14 +1,14 @@
 package com.fullfacing.keycloak4s.admin.services
 
-import java.util.UUID
-
 import cats.effect.Concurrent
 import cats.implicits._
+import com.fullfacing.keycloak4s.admin.Utilities._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.models.enums.RequiredAction
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
+import java.util.UUID
 import scala.collection.immutable.Seq
 
 class Users[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {

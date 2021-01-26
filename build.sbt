@@ -223,20 +223,20 @@ lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin/monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= monix)
   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
-  .dependsOn(`keycloak4s-admin`)
+  .dependsOn(`keycloak4s-admin`, `keycloak4s-admin-core`)
 
-// ---------------------------------------------------- //
-// Project and configuration for keycloak4s-admin-monix //
-// ---------------------------------------------------- //
+// -------------------------------------------------------- //
+// Project and configuration for keycloak4s-admin-monix-bio //
+// -------------------------------------------------------- //
 lazy val `keycloak4s-monix-bio` = (project in file("./keycloak4s-admin/monix-bio"))
   .settings(global: _*)
   .settings(libraryDependencies ++= `monix-bio`)
   .settings(name := "keycloak4s-admin-monix-bio", publishArtifact := true)
   .dependsOn(`keycloak4s-admin-core`)
 
-// ------------------------------------------------------- //
+// -------------------------------------------------- //
 // Project and configuration for keycloak4s-auth-core //
-// ------------------------------------------------------- //
+// -------------------------------------------------- //
 lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth/core"))
   .settings(global: _*)
   .settings(libraryDependencies ++= nimbus)
@@ -257,7 +257,7 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
 // ------------------------------------------------------- //
 lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `monix-bio` ++ sttp ++ Seq("org.keycloak" % "keycloak-authz-client" % "12.0.1"))
+  .settings(libraryDependencies ++= `monix-bio` ++ sttp)
   .settings(name := "keycloak4s-authz-client", publishArtifact := true)
   .dependsOn(`keycloak4s-admin-core`)
 
@@ -276,7 +276,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   }))
   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
   .settings(name := "keycloak4s-playground", publishArtifact := false)
-  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
+  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`, `keycloak4s-authz`)
 
 // ---------------------------------------------- //
 // Project and configuration for the root project //
