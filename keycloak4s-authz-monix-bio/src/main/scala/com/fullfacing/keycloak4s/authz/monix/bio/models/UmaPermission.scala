@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.authz.models
+package com.fullfacing.keycloak4s.authz.monix.bio.models
 
 final case class UmaPermission(name: String,
                                description: Option[String],

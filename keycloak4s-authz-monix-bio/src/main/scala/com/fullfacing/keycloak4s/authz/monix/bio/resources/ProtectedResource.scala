@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.authz.resources
+package com.fullfacing.keycloak4s.authz.monix.bio.resources
 
 import com.fullfacing.keycloak4s.authz.client.AuthzClient
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, Resource}
@@ -17,7 +17,7 @@ class ProtectedResource[S]()(implicit client: AuthzClient[S]) {
   }
 
   def update(id: String, patch: Resource): IO[KeycloakError, Unit] = {
-    client.put[Unit](uri"$REGISTRATION_ENDPOINT/$id", patch.mapToUpdate)
+    client.put[Unit](uri"$REGISTRATION_ENDPOINT/$id", patch)
   }
 
   private def buildQuery(first: Option[Int],

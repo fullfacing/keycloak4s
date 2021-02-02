@@ -1,8 +1,10 @@
-package com.fullfacing.keycloak4s.authz.resources
+package com.fullfacing.keycloak4s.authz.monix.bio.resources
 
 import com.fullfacing.keycloak4s.admin.utils.Service.createQuery
 import com.fullfacing.keycloak4s.authz.client.AuthzClient
 import com.fullfacing.keycloak4s.authz.models.UmaPermission
+import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient
+import com.fullfacing.keycloak4s.authz.monix.bio.models.UmaPermission.Create
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 import monix.bio.IO
 import sttp.client.UriContext
@@ -11,7 +13,7 @@ final class PolicyResource[S](resourceId: String)(implicit client: AuthzClient[S
 
   private val POLICY_ENDPOINT = client.serverConfig.policy_endpoint
 
-  def create(create: UmaPermission.Create): IO[KeycloakError, UmaPermission] = {
+  def create(create: Create): IO[KeycloakError, UmaPermission] = {
     client.post[UmaPermission](uri"$POLICY_ENDPOINT/$resourceId", create)
   }
 

@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.authz.resources
+package com.fullfacing.keycloak4s.authz.monix.bio.resources
 
 import com.fullfacing.keycloak4s.authz.client.AuthzClient
 import com.fullfacing.keycloak4s.authz.client.models.PermissionTicket

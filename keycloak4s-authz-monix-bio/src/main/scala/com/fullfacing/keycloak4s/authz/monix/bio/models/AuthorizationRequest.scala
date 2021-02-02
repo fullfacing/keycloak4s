@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.authz.client.models
+package com.fullfacing.keycloak4s.authz.monix.bio.models
 
 final case class AuthorizationRequest(ticket: Option[String] = None,
                                       claimToken: Option[String] = None,

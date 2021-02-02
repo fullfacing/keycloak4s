@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.authz.client
+package com.fullfacing.keycloak4s.authz.monix.bio.client
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.models.{Token, TokenResponse, TokenWithRefresh}

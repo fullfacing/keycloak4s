@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.authz.client.models
+package com.fullfacing.keycloak4s.authz.monix.bio.models
 
 final case class ServerConfiguration(issuer: String,
                                      authorization_endpoint: String,
