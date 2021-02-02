@@ -1,22 +1,22 @@
-package com.fullfacing.keycloak4s.authz.client.resources
+package com.fullfacing.keycloak4s.authz.resources
 
+import com.fullfacing.keycloak4s.admin.utils.Service.createQuery
 import com.fullfacing.keycloak4s.authz.client.AuthzClient
-import com.fullfacing.keycloak4s.authz.client.models.UmaPermission
-import com.fullfacing.keycloak4s.core.models.{KeycloakError, Policy}
+import com.fullfacing.keycloak4s.authz.models.UmaPermission
+import com.fullfacing.keycloak4s.core.models.KeycloakError
 import monix.bio.IO
 import sttp.client.UriContext
-import com.fullfacing.keycloak4s.admin.Utilities.createQuery
 
-class PolicyResource[S](resourceId: String)(implicit client: AuthzClient[S]) {
+final class PolicyResource[S](resourceId: String)(implicit client: AuthzClient[S]) {
 
-  private val POLICY_ENDPOINT = client.serverConfig.policyEndpoint
+  private val POLICY_ENDPOINT = client.serverConfig.policy_endpoint
 
   def create(create: UmaPermission.Create): IO[KeycloakError, UmaPermission] = {
     client.post[UmaPermission](uri"$POLICY_ENDPOINT/$resourceId", create)
   }
 
-  def update(id: String, update: UmaPermission.Update): IO[KeycloakError, Unit] = {
-    client.put[Unit](uri"$POLICY_ENDPOINT/$id", update)
+  def update(update: UmaPermission): IO[KeycloakError, Unit] = {
+    client.put[Unit](uri"$POLICY_ENDPOINT/${update.id}", update)
   }
 
   def find(first: Option[Int] = None,

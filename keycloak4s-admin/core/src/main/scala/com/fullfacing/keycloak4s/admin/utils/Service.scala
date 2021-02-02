@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.admin
+package com.fullfacing.keycloak4s.admin.utils
 
 import cats.implicits._
 import com.fullfacing.keycloak4s.core.Exceptions
@@ -13,7 +13,7 @@ import java.util.UUID
 import scala.collection.immutable.{Seq => ImmutableSeq}
 import scala.util.Try
 
-object Utilities {
+object Service {
 
   /** Allows for implicit conversion of UUID to String in sequences. */
   type Path = ImmutableSeq[String]

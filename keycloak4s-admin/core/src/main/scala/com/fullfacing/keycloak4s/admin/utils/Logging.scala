@@ -1,4 +1,4 @@
-package com.fullfacing.keycloak4s.admin
+package com.fullfacing.keycloak4s.admin.utils
 
 import com.fullfacing.keycloak4s.core.logging.Logging.Levels
 import com.fullfacing.keycloak4s.core.logging._

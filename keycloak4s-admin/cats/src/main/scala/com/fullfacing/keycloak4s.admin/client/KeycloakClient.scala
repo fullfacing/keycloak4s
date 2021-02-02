@@ -3,10 +3,11 @@ package com.fullfacing.keycloak4s.admin.client
 import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.Logging
-import com.fullfacing.keycloak4s.admin.Logging.logLeft
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.admin.implicits.{Anything, BodyMagnet}
+import com.fullfacing.keycloak4s.admin.utils.Client._
+import com.fullfacing.keycloak4s.admin.utils.Logging
+import com.fullfacing.keycloak4s.admin.utils.Logging.logLeft
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read

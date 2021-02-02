@@ -3,15 +3,17 @@ package com.fullfacing.keycloak4s.admin.client
 import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.Logging
-import com.fullfacing.keycloak4s.admin.Logging.handleLogging
-import com.fullfacing.keycloak4s.admin.client.TokenManager.{Token, TokenResponse, TokenWithRefresh, TokenWithoutRefresh}
-import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig, KeycloakSttpException, RequestInfo}
+import com.fullfacing.keycloak4s.admin.models._
+import com.fullfacing.keycloak4s.admin.utils.Client._
+import com.fullfacing.keycloak4s.admin.utils.Logging
+import com.fullfacing.keycloak4s.admin.utils.Logging.handleLogging
+import com.fullfacing.keycloak4s.admin.utils.TokenManager._
+import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakSttpException, RequestInfo}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization
 import sttp.client.json4s._
 import sttp.client.monad.MonadError
-import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, _}
+import sttp.client.{Identity, NothingT, RequestT, Response, SttpBackend, _}
 
 import java.time.Instant
 import java.util.UUID
@@ -23,28 +25,6 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
 
   protected val F: MonadError[F] = client.responseMonad
 
-  protected def buildRequestInfo(path: Seq[String], protocol: String, body: Any): RequestInfo = {
-    RequestInfo(
-      path      = path.mkString("/"),
-      protocol  = protocol,
-      body      = body match {
-        case _: Unit  => None
-        case NoBody   => None
-        case a        => Some(a)
-      }
-    )
-  }
-
-  protected def buildError(response: Response[_], leftBody: String, requestInfo: RequestInfo): KeycloakSttpException = {
-    KeycloakSttpException(
-      code        = response.code.code,
-      headers     = response.headers.map(h => h.name -> h.value),
-      body        = leftBody,
-      statusText  = response.statusText,
-      requestInfo = requestInfo
-    )
-  }
-
   protected def liftM[A](response: Response[Either[String, A]], requestInfo: RequestInfo): Either[KeycloakSttpException, A] = {
     response.body.leftMap(l => buildError(response, l, requestInfo))
   }
@@ -52,39 +32,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
   private val tokenEndpoint =
     uri"${config.buildBaseUri}/realms/${config.authn.realm}/protocol/openid-connect/token"
 
-  private val password = config.authn match {
-    case KeycloakConfig.Password(_, clientId, username, pass) =>
-      Map(
-        "grant_type"    -> "password",
-        "client_id"     -> clientId,
-        "username"      -> username,
-        "password"      -> pass
-      )
-    case KeycloakConfig.Secret(_, clientId, clientSecret) =>
-      Map(
-        "grant_type"    -> "client_credentials",
-        "client_id"     -> clientId,
-        "client_secret" -> clientSecret
-      )
-  }
-
   val ref: AtomicReference[Token] = new AtomicReference()
-
-  private def refresh(token: TokenWithRefresh): Map[String, String] = config.authn match {
-    case KeycloakConfig.Secret(_, _, clientSecret) =>
-      Map(
-        "client_id"     -> config.authn.clientId,
-        "refresh_token" -> token.refresh,
-        "client_secret" -> clientSecret,
-        "grant_type"    -> "refresh_token"
-      )
-    case _: KeycloakConfig.Password =>
-      Map(
-        "client_id"     -> config.authn.clientId,
-        "refresh_token" -> token.refresh,
-        "grant_type"    -> "refresh_token"
-      )
-  }
 
   /**
     * Authenticate the application with Keycloak, returning an access and refresh token.
@@ -92,15 +40,16 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     * @return
     */
   def issueAccessToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
-    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", password)
+    val body = password(config)
+    val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
 
     val sendF = Concurrent[F].unit.flatMap { _ =>
       Logging.tokenRequest(config.realm, cId)
 
       basicRequest.post(tokenEndpoint)
-        .body(password)
+        .body(body)
         .response(asJson[TokenResponse])
-        .mapResponse(mapToToken)
+        .mapResponse(TokenResponse.mapToToken)
         .send()
     }
 
@@ -113,7 +62,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
   }
 
   private def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
-    val body = refresh(t)
+    val body = refresh(t, config)
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
 
     val sendF = Concurrent[F].unit.flatMap { _ =>
@@ -122,7 +71,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
       basicRequest.post(tokenEndpoint)
         .body(body)
         .response(asJson[TokenResponse])
-        .mapResponse(mapToToken)
+        .mapResponse(TokenResponse.mapToToken)
         .send()
     }
 
@@ -147,29 +96,6 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
       case _            => Concurrent[F].unit
     }
   }
-
-  /**
-    * Extract all the relevant data from the Keycloak Token Response.
-    *
-    * @param response the oidc token response.
-    * @return a new token instance.
-    */
-  private def mapToToken(response: Either[ResponseError[Exception], TokenResponse]): Either[String, Token] = response.map { res =>
-    val instant = Instant.now()
-    res.refresh_token.fold[Token] {
-      TokenWithoutRefresh(
-        access         = res.access_token,
-        authenticateAt = instant.plusSeconds(res.expires_in)
-      )
-    } { refresh =>
-      TokenWithRefresh(
-        access          = res.access_token,
-        refresh         = refresh,
-        refreshAt       = instant.plusSeconds(res.expires_in),
-        authenticateAt  = instant.plusSeconds(res.refresh_expires_in)
-      )
-    }
-  }.leftMap(_.getMessage)
 
   private def getToken: F[Option[Token]] = Concurrent[F].delay(Option(ref.get))
   private def setToken(token: Token): F[Unit] = Concurrent[F].delay(ref.set(token))
@@ -207,29 +133,4 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
   def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
     Concurrent[F].map(evaluateToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
-}
-
-object TokenManager {
-
-  final case class TokenResponse(access_token: String,
-                                 expires_in: Long,
-                                 refresh_expires_in: Long,
-                                 refresh_token: Option[String] = None,
-                                 token_type: String,
-                                 `not-before-policy`: Int,
-                                 session_state: Option[String] = None,
-                                 scope: String)
-
-  sealed trait Token {
-    val access: String
-    val authenticateAt: Instant
-  }
-
-  final case class TokenWithoutRefresh(access: String,
-                                       authenticateAt: Instant) extends Token
-
-  final case class TokenWithRefresh(access: String,
-                                    refresh: String,
-                                    refreshAt: Instant,
-                                    authenticateAt: Instant) extends Token
 }

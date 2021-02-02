@@ -1,8 +1,9 @@
 package com.fullfacing.keycloak4s.admin.monix.bio.client
 
-import com.fullfacing.keycloak4s.admin.Logging
 import com.fullfacing.keycloak4s.admin.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.monix.bio.client.KeycloakClient.Headers
+import com.fullfacing.keycloak4s.admin.utils.Client._
+import com.fullfacing.keycloak4s.admin.utils.Logging
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}

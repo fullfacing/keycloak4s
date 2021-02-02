@@ -1,35 +1,35 @@
-package com.fullfacing.keycloak4s.authz.client.resources
+package com.fullfacing.keycloak4s.authz.resources
 
 import com.fullfacing.keycloak4s.authz.client.AuthzClient
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, Resource}
 import monix.bio.IO
 import sttp.client.UriContext
-import com.fullfacing.keycloak4s.admin.Utilities._
+import com.fullfacing.keycloak4s.admin.utils.Service._
 import sttp.model.Uri.QuerySegment.KeyValue
+import scala.collection.immutable.Seq
 
 class ProtectedResource[S]()(implicit client: AuthzClient[S]) {
 
-  private val REGISTRATION_ENDPOINT = client.serverConfig.registrationEndpoint
+  private val REGISTRATION_ENDPOINT = client.serverConfig.resource_registration_endpoint
 
   def create(body: Resource.Create): IO[KeycloakError, Resource] = {
     client.post[Resource](uri"$REGISTRATION_ENDPOINT", body)
   }
 
-  // TODO Check if ID required in body as well (as per PermissionResource)
-  def update(id: String, patch: Resource.Update): IO[KeycloakError, Unit] = {
-    client.put[Unit](uri"$REGISTRATION_ENDPOINT/$id")
+  def update(id: String, patch: Resource): IO[KeycloakError, Unit] = {
+    client.put[Unit](uri"$REGISTRATION_ENDPOINT/$id", patch.mapToUpdate)
   }
 
-  private def buildQuery(first: Option[Int] = None,
-                         max: Option[Int] = None,
-                         id: Option[String] = None,
-                         name: Option[String] = None,
-                         uri: Option[String] = None,
-                         owner: Option[String] = None,
-                         `type`: Option[String] = None,
-                         scope: Option[String] = None,
-                         matchingUri: Option[Boolean] = None,
-                         exactName: Option[Boolean] = None): Seq[KeyValue] = {
+  private def buildQuery(first: Option[Int],
+                         max: Option[Int],
+                         id: Option[String],
+                         name: Option[String],
+                         uri: Option[String],
+                         owner: Option[String],
+                         `type`: Option[String],
+                         scope: Option[String],
+                         matchingUri: Option[Boolean],
+                         exactName: Option[Boolean]): Seq[KeyValue] = {
     createQuery(
       ("first", first),
       ("max", max),

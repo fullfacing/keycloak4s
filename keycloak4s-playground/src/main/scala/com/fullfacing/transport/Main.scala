@@ -10,13 +10,12 @@ import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import com.fullfacing.transport.backends.AkkaHttpBackendL
 import com.fullfacing.transport.handles.Akka
-import sttp.client.SttpBackend
 import monix.eval.{Task, TaskApp}
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import org.json4s.jackson.Serialization.writePretty
-import sttp.client.NothingT
 import sttp.client.akkahttp.AkkaHttpBackend
+import sttp.client.{NothingT, SttpBackend}
 
 object Main extends TaskApp {
   

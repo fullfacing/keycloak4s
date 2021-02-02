@@ -1,15 +1,16 @@
 package com.fullfacing.keycloak4s.authz.client
 
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.Logging
 import com.fullfacing.keycloak4s.admin.implicits.{Anything, BodyMagnet}
+import com.fullfacing.keycloak4s.admin.utils.Client._
+import com.fullfacing.keycloak4s.admin.utils.Logging
 import com.fullfacing.keycloak4s.authz.client.AuthzClient._
 import com.fullfacing.keycloak4s.authz.client.models.ServerConfiguration
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, Task, UIO}
-import org.json4s.jackson.Serialization.read
-import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, UriContext, asString, basicRequest}
+import org.json4s.jackson.Serialization.{read, writePretty}
+import sttp.client.{Identity, NothingT, RequestT, Response, SttpBackend, UriContext, asString, basicRequest}
 import sttp.model.Uri.QuerySegment.KeyValue
 import sttp.model.{StatusCode, Uri}
 
@@ -38,7 +39,7 @@ final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfi
 
         if (tag.tpe =:= typeOf[Unit]) read[A]("null")
         else if (tag.tpe =:= typeOf[Headers]) meta.headers.map(h => h.name -> h.value).toMap.asInstanceOf[A]
-        else read[A](body)
+        else {println(body);read[A](body)}
       }
     }
 
@@ -51,13 +52,13 @@ final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfi
     val resp = setResponse[B](request.header("Accept", "application/json"))
 
     def sendWithLogging(req: RequestT[Identity, Either[String, B], Nothing]): IO[Throwable, Response[Either[String, B]]] = {
-      UIO(Logging.requestSent(requestInfo, cId)).flatMap(_ => req.send())
-      req.send()
+      UIO(Logging.requestSent(requestInfo, cId))
+        .flatMap(_ => req.send())
     }
 
     def retryWithLogging(req: RequestT[Identity, Either[String, B], Nothing]): IO[Throwable, Response[Either[String, B]]] = {
-      UIO(Logging.retryUnauthorized(requestInfo, cId)).flatMap(_ => req.send())
-      req.send()
+      UIO(Logging.retryUnauthorized(requestInfo, cId))
+        .flatMap(_ => req.send())
     }
 
     (for {
@@ -74,7 +75,7 @@ final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfi
           } yield b
       }
       .mapError { ex =>
-        Logging.requestFailed(cId, _)
+        Logging.requestFailed(cId, ex)
         KeycloakThrowable(ex)
       }
   }
@@ -85,25 +86,19 @@ final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfi
     call[A](request, buildRequestInfo(uri, "GET", ()))
   }
 
-  def put[A : Anything](uri: Uri,
-                        payload: BodyMagnet = (),
-                        query: Seq[KeyValue] = Seq.empty[KeyValue]): IO[KeycloakError, A] = {
+  def put[A : Anything](uri: Uri, payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): IO[KeycloakError, A] = {
     val request   = basicRequest.put(addQuerySegments(uri, query))
     val injected  = payload.apply(request)
     call[A](injected, buildRequestInfo(uri, "PUT", injected.body))
   }
 
-  def post[A : Anything](uri: Uri,
-                         payload: BodyMagnet = (),
-                         query: Seq[KeyValue] = Seq.empty[KeyValue]): IO[KeycloakError, A] = {
+  def post[A : Anything](uri: Uri, payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): IO[KeycloakError, A] = {
     val request   = basicRequest.post(addQuerySegments(uri, query))
     val injected  = payload.apply(request)
     call[A](injected, buildRequestInfo(uri, "POST", injected.body))
   }
 
-  def delete[A : Anything](uri: Uri,
-                           payload: BodyMagnet = (),
-                           query: Seq[KeyValue] = Seq.empty[KeyValue]): IO[KeycloakError, A] = {
+  def delete[A : Anything](uri: Uri, payload: BodyMagnet = (), query: Seq[KeyValue] = Seq.empty[KeyValue]): IO[KeycloakError, A] = {
     val request   = basicRequest.delete(addQuerySegments(uri, query))
     val injected  = payload.apply(request)
     call[A](injected, buildRequestInfo(uri, "DELETE", injected.body))
@@ -117,36 +112,10 @@ object AuthzClient {
 
   lazy val CONFIGURATION_PATH: String = "/.well-known/uma2-configuration"
 
-  def buildRequestInfo(path: Uri, protocol: String, body: Any): RequestInfo = {
-    buildRequestInfo(path.toString(), protocol, body)
-  }
-
-  def buildRequestInfo(path: String, protocol: String, body: Any): RequestInfo = {
-    RequestInfo(
-      path      = path,
-      protocol  = protocol,
-      body      = body match {
-        case _: Unit  => None
-        case NoBody   => None
-        case a        => Some(a)
-      }
-    )
-  }
-
   @tailrec
   def addQuerySegments(uri: Uri, query: Seq[KeyValue]): Uri = query match {
     case Nil    => uri
     case h :: t => addQuerySegments(uri.querySegment(h), t)
-  }
-
-  def buildError(response: Response[_], leftBody: String, requestInfo: RequestInfo): KeycloakSttpException = {
-    KeycloakSttpException(
-      code        = response.code.code,
-      headers     = response.headers.map(h => h.name -> h.value),
-      body        = leftBody,
-      statusText  = response.statusText,
-      requestInfo = requestInfo
-    )
   }
 
   def liftM[A](response: Response[Either[String, A]], requestInfo: RequestInfo): IO[KeycloakError, A] = {
@@ -156,14 +125,14 @@ object AuthzClient {
   private def retrieveServerConfiguration(config: ConfigWithAuth)
                                          (implicit client: SttpBackend[Task[*], _, NothingT]): IO[KeycloakError, ServerConfiguration] = {
     basicRequest
-      .get(uri"${config.buildBaseUri}/realms/${config.realm}$CONFIGURATION_PATH")
+      .get(uri"${config.buildBaseUri}/realms/${config.realm}/.well-known/uma2-configuration")
       .response(asString)
       .send()
       .mapError(KeycloakThrowable)
       .map { response =>
         response.body.bimap(
           error => KeycloakException(response.code.code, response.statusText, Some(error)),
-          res   => read[ServerConfiguration](res)
+          res   => {println(writePretty(res)) ;read[ServerConfiguration](res)}
         )
       }
       .flatMap(IO.fromEither)
