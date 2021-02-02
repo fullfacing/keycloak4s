@@ -1,5 +1,7 @@
 package com.fullfacing.keycloak4s.authz.monix.bio.models
 
+import com.fullfacing.keycloak4s.core.models.enums.{Logic, LogicTypes}
+
 final case class UmaPermission(name: String,
                                description: Option[String],
                                `type`: String,
@@ -21,7 +23,7 @@ object UmaPermission {
                           `type`: String,
                           policies: List[String] = List.empty[String],
                           resources: List[String] = List.empty[String],
-                          logic: Logic = Logic.Positive,
+                          logic: Logic = LogicTypes.Positive,
                           scopes: List[String] = List.empty[String],
                           roles: List[String] = List.empty[String],
                           groups: List[String] = List.empty[String],
