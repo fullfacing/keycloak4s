@@ -30,7 +30,13 @@ object KeycloakConfig {
     val clientId: String
   }
 
+  final case class Secret(realm: String, clientId: String, clientSecret: String) extends Auth
+
   final case class Password(realm: String, clientId: String, username: String, password: String) extends Auth
 
-  final case class Secret(realm: String, clientId: String, clientSecret: String) extends Auth
+  final case class PasswordWithSecret(realm: String,
+                                      clientId: String,
+                                      username: String,
+                                      password: String,
+                                      clientSecret: String) extends Auth
 }

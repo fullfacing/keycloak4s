@@ -29,7 +29,7 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 lazy val global = {
   Seq(
-    scalaVersion  := "2.13.1",
+    scalaVersion  := "2.13.4",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
@@ -188,6 +188,10 @@ val sttpAkkaMonix: Seq[ModuleID] = Seq(
   "com.fullfacing" %% "sttp-akka-monix-task" % "1.6.0"
 )
 
+val sttpAkkaMonixBio: Seq[ModuleID] = Seq(
+  "com.fullfacing" %% "sttp-akka-monix-bio" % "1.6.0"
+)
+
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
 // --------------------------------------------- //
@@ -198,36 +202,45 @@ lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
   .settings(libraryDependencies ++= coreDependencies)
   .settings(name := "keycloak4s-core", publishArtifact := true)
 
+// --------------------------------------------------- //
+// Project and configuration for keycloak4s-admin-core //
+// --------------------------------------------------- //
+lazy val `keycloak4s-admin-core` = (project in file("./keycloak4s-admin/core"))
+  .settings(global: _*)
+  .settings(libraryDependencies ++= sttp)
+  .settings(name := "keycloak4s-admin-core", publishArtifact := true)
+  .dependsOn(`keycloak4s-core`)
+
+
 // ---------------------------------------------- //
 // Project and configuration for keycloak4s-admin //
 // ---------------------------------------------- //
-lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
+lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin/cats"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= sttp)
   .settings(name := "keycloak4s-admin", publishArtifact := true)
-  .dependsOn(`keycloak4s-core`)
+  .dependsOn(`keycloak4s-admin-core`)
 
 // ---------------------------------------------------- //
 // Project and configuration for keycloak4s-admin-monix //
 // ---------------------------------------------------- //
-lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
+lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin/monix"))
   .settings(global: _*)
   .settings(libraryDependencies ++= monix)
   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
-  .dependsOn(`keycloak4s-admin`)
+  .dependsOn(`keycloak4s-admin`, `keycloak4s-admin-core`)
 
-// ---------------------------------------------------- //
-// Project and configuration for keycloak4s-admin-monix //
-// ---------------------------------------------------- //
-lazy val `keycloak4s-monix-bio` = (project in file("./keycloak4s-admin-monix-bio"))
+// -------------------------------------------------------- //
+// Project and configuration for keycloak4s-admin-monix-bio //
+// -------------------------------------------------------- //
+lazy val `keycloak4s-monix-bio` = (project in file("./keycloak4s-admin/monix-bio"))
   .settings(global: _*)
-  .settings(libraryDependencies ++= `monix-bio` ++ sttp)
+  .settings(libraryDependencies ++= `monix-bio`)
   .settings(name := "keycloak4s-admin-monix-bio", publishArtifact := true)
-  .dependsOn(`keycloak4s-core`)
+  .dependsOn(`keycloak4s-admin-core`)
 
-// ------------------------------------------------------- //
+// -------------------------------------------------- //
 // Project and configuration for keycloak4s-auth-core //
-// ------------------------------------------------------- //
+// -------------------------------------------------- //
 lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth/core"))
   .settings(global: _*)
   .settings(libraryDependencies ++= nimbus)
@@ -243,20 +256,22 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
   .dependsOn(`keycloak4s-auth-core`)
 
-// ------------------------------------------------------- //
-// Project and configuration for keycloak4s-authz-client //
-// ------------------------------------------------------- //
-lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
+// -------------------------------------------------------- //
+// Project and configuration for keycloak4s-authz-monix-bio //
+// -------------------------------------------------------- //
+lazy val `keycloak4s-authz-bio` = (project in file("./keycloak4s-authz-monix-bio"))
   .settings(global: _*)
-  .settings(name := "keycloak4s-authz-client", publishArtifact := true)
+  .settings(libraryDependencies ++= `monix-bio` ++ sttp)
+  .settings(name := "keycloak4s-authz-monix-bio", publishArtifact := true)
+  .dependsOn(`keycloak4s-admin-core`)
 
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-  .settings(scalaVersion  := "2.13.1")
+  .settings(scalaVersion  := "2.13.4")
   .settings(skip in publish := true)
-  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka)
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka ++ sttpAkkaMonixBio)
   .settings(coverageEnabled := false)
   .settings(parallelExecution in Test := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
@@ -265,7 +280,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   }))
   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
   .settings(name := "keycloak4s-playground", publishArtifact := false)
-  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
+  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`, `keycloak4s-authz-bio`)
 
 // ---------------------------------------------- //
 // Project and configuration for the root project //
@@ -281,6 +296,6 @@ lazy val root = (project in file("."))
     `keycloak4s-monix-bio`,
     `keycloak4s-auth-core`,
     `keycloak4s-akka-http`,
-    `keycloak4s-authz`,
+    `keycloak4s-authz-bio`,
     `keycloak4s-playground`
   )

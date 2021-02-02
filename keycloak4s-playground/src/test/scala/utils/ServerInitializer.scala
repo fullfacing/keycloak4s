@@ -1,15 +1,15 @@
 package utils
 
-import java.util.UUID
-
 import cats.implicits._
-import com.fullfacing.keycloak4s.admin.client.TokenManager.TokenResponse
+import com.fullfacing.keycloak4s.admin.models.TokenResponse
 import com.fullfacing.keycloak4s.core.models.{Client, Credential, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import sttp.client.json4s.asJson
-import sttp.client._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.write
+import sttp.client._
+import sttp.client.json4s.asJson
+
+import java.util.UUID
 
 object ServerInitializer {
 
@@ -44,7 +44,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .response(asJson[List[Client]])
       .mapResponse(_.leftMap(_.getMessage).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
-      .send
+      .send()
       .map(_.body)
   }
 
