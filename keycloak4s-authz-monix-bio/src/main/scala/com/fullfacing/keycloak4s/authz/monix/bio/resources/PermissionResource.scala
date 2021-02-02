@@ -1,10 +1,10 @@
 package com.fullfacing.keycloak4s.authz.monix.bio.resources
 
-import com.fullfacing.keycloak4s.authz.client.AuthzClient
-import com.fullfacing.keycloak4s.authz.client.models.PermissionTicket
+import com.fullfacing.keycloak4s.admin.utils.Service._
+import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient
+import com.fullfacing.keycloak4s.authz.monix.bio.models.PermissionTicket
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 import monix.bio.IO
-import com.fullfacing.keycloak4s.admin.utils.Service._
 import sttp.client.UriContext
 import sttp.model.Uri.QuerySegment.KeyValue
 

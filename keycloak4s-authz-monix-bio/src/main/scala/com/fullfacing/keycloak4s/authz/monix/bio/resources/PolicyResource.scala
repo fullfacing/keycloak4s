@@ -1,9 +1,8 @@
 package com.fullfacing.keycloak4s.authz.monix.bio.resources
 
 import com.fullfacing.keycloak4s.admin.utils.Service.createQuery
-import com.fullfacing.keycloak4s.authz.client.AuthzClient
-import com.fullfacing.keycloak4s.authz.models.UmaPermission
 import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient
+import com.fullfacing.keycloak4s.authz.monix.bio.models.UmaPermission
 import com.fullfacing.keycloak4s.authz.monix.bio.models.UmaPermission.Create
 import com.fullfacing.keycloak4s.core.models.KeycloakError
 import monix.bio.IO

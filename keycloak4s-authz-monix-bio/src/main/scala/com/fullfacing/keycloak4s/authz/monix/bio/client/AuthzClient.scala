@@ -4,9 +4,8 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.utils.Client._
 import com.fullfacing.keycloak4s.admin.utils.Logging
-import com.fullfacing.keycloak4s.authz.client.AuthzClient._
-import com.fullfacing.keycloak4s.authz.client.models.ServerConfiguration
-import com.fullfacing.keycloak4s.authz.monix.bio.models.ServerConfiguration
+import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient._
+import com.fullfacing.keycloak4s.authz.monix.bio.models._
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, Task, UIO}

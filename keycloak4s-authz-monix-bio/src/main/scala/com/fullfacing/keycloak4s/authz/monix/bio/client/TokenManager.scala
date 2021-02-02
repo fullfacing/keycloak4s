@@ -5,7 +5,7 @@ import com.fullfacing.keycloak4s.admin.models.{Token, TokenResponse, TokenWithRe
 import com.fullfacing.keycloak4s.admin.utils.Client._
 import com.fullfacing.keycloak4s.admin.utils.Logging
 import com.fullfacing.keycloak4s.admin.utils.TokenManager._
-import com.fullfacing.keycloak4s.authz.client.models.ServerConfiguration
+import com.fullfacing.keycloak4s.authz.monix.bio.models.ServerConfiguration
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}
