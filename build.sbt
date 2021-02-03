@@ -113,8 +113,8 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.3"
-val akkaStreamsVersion    = "2.6.10"
+val akkaHttpVersion       = "10.2.2"
+val akkaStreamsVersion    = "2.6.12"
 val catsEffectVersion     = "2.3.1"
 val catsCoreVersion       = "2.3.1"
 val enumeratumVersion     = "1.6.0"
@@ -122,7 +122,7 @@ val json4sVersion         = "3.6.10"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.1.5"
+val nimbusVersion         = "9.5"
 val scalaTestVersion      = "3.2.3"
 val sttpVersion           = "2.2.9"
 
