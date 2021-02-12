@@ -7,7 +7,7 @@ import com.fullfacing.keycloak4s.admin.models._
 import com.fullfacing.keycloak4s.admin.utils.Client._
 import com.fullfacing.keycloak4s.admin.utils.Logging
 import com.fullfacing.keycloak4s.admin.utils.Logging.handleLogging
-import com.fullfacing.keycloak4s.admin.utils.TokenManager._
+import com.fullfacing.keycloak4s.admin.utils.Credentials._
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakSttpException, RequestInfo}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization

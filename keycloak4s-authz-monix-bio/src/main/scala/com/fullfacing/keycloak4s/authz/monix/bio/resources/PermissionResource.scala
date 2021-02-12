@@ -8,9 +8,15 @@ import monix.bio.IO
 import sttp.client.UriContext
 import sttp.model.Uri.QuerySegment.KeyValue
 
+import java.util.UUID
+
 final class PermissionResource[S](implicit client: AuthzClient[S]) {
 
   private val PERMISSION_ENDPOINT = client.serverConfig.permission_endpoint
+
+  def request(ticketRequest: PermissionTicket.Request): IO[KeycloakError, PermissionTicket.Response] = {
+    request(ticketRequest :: Nil)
+  }
 
   def request(requests: List[PermissionTicket.Request]): IO[KeycloakError, PermissionTicket.Response] = {
     client.post[PermissionTicket.Response](uri"$PERMISSION_ENDPOINT", requests)
@@ -20,12 +26,12 @@ final class PermissionResource[S](implicit client: AuthzClient[S]) {
     client.post[PermissionTicket](uri"$PERMISSION_ENDPOINT/ticket", body)
   }
 
-  def update(update: PermissionTicket.Update): IO[KeycloakError, Unit] = {
+  def update(update: PermissionTicket): IO[KeycloakError, Unit] = {
     client.put[Unit](uri"$PERMISSION_ENDPOINT/ticket", update)
   }
 
-  def delete(ticketId: String): IO[KeycloakError, Unit] = {
-    client.delete[Unit](uri"$PERMISSION_ENDPOINT/ticket/$ticketId")
+  def delete(id: UUID): IO[KeycloakError, Unit] = {
+    client.delete[Unit](uri"$PERMISSION_ENDPOINT/ticket/$id")
   }
 
   def findByScope(scopeId: String): IO[KeycloakError, List[PermissionTicket]] = {
@@ -33,9 +39,9 @@ final class PermissionResource[S](implicit client: AuthzClient[S]) {
       .get[List[PermissionTicket]](uri"$PERMISSION_ENDPOINT/ticket", KeyValue("scopeId", scopeId) :: Nil)
   }
 
-  def findByResource(resourceId: String): IO[KeycloakError, List[PermissionTicket]] = {
+  def findByResource(resource: String): IO[KeycloakError, List[PermissionTicket]] = {
     client
-      .get[List[PermissionTicket]](uri"$PERMISSION_ENDPOINT/ticket", KeyValue("resourceId", resourceId) :: Nil)
+      .get[List[PermissionTicket]](uri"$PERMISSION_ENDPOINT/ticket", KeyValue("resourceId", resource) :: Nil)
   }
 
   def find(resource: Option[String] = None,

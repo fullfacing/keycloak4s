@@ -38,5 +38,4 @@ object TokenResponse {
       )
     }
   }.leftMap(_.getMessage)
-
 }

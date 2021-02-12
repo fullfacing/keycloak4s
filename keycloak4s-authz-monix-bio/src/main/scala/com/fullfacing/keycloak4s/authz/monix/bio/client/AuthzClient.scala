@@ -30,47 +30,38 @@ final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfi
   private implicit def ma[A : Anything]: Manifest[A] = implicitly[Anything[A]].manifest
 
   /* HTTP Call Builders **/
-  private def setResponse[A <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing])
-                                              (implicit tag: TypeTag[A], cId: UUID)
-  : RequestT[Identity, Either[String, A], Nothing] = {
-
-    val respAs = asString.mapWithMetadata { case (raw, meta) =>
+  private def asResponseObject[A <: Any : Manifest](implicit tag: TypeTag[A], cId: UUID) = {
+    asString.mapWithMetadata { case (raw, meta) =>
       raw.map { body =>
+        Logging.requestSuccessful(body, cId)
 
         if (tag.tpe =:= typeOf[Unit]) read[A]("null")
         else if (tag.tpe =:= typeOf[Headers]) meta.headers.map(h => h.name -> h.value).toMap.asInstanceOf[A]
-        else {println(body);read[A](body)}
+        else read[A](body)
       }
     }
-
-    request.response(respAs)
   }
 
-  private def call[B <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing], requestInfo: RequestInfo): IO[KeycloakError, B] = {
+  private def call[B <: Any : Manifest](requestT: RequestT[Identity, Either[String, String], Nothing],
+                                        requestInfo: RequestInfo): IO[KeycloakError, B] = {
     implicit val cId: UUID = UUID.randomUUID()
 
-    val resp = setResponse[B](request.header("Accept", "application/json"))
-
-    def sendWithLogging(req: RequestT[Identity, Either[String, B], Nothing]): IO[Throwable, Response[Either[String, B]]] = {
-      UIO(Logging.requestSent(requestInfo, cId))
-        .flatMap(_ => req.send())
-    }
-
-    def retryWithLogging(req: RequestT[Identity, Either[String, B], Nothing]): IO[Throwable, Response[Either[String, B]]] = {
-      UIO(Logging.retryUnauthorized(requestInfo, cId))
-        .flatMap(_ => req.send())
-    }
+    val request = requestT
+      .header("Accept", "application/json")
+      .response(asResponseObject[B])
 
     (for {
-      auth <- withAuth(resp)
-      res  <- sendWithLogging(auth)
-      b    <- liftM(res, requestInfo)
+      req      <- withAuth(request)
+      _        <- UIO(Logging.requestSent(requestInfo, cId))
+      response <- req.send()
+      b        <- liftM(response, requestInfo)
     } yield b)
       .onErrorRecoverWith {
         case KeycloakSttpException(StatusCode.Unauthorized.code, _, _, _, _) =>
           for {
-            token <- withAuthNewToken(resp)
-            retry <- retryWithLogging(token)
+            token <- withAuthNewToken(request)
+            _     <- UIO(Logging.retryUnauthorized(requestInfo, cId))
+            retry <- token.send()
             b     <- liftM(retry, requestInfo)
           } yield b
       }
@@ -132,7 +123,7 @@ object AuthzClient {
       .map { response =>
         response.body.bimap(
           error => KeycloakException(response.code.code, response.statusText, Some(error)),
-          res   => {println(writePretty(res)) ;read[ServerConfiguration](res)}
+          res   => read[ServerConfiguration](res)
         )
       }
       .flatMap(IO.fromEither)

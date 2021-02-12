@@ -8,11 +8,13 @@ import com.fullfacing.keycloak4s.core.models.KeycloakError
 import monix.bio.IO
 import sttp.client.UriContext
 
-final class PolicyResource[S](resourceId: String)(implicit client: AuthzClient[S]) {
+import java.util.UUID
+
+final class PolicyResource[S]()(implicit client: AuthzClient[S]) {
 
   private val POLICY_ENDPOINT = client.serverConfig.policy_endpoint
 
-  def create(create: Create): IO[KeycloakError, UmaPermission] = {
+  def create(resourceId: UUID, create: Create): IO[KeycloakError, UmaPermission] = {
     client.post[UmaPermission](uri"$POLICY_ENDPOINT/$resourceId", create)
   }
 
@@ -22,6 +24,7 @@ final class PolicyResource[S](resourceId: String)(implicit client: AuthzClient[S
 
   def find(first: Option[Int] = None,
            max: Option[Int] = None,
+           resource: Option[String] = None,
            name: Option[String] = None,
            scope: Option[String] = None): IO[KeycloakError, List[UmaPermission]] = {
     val params = List(
@@ -29,7 +32,7 @@ final class PolicyResource[S](resourceId: String)(implicit client: AuthzClient[S
       ("max", max),
       ("name", name),
       ("scope", scope),
-      ("resource", Some(resourceId))
+      ("resource", resource)
     )
 
     client.get[List[UmaPermission]](uri"$POLICY_ENDPOINT", createQuery(params: _*))

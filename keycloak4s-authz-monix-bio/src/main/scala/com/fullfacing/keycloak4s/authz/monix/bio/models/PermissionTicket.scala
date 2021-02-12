@@ -16,30 +16,19 @@ final case class PermissionTicket(id: UUID,
 object PermissionTicket {
 
   final case class Create(owner: Option[String] = None,
-                          resource: Option[String] = None,
-                          scope: Option[String] = None,
-                          granted: Option[Boolean] = None,
-                          scopeName: Option[String] = None,
-                          resourceName: Option[String] = None,
-                          requester: Option[String] = None,
                           ownerName: Option[String] = None,
+                          resource: Option[String] = None,
+                          resourceName: Option[String] = None,
+                          scope: Option[String] = None,
+                          scopeName: Option[String] = None,
+                          granted: Option[Boolean] = None,
+                          requester: Option[String] = None,
                           requesterName: Option[String] = None)
 
   final case class Request(resource_id: String,
-                           scopes: List[String] = List.empty[String],
-                           resourceServerId: String,
-                           claims: Map[String, List[String]])
+                           resource_scopes: List[String] = List.empty[String],
+                           resource_server_id: Option[String] = None,
+                           claims: Map[String, List[String]] = Map.empty[String, List[String]])
 
   final case class Response(ticket: String)
-
-  final case class Update(id: String,
-                          owner: Option[String] = None,
-                          resource: Option[String] = None,
-                          scope: Option[String] = None,
-                          granted: Option[Boolean] = None,
-                          scopeName: Option[String] = None,
-                          resourceName: Option[String] = None,
-                          requester: Option[String] = None,
-                          ownerName: Option[String] = None,
-                          requesterName: Option[String] = None)
 }

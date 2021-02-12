@@ -1,5 +1,6 @@
 import suites._
 import org.scalatest.Sequential
+import suites.authz.{AuthzTests, PermissionTests, PolicyTests, ProtectedResourceTests}
 
 class IntegrationTests extends Sequential(
   new AttackDetectionTests,
@@ -13,5 +14,9 @@ class IntegrationTests extends Sequential(
   new RolesByIdTests,
   new RolesTests,
   new ClientScopeTests,
-  new UsersTests
+  new UsersTests,
+  new AuthzTests,
+  new ProtectedResourceTests,
+  new PolicyTests,
+  new PermissionTests
 )

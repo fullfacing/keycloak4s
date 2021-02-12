@@ -25,7 +25,7 @@ object Resource {
                           displayName: Option[String] = None,
                           icon_uri: Option[String] = None,
                           ownerManagedAccess: Option[Boolean] = None,
-                          scopes: Option[List[Scope]] = None,
+                          scopes: Option[List[Scope.Create]] = None,
                           `type`: Option[String] = None,
                           uris: Option[List[String]] = None)
 }

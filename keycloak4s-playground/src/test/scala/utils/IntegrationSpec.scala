@@ -5,13 +5,13 @@ import com.fullfacing.akka.monix.task.backend.AkkaMonixHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{ClientScopes, _}
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
-import sttp.client.{NothingT, SttpBackend}
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.reactive.Observable
-import org.scalatest.{Assertion, Inspectors}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{Assertion, Inspectors}
+import sttp.client.{NothingT, SttpBackend}
 
 import scala.concurrent.Future
 

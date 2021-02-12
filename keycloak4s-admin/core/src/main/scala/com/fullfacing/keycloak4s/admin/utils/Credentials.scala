@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.admin.utils
 import com.fullfacing.keycloak4s.admin.models.TokenWithRefresh
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
 
-object TokenManager {
+object Credentials {
 
   def password(config: ConfigWithAuth): Map[String, String] = config.authn match {
     case KeycloakConfig.Password(_, clientId, username, pass) =>

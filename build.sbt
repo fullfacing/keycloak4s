@@ -280,7 +280,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   }))
   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
   .settings(name := "keycloak4s-playground", publishArtifact := false)
-  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`, `keycloak4s-authz-bio`)
+  .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`, `keycloak4s-monix-bio`, `keycloak4s-authz-bio`)
 
 // ---------------------------------------------- //
 // Project and configuration for the root project //

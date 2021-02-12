@@ -7,6 +7,7 @@ import monix.bio.IO
 import sttp.client.UriContext
 import sttp.model.Uri.QuerySegment.KeyValue
 
+import java.util.UUID
 import scala.collection.immutable.Seq
 
 class ProtectedResource[S]()(implicit client: AuthzClient[S]) {
@@ -17,8 +18,12 @@ class ProtectedResource[S]()(implicit client: AuthzClient[S]) {
     client.post[Resource](uri"$REGISTRATION_ENDPOINT", body)
   }
 
-  def update(id: String, patch: Resource): IO[KeycloakError, Unit] = {
+  def update(id: UUID, patch: Resource): IO[KeycloakError, Unit] = {
     client.put[Unit](uri"$REGISTRATION_ENDPOINT/$id", patch)
+  }
+
+  def delete(id: UUID): IO[KeycloakError, Unit] = {
+    client.delete[Unit](uri"$REGISTRATION_ENDPOINT/$id")
   }
 
   private def buildQuery(first: Option[Int],
