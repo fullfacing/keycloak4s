@@ -40,7 +40,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     * @return
     */
   def issueAccessToken()(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
-    val body = password(config)
+    val body = access(config.authn)
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
 
     val sendF = Concurrent[F].unit.flatMap { _ =>
@@ -62,7 +62,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
   }
 
   private def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): F[Either[KeycloakSttpException, Token]] = {
-    val body = refresh(t, config)
+    val body = refresh(t, config.authn)
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
 
     val sendF = Concurrent[F].unit.flatMap { _ =>

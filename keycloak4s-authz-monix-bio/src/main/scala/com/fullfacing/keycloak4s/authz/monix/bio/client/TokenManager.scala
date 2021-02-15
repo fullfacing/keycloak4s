@@ -3,9 +3,10 @@ package com.fullfacing.keycloak4s.authz.monix.bio.client
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.models.{Token, TokenResponse, TokenWithRefresh}
 import com.fullfacing.keycloak4s.admin.utils.Client._
+import com.fullfacing.keycloak4s.admin.utils.Credentials
 import com.fullfacing.keycloak4s.admin.utils.Credentials._
-import com.fullfacing.keycloak4s.admin.utils.{Credentials, Logging}
-import com.fullfacing.keycloak4s.authz.monix.bio.models.{AuthorizationRequest, IntrospectionResponse, ServerConfiguration}
+import com.fullfacing.keycloak4s.authz.monix.bio.Logging
+import com.fullfacing.keycloak4s.authz.monix.bio.models.{IntrospectionResponse, ServerConfiguration}
 import com.fullfacing.keycloak4s.authz.monix.bio.serialization.IntrospectionSerializer
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats
@@ -27,7 +28,7 @@ abstract class TokenManager[-S](config: ConfigWithAuth, server: ServerConfigurat
 
   private val ref: AtomicReference[Token] = new AtomicReference()
 
-  private val password = Credentials.password(config)
+  private val password = Credentials.access(config.authn)
 
   def handleLogging[A](result: IO[Throwable, A])(implicit cId: UUID): IO[Throwable, A] = {
     result
@@ -53,7 +54,7 @@ abstract class TokenManager[-S](config: ConfigWithAuth, server: ServerConfigurat
   }
 
   def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): IO[KeycloakError, Token] = {
-    val body = refresh(t, config)
+    val body = refresh(t, config.authn)
     val requestInfo = buildRequestInfo(server.token_endpoint, "POST", body)
     val request = basicRequest
       .post(uri"${server.token_endpoint}")
@@ -115,20 +116,25 @@ abstract class TokenManager[-S](config: ConfigWithAuth, server: ServerConfigurat
     "token"           -> token
   )
 
-  def introspectToken(token: String): IO[KeycloakError, IntrospectionResponse] = {
+  def introspectToken(token: String)(implicit cId: UUID = UUID.randomUUID()): IO[KeycloakError, IntrospectionResponse] = {
     val body = password ++ introspectionBody(token)
     val uri  = uri"${server.introspection_endpoint}"
+    val info = buildRequestInfo(uri, "POST", body)
 
-    basicRequest
+    val request = basicRequest
       .post(uri)
       .body(body)
-      .response(asJson[IntrospectionResponse])
-      .mapResponse(_.leftMap(_.toString))
       .send()
-      .flatMap { r =>
-        AuthzClient.liftM(r, buildRequestInfo(uri, "POST", body))
-      }
       .mapError(KeycloakThrowable)
+      .flatMap(AuthzClient.liftM(_, info))
+      .map { response =>
+        UIO(Logging.requestSuccessful(response, cId))
+        Serialization.read[IntrospectionResponse](response)
+      }
+      .tapError(t => UIO(Logging.requestFailed(cId, t)))
+
+    UIO(Logging.requestSent(info, cId))
+      .flatMap(_ => request)
   }
 
   protected def withAuthNewToken[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID)
@@ -138,31 +144,5 @@ abstract class TokenManager[-S](config: ConfigWithAuth, server: ServerConfigurat
 
   def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): IO[KeycloakError, RequestT[Identity, A, Nothing]] = {
     evaluateToken().map(tkn => request.auth.bearer(tkn.access))
-  }
-
-  def authorize(request: AuthorizationRequest): IO[KeycloakError, TokenResponse] = {
-    val body = Map(
-      "ticket"             -> request.ticket,
-      "claim_token"        -> request.claimToken,
-      "claim_token_format" -> request.claimTokenFormat,
-      "pct"                -> request.pct,
-      "rpt"                -> request.rptToken,
-      "scope"              -> request.scope,
-      "audience"           -> request.audience.orElse(Some(config.authn.clientId)),
-      "subject_token"      -> request.subjectToken
-    )
-      .collect { case (key, Some(value)) => key -> value :: Nil }
-
-    val uri = uri"${server.token_endpoint}"
-    basicRequest
-      .post(uri)
-      .body(body)
-      .response(asJson[TokenResponse])
-      .mapResponse(_.leftMap(_.toString))
-      .send()
-      .flatMap { r =>
-        AuthzClient.liftM(r, buildRequestInfo(uri, "POST", body))
-      }
-      .mapError(KeycloakThrowable)
   }
 }

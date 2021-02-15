@@ -41,7 +41,7 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
    * @return
    */
   def issueAccessToken()(implicit cId: UUID): IO[KeycloakError, Token] = {
-    val body = password(config)
+    val body = access(config.authn)
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
     val request = basicRequest
       .post(tokenEndpoint)
@@ -58,7 +58,7 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
   }
 
   private def refreshAccessToken(t: TokenWithRefresh)(implicit cId: UUID): IO[KeycloakError, Token] = {
-    val body = refresh(t, config)
+    val body = refresh(t, config.authn)
     val requestInfo = buildRequestInfo(tokenEndpoint.path, "POST", body)
     val request = basicRequest
       .post(tokenEndpoint)

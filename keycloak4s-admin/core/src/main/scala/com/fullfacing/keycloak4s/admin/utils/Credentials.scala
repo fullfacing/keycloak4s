@@ -1,11 +1,12 @@
 package com.fullfacing.keycloak4s.admin.utils
 
 import com.fullfacing.keycloak4s.admin.models.TokenWithRefresh
-import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig}
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig
+import com.fullfacing.keycloak4s.core.models.KeycloakConfig.Auth
 
 object Credentials {
 
-  def password(config: ConfigWithAuth): Map[String, String] = config.authn match {
+  def access(authn: Auth): Map[String, String] = authn match {
     case KeycloakConfig.Password(_, clientId, username, pass) =>
       Map(
         "grant_type"    -> "password",
@@ -29,23 +30,23 @@ object Credentials {
       )
   }
 
-  def refresh(token: TokenWithRefresh, config: ConfigWithAuth): Map[String, String] = config.authn match {
-    case KeycloakConfig.Secret(_, _, clientSecret) =>
+  def refresh(token: TokenWithRefresh, authn: Auth): Map[String, String] = authn match {
+    case KeycloakConfig.Secret(_, clientId, clientSecret) =>
       Map(
-        "client_id"     -> config.authn.clientId,
+        "client_id"     -> clientId,
         "refresh_token" -> token.refresh,
         "client_secret" -> clientSecret,
         "grant_type"    -> "refresh_token"
       )
     case _: KeycloakConfig.Password =>
       Map(
-        "client_id"     -> config.authn.clientId,
+        "client_id"     -> authn.clientId,
         "refresh_token" -> token.refresh,
         "grant_type"    -> "refresh_token"
       )
-    case KeycloakConfig.PasswordWithSecret(_, _, _, _, clientSecret) =>
+    case KeycloakConfig.PasswordWithSecret(_, clientId, _, _, clientSecret) =>
       Map(
-        "client_id"     -> config.authn.clientId,
+        "client_id"     -> clientId,
         "refresh_token" -> token.refresh,
         "client_secret" -> clientSecret,
         "grant_type"    -> "refresh_token"

@@ -3,13 +3,14 @@ package com.fullfacing.keycloak4s.authz.monix.bio.client
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.implicits.{Anything, BodyMagnet}
 import com.fullfacing.keycloak4s.admin.utils.Client._
-import com.fullfacing.keycloak4s.admin.utils.Logging
+import com.fullfacing.keycloak4s.authz.monix.bio.Logging
 import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient._
 import com.fullfacing.keycloak4s.authz.monix.bio.models._
+import com.fullfacing.keycloak4s.authz.monix.bio.resources.{AuthorizationResource, PermissionResource, PolicyResource, ProtectedResource}
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, Task, UIO}
-import org.json4s.jackson.Serialization.{read, writePretty}
+import org.json4s.jackson.Serialization.read
 import sttp.client.{Identity, NothingT, RequestT, Response, SttpBackend, UriContext, asString, basicRequest}
 import sttp.model.Uri.QuerySegment.KeyValue
 import sttp.model.{StatusCode, Uri}
@@ -20,7 +21,7 @@ import scala.collection.immutable.Seq
 import scala.reflect.Manifest
 import scala.reflect.runtime.universe._
 
-final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfiguration)
+final class AuthzClient[S](config: ConfigWithAuth, private[bio] val serverConfig: ServerConfiguration)
                           (implicit client: SttpBackend[IO[Throwable, *], S, NothingT])
   extends TokenManager[S](config, serverConfig) {
 
@@ -94,6 +95,11 @@ final class AuthzClient[S](config: ConfigWithAuth, val serverConfig: ServerConfi
     val injected  = payload.apply(request)
     call[A](injected, buildRequestInfo(uri, "DELETE", injected.body))
   }
+
+  def authorization(): AuthorizationResource[S] = new AuthorizationResource[S](config, serverConfig)
+  def policy(): PolicyResource[S]               = new PolicyResource[S]()(this)
+  def permission(): PermissionResource[S]       = new PermissionResource[S]()(this)
+  def resource(): ProtectedResource[S]          = new ProtectedResource[S]()(this)
 }
 
 object AuthzClient {

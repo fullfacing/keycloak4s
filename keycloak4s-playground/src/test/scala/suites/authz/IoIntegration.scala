@@ -5,7 +5,7 @@ import com.fullfacing.akka.monix.bio.backend.AkkaMonixBioHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.bio.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.bio.services.{Clients, RealmsAdmin}
 import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient
-import com.fullfacing.keycloak4s.authz.monix.bio.resources.{PermissionResource, PolicyResource, ProtectedResource}
+import com.fullfacing.keycloak4s.authz.monix.bio.resources.{AuthorizationResource, PermissionResource, PolicyResource, ProtectedResource}
 import com.fullfacing.keycloak4s.core.models._
 import monix.bio.{IO, Task}
 import monix.execution.Scheduler
@@ -66,4 +66,5 @@ object IoIntegration {
   val resource: IO[KeycloakError, ProtectedResource[O]] = authzClient.map(new ProtectedResource[O]()(_)).memoizeOnSuccess
   val policy: IO[KeycloakError, PolicyResource[O]] = authzClient.map(new PolicyResource[O]()(_)).memoizeOnSuccess
   val permission: IO[KeycloakError, PermissionResource[O]] = authzClient.map(new PermissionResource[O]()(_)).memoizeOnSuccess
+  val authorization: IO[KeycloakError, AuthorizationResource[O]] = authzClient.map(_.authorization()).memoizeOnSuccess
 }

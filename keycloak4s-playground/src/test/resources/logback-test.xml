@@ -19,6 +19,7 @@
 
     <logger name="keycloak4s.admin" level="trace"/>
     <logger name="keycloak4s.auth"  level="trace"/>
+    <logger name="keycloak4s.authz" level="trace"/>
 
     <root level="trace">
         <appender-ref ref="STDOUT"/>

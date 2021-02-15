@@ -10,6 +10,7 @@ final case class TokenResponse(access_token: String,
                                refresh_expires_in: Long,
                                refresh_token: Option[String] = None,
                                token_type: String,
+                               id_token: Option[String] = None,
                                `not-before-policy`: Int,
                                session_state: Option[String] = None,
                                scope: String)
