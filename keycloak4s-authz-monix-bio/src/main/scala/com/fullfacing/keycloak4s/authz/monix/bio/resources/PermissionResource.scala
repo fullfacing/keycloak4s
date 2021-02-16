@@ -23,6 +23,7 @@ final class PermissionResource[S](implicit client: AuthzClient[S]) {
   }
 
   def create(body: PermissionTicket.Create): IO[KeycloakError, PermissionTicket] = {
+
     client.post[PermissionTicket](uri"$PERMISSION_ENDPOINT/ticket", body)
   }
 
@@ -39,12 +40,12 @@ final class PermissionResource[S](implicit client: AuthzClient[S]) {
       .get[List[PermissionTicket]](uri"$PERMISSION_ENDPOINT/ticket", KeyValue("scopeId", scopeId) :: Nil)
   }
 
-  def findByResource(resource: String): IO[KeycloakError, List[PermissionTicket]] = {
+  def findByResource(resource: UUID): IO[KeycloakError, List[PermissionTicket]] = {
     client
-      .get[List[PermissionTicket]](uri"$PERMISSION_ENDPOINT/ticket", KeyValue("resourceId", resource) :: Nil)
+      .get[List[PermissionTicket]](uri"$PERMISSION_ENDPOINT/ticket", KeyValue("resourceId", resource.toString) :: Nil)
   }
 
-  def find(resource: Option[String] = None,
+  def find(resourceId: Option[UUID] = None,
            scope: Option[String] = None,
            owner: Option[String] = None,
            requester: Option[String] = None,
@@ -53,7 +54,7 @@ final class PermissionResource[S](implicit client: AuthzClient[S]) {
            first: Option[Int] = None,
            max: Option[Int] = None): IO[KeycloakError, List[PermissionTicket]] = {
     val query = List(
-      ("resourceId", resource),
+      ("resourceId", resourceId),
       ("scopeId", scope),
       ("owner", owner),
       ("requester", requester),

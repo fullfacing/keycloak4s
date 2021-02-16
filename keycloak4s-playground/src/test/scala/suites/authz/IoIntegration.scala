@@ -3,7 +3,7 @@ package suites.authz
 import akka.util.ByteString
 import com.fullfacing.akka.monix.bio.backend.AkkaMonixBioHttpBackend
 import com.fullfacing.keycloak4s.admin.monix.bio.client.{Keycloak, KeycloakClient}
-import com.fullfacing.keycloak4s.admin.monix.bio.services.{Clients, RealmsAdmin}
+import com.fullfacing.keycloak4s.admin.monix.bio.services.{Clients, RealmsAdmin, Users}
 import com.fullfacing.keycloak4s.authz.monix.bio.client.AuthzClient
 import com.fullfacing.keycloak4s.authz.monix.bio.resources.{AuthorizationResource, PermissionResource, PolicyResource, ProtectedResource}
 import com.fullfacing.keycloak4s.core.models._
@@ -33,31 +33,33 @@ object IoIntegration {
 
   val authConfig: KeycloakConfig.Secret = KeycloakConfig.Secret("master", "admin-cli", ServerInitializer.clientSecret)
 
-  implicit val backend: SttpBackend[Task, Observable[ByteString], NothingT] = AkkaMonixBioHttpBackend()
+  implicit val backend: SttpBackend[Task, O, NothingT] = AkkaMonixBioHttpBackend()
 
-  val realmService: RealmsAdmin[Observable[ByteString]] = {
+  val realmService: RealmsAdmin[O] = {
     val config = ConfigWithAuth("http", "127.0.0.1", 8080, "master", authConfig)
-    val client = new KeycloakClient[Observable[ByteString]](config)
+    val client = new KeycloakClient[O](config)
     Keycloak.RealmsAdmin(client)
   }
 
-  lazy val clientService: Clients[Observable[ByteString]] = {
-    val config = ConfigWithAuth("http", "127.0.0.1", 8080, "AuthzRealm", authConfig)
-    val client = new KeycloakClient[Observable[ByteString]](config)
-    Keycloak.Clients(client)
+  object AuthzRealm {
+    private val config = ConfigWithAuth("http", "127.0.0.1", 8080, "AuthzRealm", authConfig)
+    private val client = new KeycloakClient[O](config)
+
+    lazy val userService: Users[O]     = Keycloak.Users(client)
+    lazy val clientService: Clients[O] = Keycloak.Clients(client)
   }
 
   def setup(): IO[KeycloakError, String] = {
     for {
       _  <- realmService.create(Realm.Create("AuthzRealm", "AuthzRealm", userManagedAccessAllowed = Some(true), enabled = Some(true)))
-      c  <- clientService.fetch(clientId = Some("admin-cli"))
+      c  <- AuthzRealm.clientService.fetch(clientId = Some("admin-cli"))
       id <- IO.fromOption(c.headOption.map(_.id), KeycloakThrowable(new Throwable("Client ID not found")))
-      _  <- clientService.update(id, Client.Update(id, "admin-cli", serviceAccountsEnabled = Some(true), authorizationServicesEnabled = Some(true), publicClient = Some(false)))
-      s  <- clientService.fetchClientSecret(id)
+      _  <- AuthzRealm.clientService.update(id, Client.Update(id, "admin-cli", serviceAccountsEnabled = Some(true), authorizationServicesEnabled = Some(true), publicClient = Some(false)))
+      s  <- AuthzRealm.clientService.fetchClientSecret(id)
     } yield s.value.get
   }.memoizeOnSuccess
 
-  val authzClient: IO[KeycloakError, AuthzClient[Observable[ByteString]]] = setup().flatMap { secret =>
+  val authzClient: IO[KeycloakError, AuthzClient[O]] = setup().flatMap { secret =>
     val authnConfig = KeycloakConfig.Secret("AuthzRealm", "admin-cli", secret)
     val authzConfig = ConfigWithAuth("http", "localhost", 8080, "AuthzRealm", authnConfig)
     AuthzClient.initialise(authzConfig)

@@ -3,26 +3,23 @@ package com.fullfacing.keycloak4s.authz.monix.bio.models
 import java.util.UUID
 
 final case class PermissionTicket(id: UUID,
-                                  owner: String,
-                                  resource: String,
-                                  scope: String,
+                                  owner: UUID,
+                                  resource: UUID,
+                                  scope: UUID,
+                                  requester: UUID,
                                   granted: Boolean,
-                                  scopeName: String,
-                                  resourceName: String,
-                                  requester: String,
-                                  ownerName: String,
-                                  requesterName: String)
+                                  scopeName: Option[String],
+                                  resourceName: Option[String],
+                                  ownerName: Option[String],
+                                  requesterName: Option[String])
 
 object PermissionTicket {
 
-  final case class Create(owner: Option[String] = None,
-                          ownerName: Option[String] = None,
-                          resource: Option[String] = None,
-                          resourceName: Option[String] = None,
-                          scope: Option[String] = None,
+  final case class Create(resource: UUID,
+                          scope: Option[UUID] = None,
+                          requester: Option[UUID] = None,
+                          granted: Boolean,
                           scopeName: Option[String] = None,
-                          granted: Option[Boolean] = None,
-                          requester: Option[String] = None,
                           requesterName: Option[String] = None)
 
   final case class Request(resource_id: String,

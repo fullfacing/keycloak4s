@@ -11,7 +11,8 @@ final case class Resource(_id: UUID,
                           displayName: Option[String],
                           icon_uri: Option[String],
                           ownerManagedAccess: Boolean,
-                          resource_scopes: List[Scope],
+                          scopes: Option[List[Scope]],
+                          resource_scopes: Option[List[Scope]],
                           `type`: Option[String],
                           uris: List[String])
 

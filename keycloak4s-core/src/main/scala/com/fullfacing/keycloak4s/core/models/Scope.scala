@@ -8,9 +8,9 @@ final case class Scope(displayName: Option[String],
                        resources: Option[List[Resource]])
 
 object Scope {
-  final case class Create(displayName: Option[String],
-                          iconUri: Option[String],
-                          name: Option[String],
-                          policies: Option[Policy],
-                          resources: Option[Resource.Create])
+  final case class Create(name: String,
+                          displayName: Option[String] = None,
+                          iconUri: Option[String] = None,
+                          policies: Option[List[Policy]] = None,
+                          resources: Option[List[Resource.Create]] = None)
 }
