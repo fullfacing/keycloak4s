@@ -29,20 +29,20 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 lazy val global = {
   Seq(
-    scalaVersion  := "2.13.1",
+    scalaVersion  := "2.13.5",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.2" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.13"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
@@ -113,17 +113,17 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.2"
-val akkaStreamsVersion    = "2.6.10"
-val catsEffectVersion     = "2.3.1"
-val catsCoreVersion       = "2.3.1"
+val akkaHttpVersion       = "10.2.4"
+val akkaStreamsVersion    = "2.6.13"
+val catsEffectVersion     = "2.3.3"
+val catsCoreVersion       = "2.4.2"
 val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.10"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.1.5"
-val scalaTestVersion      = "3.2.3"
+val nimbusVersion         = "9.7"
+val scalaTestVersion      = "3.2.5"
 val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
@@ -254,7 +254,7 @@ lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-  .settings(scalaVersion  := "2.13.1")
+  .settings(scalaVersion  := "2.13.5")
   .settings(skip in publish := true)
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka)
   .settings(coverageEnabled := false)

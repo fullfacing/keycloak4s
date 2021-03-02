@@ -6,6 +6,7 @@ sealed trait KeycloakConfig {
   val port: Int
   val realm: String
   val basePath: List[String]
+  val proxyUrl: Option[String]
 
   def buildBaseUri: String = s"$scheme://$host:$port" + (if (basePath.nonEmpty) s"/${basePath.mkString("/")}" else "")
 }
@@ -15,12 +16,14 @@ final case class ConfigWithAuth(scheme: String,
                                 port: Int,
                                 realm: String,
                                 authn: KeycloakConfig.Auth,
+                                proxyUrl: Option[String] = None,
                                 basePath: List[String] = List("auth")) extends KeycloakConfig
 
 final case class ConfigWithoutAuth(scheme: String,
                                    host: String,
                                    port: Int,
                                    realm: String,
+                                   proxyUrl: Option[String] = None,
                                    basePath: List[String] = List("auth")) extends KeycloakConfig
 
 object KeycloakConfig {
