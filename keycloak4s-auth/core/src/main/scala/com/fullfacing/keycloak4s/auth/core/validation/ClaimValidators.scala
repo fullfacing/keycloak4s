@@ -47,9 +47,9 @@ trait ClaimValidators {
   }
 
   /* Validates that a token's issuer is defined and matches the web address as specified in the KeycloakConfig. **/
-  protected def validateIss(claims: JWTClaimsSet, uri: String): ValidatedNel[KeycloakException, Unit] = {
-    val iss = Option(claims.getIssuer)
-    val cond = iss.map(_ == uri)
+  protected def validateIss(claims: JWTClaimsSet, uri: String, proxy: Option[String] = None): ValidatedNel[KeycloakException, Unit] = {
+    val issuer = Option(claims.getIssuer)
+    val cond   = issuer.map(iss => iss == uri || proxy.contains(iss))
 
     lazy val missing    = invalidNel[KeycloakException, Unit](Exceptions.ISS_MISSING)
     lazy val incorrect  = invalidNel[KeycloakException, Unit](Exceptions.ISS_INCORRECT)

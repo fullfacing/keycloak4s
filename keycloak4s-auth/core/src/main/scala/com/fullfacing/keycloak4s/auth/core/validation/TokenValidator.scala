@@ -56,7 +56,7 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
       validateExp(claims, now),
       validateNbf(claims, now),
       validateIat(claims, now),
-      validateIss(claims, uri)
+      validateIss(claims, uri, config.proxyUrl)
     )
 
     validationResults
