@@ -123,7 +123,7 @@ val logbackVersion        = "1.2.3"
 val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.1.0"
 val nimbusVersion         = "9.7"
-val scalaTestVersion      = "3.2.5"
+val scalaTestVersion      = "3.2.6"
 val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
