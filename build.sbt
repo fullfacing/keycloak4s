@@ -114,15 +114,15 @@ lazy val global = {
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.2.4"
-val akkaStreamsVersion    = "2.6.13"
+val akkaStreamsVersion    = "2.6.14"
 val catsEffectVersion     = "2.3.3"
-val catsCoreVersion       = "2.4.2"
+val catsCoreVersion       = "2.5.0"
 val enumeratumVersion     = "1.6.0"
-val json4sVersion         = "3.6.10"
+val json4sVersion         = "3.6.11"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.3.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.7"
+val nimbusVersion         = "9.8.1"
 val scalaTestVersion      = "3.2.7"
 val sttpVersion           = "2.2.9"
 
@@ -168,7 +168,7 @@ val `monix-bio`: Seq[ModuleID] = Seq(
 
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion,
-  "net.minidev" % "json-smart" % "2.3"
+  "net.minidev" % "json-smart" % "2.4.2"
 )
 
 val scalaTest: Seq[ModuleID] = Seq(
