@@ -168,7 +168,7 @@ val `monix-bio`: Seq[ModuleID] = Seq(
 
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion,
-  "net.minidev" % "json-smart" % "2.4.2"
+  "net.minidev" % "json-smart" % "2.4.6"
 )
 
 val scalaTest: Seq[ModuleID] = Seq(
