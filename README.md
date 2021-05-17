@@ -32,11 +32,11 @@ The project is split into the following modules, each as a separate dependency:
 ## Installation
 
 Each module can be pulled into a project separately using the following SBT dependencies:
-* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "2.4.1"`
-* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "2.4.1"`
-* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-admin-monix" % "2.4.1"`
-* keycloak4s-admin-monix-bio:   `"com.fullfacing" %% "keycloak4s-admin-monix-bio" % "2.4.1"`
-* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "2.4.1"`
+* keycloak4s-core:              `"com.fullfacing" %% "keycloak4s-core" % "2.5.0"`
+* keycloak4s-admin:             `"com.fullfacing" %% "keycloak4s-admin" % "2.5.0"`
+* keycloak4s-admin-monix:       `"com.fullfacing" %% "keycloak4s-admin-monix" % "2.5.0"`
+* keycloak4s-admin-monix-bio:   `"com.fullfacing" %% "keycloak4s-admin-monix-bio" % "2.5.0"`
+* keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "2.5.0"`
 
 The core module is a dependency for all other modules, and is automatically pulled in when using any other module.
 
