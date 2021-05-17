@@ -286,8 +286,11 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().find(_.username == "admin")
 
     for {
-      user  <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
-      roles <- EitherT(userService.fetchRoles(user.id))
+      user   <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
+      client <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head)
+      cRoles <- EitherT(roleService.ClientLevel.fetch(client.id))
+      _      <- EitherT(userService.addClientRoles(client.id, user.id, cRoles.map(r => Role.Mapping(r.id, r.name))))
+      roles  <- EitherT(userService.fetchRoles(user.id))
     } yield {
       storedAdminUser.set(user)
       roles.realmMappings shouldNot be (empty)
