@@ -36,7 +36,7 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
@@ -115,15 +115,15 @@ lazy val global = {
 // ---------------------------------- //
 val akkaHttpVersion       = "10.2.4"
 val akkaStreamsVersion    = "2.6.14"
-val catsEffectVersion     = "2.5.0"
-val catsCoreVersion       = "2.6.0"
+val catsEffectVersion     = "2.5.1"
+val catsCoreVersion       = "2.6.1"
 val enumeratumVersion     = "1.6.0"
 val json4sVersion         = "3.6.11"
 val logbackVersion        = "1.2.3"
-val monixVersion          = "3.3.0"
+val monixVersion          = "3.4.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.9"
-val scalaTestVersion      = "3.2.8"
+val nimbusVersion         = "9.9.3"
+val scalaTestVersion      = "3.2.9"
 val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
