@@ -36,7 +36,7 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
 
@@ -88,8 +88,8 @@ lazy val global = {
       )
     ),
 
-    releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
-    releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
+    releaseCommitMessage := s"[skip ci] Setting version to ${(ThisBuild / version).value}",
+    releaseNextCommitMessage := s"[skip ci] Setting version to ${(ThisBuild / version).value}",
     releaseIgnoreUntrackedFiles := true,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseCrossBuild := true,
@@ -114,16 +114,16 @@ lazy val global = {
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.2.4"
-val akkaStreamsVersion    = "2.6.13"
-val catsEffectVersion     = "2.3.3"
-val catsCoreVersion       = "2.4.2"
+val akkaStreamsVersion    = "2.6.14"
+val catsEffectVersion     = "2.5.1"
+val catsCoreVersion       = "2.6.1"
 val enumeratumVersion     = "1.6.0"
-val json4sVersion         = "3.6.10"
+val json4sVersion         = "3.6.11"
 val logbackVersion        = "1.2.3"
-val monixVersion          = "3.3.0"
+val monixVersion          = "3.4.0"
 val monixBioVersion       = "1.1.0"
-val nimbusVersion         = "9.7"
-val scalaTestVersion      = "3.2.5"
+val nimbusVersion         = "9.9.3"
+val scalaTestVersion      = "3.2.9"
 val sttpVersion           = "2.2.9"
 
 // -------------------------------------- //
@@ -168,7 +168,7 @@ val `monix-bio`: Seq[ModuleID] = Seq(
 
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion,
-  "net.minidev" % "json-smart" % "2.3"
+  "net.minidev" % "json-smart" % "2.4.7"
 )
 
 val scalaTest: Seq[ModuleID] = Seq(
@@ -255,10 +255,10 @@ lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.5")
-  .settings(skip in publish := true)
+  .settings(publish / skip := true)
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka)
   .settings(coverageEnabled := false)
-  .settings(parallelExecution in Test := false)
+  .settings(Test / parallelExecution := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, n)) if n <= 12 => scalac212Opts
     case _                       => scalac213Opts
@@ -273,7 +273,7 @@ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
 lazy val root = (project in file("."))
   .settings(global: _*)
   .settings(publishArtifact := false)
-  .settings(skip in publish := true)
+  .settings(publish / skip := true)
   .aggregate(
     `keycloak4s-core`,
     `keycloak4s-admin`,
