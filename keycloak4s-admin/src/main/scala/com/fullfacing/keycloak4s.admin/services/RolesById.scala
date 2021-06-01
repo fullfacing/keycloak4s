@@ -8,7 +8,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, ManagementPermissio
 
 import scala.collection.immutable.Seq
 
-class RolesById[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class RolesById[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //

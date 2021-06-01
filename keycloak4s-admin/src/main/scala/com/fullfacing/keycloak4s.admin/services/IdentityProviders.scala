@@ -11,7 +11,7 @@ import com.fullfacing.keycloak4s.core.models.enums.ProviderType
 
 import scala.collection.immutable.Seq
 
-class IdentityProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class IdentityProviders[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Imports an identity provider from a JSON file. */
   def `import`(config: File): R[Either[KeycloakError, Map[String, String]]] = {

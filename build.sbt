@@ -124,7 +124,7 @@ val monixVersion          = "3.4.0"
 val monixBioVersion       = "1.1.0"
 val nimbusVersion         = "9.9.3"
 val scalaTestVersion      = "3.2.9"
-val sttpVersion           = "2.2.9"
+val sttpVersion           = "3.2.3"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -176,12 +176,12 @@ val scalaTest: Seq[ModuleID] = Seq(
 )
 
 val sttp: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "core"   % sttpVersion,
-  "com.softwaremill.sttp.client" %% "json4s" % sttpVersion
+  "com.softwaremill.sttp.client3" %% "core"   % sttpVersion,
+  "com.softwaremill.sttp.client3" %% "json4s" % sttpVersion
 )
 
 val sttpAkka: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "akka-http-backend" % sttpVersion
+  "com.softwaremill.sttp.client3" %% "akka-http-backend" % sttpVersion
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(

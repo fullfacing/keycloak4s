@@ -8,10 +8,10 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakError
-import sttp.client.BasicRequestBody
+import sttp.client3.BasicRequestBody
 import sttp.model.Part
 import sttp.model.Uri.QuerySegment.KeyValue
-import sttp.client._
+import sttp.client3._
 import scala.collection.immutable.{Seq => ImmutableSeq}
 import scala.util.Try
 

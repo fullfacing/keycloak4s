@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, ServerInfo}
 
 import scala.collection.immutable.Seq
 
-class Root[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Root[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Get themes, social providers, auth providers, and event listeners available on this server */
   def serverInfo: R[Either[KeycloakError, ServerInfo]] = {
