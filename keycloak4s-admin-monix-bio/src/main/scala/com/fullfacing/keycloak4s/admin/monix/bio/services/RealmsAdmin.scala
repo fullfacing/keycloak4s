@@ -8,7 +8,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class RealmsAdmin[S](implicit client: KeycloakClient[S]) {
+class RealmsAdmin(implicit client: KeycloakClient) {
 
   /** Creates a realm. */
   def create(realm: Realm.Create): IO[KeycloakError, Unit] = {

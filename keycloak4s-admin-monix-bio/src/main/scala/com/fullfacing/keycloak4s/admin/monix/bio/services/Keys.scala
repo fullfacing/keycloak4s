@@ -6,7 +6,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class Keys[S](implicit client: KeycloakClient[S]) {
+class Keys(implicit client: KeycloakClient) {
 
   /** Retrieves metadata of a Realm's keys. */
   def fetchRealmKeys(): IO[KeycloakError, KeysMetadata] = {

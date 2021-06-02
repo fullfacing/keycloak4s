@@ -10,7 +10,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class Users[S](implicit client: KeycloakClient[S]) {
+class Users(implicit client: KeycloakClient) {
 
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //

@@ -11,7 +11,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class IdentityProviders[S](implicit client: KeycloakClient[S]) {
+class IdentityProviders(implicit client: KeycloakClient) {
 
   /** Imports an identity provider from a JSON file. */
   def `import`(config: File): IO[KeycloakError, Map[String, String]] = {
