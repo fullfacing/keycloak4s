@@ -10,7 +10,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Groups[T](implicit client: KeycloakClient[T]) extends services.Groups[Task, Observable[T]] {
+class Groups[T](implicit client: KeycloakClient[T]) extends services.Groups[Task] {
 
   /**
    * Retrieves all groups for a Realm. Only name and ids are returned.

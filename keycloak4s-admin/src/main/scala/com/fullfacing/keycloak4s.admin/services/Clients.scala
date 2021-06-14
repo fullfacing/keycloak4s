@@ -12,7 +12,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
-class Clients[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Clients[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Retrieves a client's installation file. */
   def getInstallationProvider(clientId: UUID, providerId: InstallationProvider = InstallationProviders.Json): R[Either[KeycloakError, InstallationConfig]] = {

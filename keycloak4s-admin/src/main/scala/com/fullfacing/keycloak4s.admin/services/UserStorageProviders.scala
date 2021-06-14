@@ -7,7 +7,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, SimpleNameResponse,
 
 import scala.collection.immutable.Seq
 
-class UserStorageProviders[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class UserStorageProviders[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Need this for admin console to display simple name of provider when displaying user detail. */
   def userSimpleProviderName(userStorageId: String): R[Either[KeycloakError, SimpleNameResponse]] = {

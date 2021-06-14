@@ -8,7 +8,7 @@ import cats.implicits._
 import com.fullfacing.keycloak4s.admin.monix.bio.client.KeycloakClient.Headers
 import com.fullfacing.keycloak4s.core.Exceptions
 import com.fullfacing.keycloak4s.core.models.KeycloakError
-import sttp.client.{BasicRequestBody, _}
+import sttp.client3.{BasicRequestBody, _}
 import sttp.model.Part
 import sttp.model.Uri.QuerySegment.KeyValue
 

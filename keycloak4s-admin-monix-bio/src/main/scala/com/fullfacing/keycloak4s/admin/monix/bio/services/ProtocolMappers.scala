@@ -10,7 +10,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class ProtocolMappers[S](implicit client: KeycloakClient[S]) {
+class ProtocolMappers(implicit client: KeycloakClient) {
 
   /** Creates multiple protocol mappers for either a client or client scope. */
   def createMany(entityId: UUID, entity: ProtocolMapperEntity, mapper: Seq[ProtocolMapper.Create]): IO[KeycloakError, Unit] = {

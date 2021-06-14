@@ -9,7 +9,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class ClientScopes[S](implicit client: KeycloakClient[S]) {
+class ClientScopes(implicit client: KeycloakClient) {
 
   /** Creates a new client scope. Client Scope’s name must be unique. */
   def create(clientScope: ClientScope.Create): IO[KeycloakError, UUID] = {

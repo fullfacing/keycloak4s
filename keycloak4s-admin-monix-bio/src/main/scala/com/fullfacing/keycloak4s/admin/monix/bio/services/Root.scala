@@ -6,7 +6,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class Root[S](implicit client: KeycloakClient[S]) {
+class Root(implicit client: KeycloakClient) {
 
   /** Get themes, social providers, auth providers, and event listeners available on this server */
   def serverInfo: IO[KeycloakError, ServerInfo] = {

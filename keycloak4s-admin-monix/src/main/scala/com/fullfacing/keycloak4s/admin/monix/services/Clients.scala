@@ -10,7 +10,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Clients[T](implicit client: KeycloakClient[T]) extends services.Clients[Task, Observable[T]] {
+class Clients[T](implicit client: KeycloakClient[T]) extends services.Clients[Task] {
 
   /**
    * Get application offline sessions.
