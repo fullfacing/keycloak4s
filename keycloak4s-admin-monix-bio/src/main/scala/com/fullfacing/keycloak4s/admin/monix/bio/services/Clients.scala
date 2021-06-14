@@ -11,7 +11,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class Clients[S](implicit client: KeycloakClient[S]) {
+class Clients(implicit client: KeycloakClient) {
 
   /** Retrieves a client's installation file. */
   def getInstallationProvider(clientId: UUID, providerId: InstallationProvider = InstallationProviders.Json): IO[KeycloakError, InstallationConfig] = {

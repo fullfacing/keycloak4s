@@ -1,16 +1,15 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import java.util.UUID
-
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import com.fullfacing.keycloak4s.core.models.{Group, User}
 import monix.eval.Task
 import monix.reactive.Observable
 
+import java.util.UUID
 import scala.collection.immutable.Seq
 
-class Users[T](implicit client: KeycloakClient[T]) extends services.Users[Task, Observable[T]] {
+class Users[T](implicit client: KeycloakClient[T]) extends services.Users[Task] {
 
   /**
    * Get all realm users. Returns a list of users, filtered according to query parameters

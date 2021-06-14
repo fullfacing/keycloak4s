@@ -1,16 +1,15 @@
 package com.fullfacing.keycloak4s.admin.monix.services
 
-import java.util.UUID
-
 import com.fullfacing.keycloak4s.admin.monix.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.services
 import com.fullfacing.keycloak4s.core.models.UserSession
 import monix.eval.Task
 import monix.reactive.Observable
 
+import java.util.UUID
 import scala.collection.immutable.Seq
 
-class Clients[T](implicit client: KeycloakClient[T]) extends services.Clients[Task, Observable[T]] {
+class Clients[T](implicit client: KeycloakClient[T]) extends services.Clients[Task] {
 
   /**
    * Get application offline sessions.

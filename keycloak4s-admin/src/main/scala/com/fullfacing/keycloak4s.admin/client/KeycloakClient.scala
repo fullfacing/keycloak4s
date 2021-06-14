@@ -1,7 +1,5 @@
 package com.fullfacing.keycloak4s.admin.client
 
-import java.util.UUID
-
 import cats.data.EitherT
 import cats.effect.Concurrent
 import cats.implicits._
@@ -13,9 +11,10 @@ import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
 import sttp.client3.{Identity, RequestT, SttpBackend, asString, _}
-import sttp.model.{StatusCode, Uri}
 import sttp.model.Uri.QuerySegment.KeyValue
+import sttp.model.{StatusCode, Uri}
 
+import java.util.UUID
 import scala.collection.immutable.Seq
 import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
