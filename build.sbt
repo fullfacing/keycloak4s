@@ -185,7 +185,7 @@ val sttpAkka: Seq[ModuleID] = Seq(
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix-task" % "1.6.0"
+  "com.fullfacing" %% "sttp-akka-monix-task" % "2.0.0"
 )
 
 // --------------------------------------------- //
