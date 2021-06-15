@@ -10,7 +10,7 @@ import com.fullfacing.keycloak4s.core.models.enums.{Protocol, ProtocolMapperEnti
 
 import scala.collection.immutable.Seq
 
-class ProtocolMappers[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class ProtocolMappers[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Creates multiple protocol mappers for either a client or client scope. */
   def createMany(entityId: UUID, entity: ProtocolMapperEntity, mapper: Seq[ProtocolMapper.Create]): R[Either[KeycloakError, Unit]] = {

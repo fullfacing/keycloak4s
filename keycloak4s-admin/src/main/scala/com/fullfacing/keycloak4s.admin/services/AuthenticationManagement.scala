@@ -8,7 +8,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
-class AuthenticationManagement[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class AuthenticationManagement[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Retrieves a list of authenticator providers. */
   def fetchAuthenticatorProviders(): R[Either[KeycloakError, Seq[AuthenticationProvider]]] = {

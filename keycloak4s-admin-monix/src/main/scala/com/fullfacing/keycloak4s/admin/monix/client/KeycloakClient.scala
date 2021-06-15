@@ -4,13 +4,13 @@ import com.fullfacing.keycloak4s.admin.client.{KeycloakClient => KeycloakClientA
 import com.fullfacing.keycloak4s.core.models._
 import monix.eval.Task
 import monix.reactive.Observable
-import sttp.client.{NothingT, SttpBackend}
+import sttp.client3.SttpBackend
 import sttp.model.Uri.QuerySegment.KeyValue
 
 import scala.collection.immutable.Seq
 import scala.reflect._
 
-class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Task, Observable[T], NothingT]) extends KeycloakClientA[Task, Observable[T]](config) {
+class KeycloakClient[T](config: ConfigWithAuth)(implicit client: SttpBackend[Task, Any]) extends KeycloakClientA[Task](config) {
 
   /**
    * Used for calls that return a sequence of items, this sequentially makes calls to retrieve and process

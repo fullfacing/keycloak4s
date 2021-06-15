@@ -10,7 +10,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Users[T](implicit client: KeycloakClient[T]) extends services.Users[Task, Observable[T]] {
+class Users[T](implicit client: KeycloakClient[T]) extends services.Users[Task] {
 
   /**
    * Get all realm users. Returns a list of users, filtered according to query parameters

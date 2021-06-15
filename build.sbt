@@ -29,7 +29,7 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 lazy val global = {
   Seq(
-    scalaVersion  := "2.13.5",
+    scalaVersion  := "2.13.6",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
@@ -42,7 +42,7 @@ lazy val global = {
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.13"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
@@ -114,17 +114,17 @@ lazy val global = {
 //          Library Versions          //
 // ---------------------------------- //
 val akkaHttpVersion       = "10.2.4"
-val akkaStreamsVersion    = "2.6.14"
+val akkaStreamsVersion    = "2.6.15"
 val catsEffectVersion     = "2.5.1"
 val catsCoreVersion       = "2.6.1"
-val enumeratumVersion     = "1.6.0"
-val json4sVersion         = "4.0.0"
+val enumeratumVersion     = "1.5.15"
+val json4sVersion         = "3.6.11"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.4.0"
-val monixBioVersion       = "1.1.0"
+val monixBioVersion       = "1.2.0"
 val nimbusVersion         = "9.9.3"
 val scalaTestVersion      = "3.2.9"
-val sttpVersion           = "2.2.9"
+val sttpVersion           = "3.2.3"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -176,16 +176,12 @@ val scalaTest: Seq[ModuleID] = Seq(
 )
 
 val sttp: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "core"   % sttpVersion,
-  "com.softwaremill.sttp.client" %% "json4s" % sttpVersion
-)
-
-val sttpAkka: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "akka-http-backend" % sttpVersion
+  "com.softwaremill.sttp.client3" %% "core"   % sttpVersion,
+  "com.softwaremill.sttp.client3" %% "json4s" % sttpVersion
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix-task" % "1.6.0"
+  "com.fullfacing" %% "sttp3-akka-monix-task" % "2.0.1"
 )
 
 // --------------------------------------------- //
@@ -254,9 +250,9 @@ lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-  .settings(scalaVersion  := "2.13.5")
+  .settings(scalaVersion  := "2.13.6")
   .settings(publish / skip := true)
-  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka)
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
   .settings(Test / parallelExecution := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {

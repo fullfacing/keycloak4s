@@ -12,7 +12,7 @@ import com.fullfacing.keycloak4s.admin.handles.Logging.logLeft
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization.read
-import sttp.client.{Identity, NothingT, RequestT, SttpBackend, asString, _}
+import sttp.client3.{Identity, RequestT, SttpBackend, asString, _}
 import sttp.model.{StatusCode, Uri}
 import sttp.model.Uri.QuerySegment.KeyValue
 
@@ -21,7 +21,7 @@ import scala.reflect._
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.util.control.NonFatal
 
-class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S, NothingT]) extends TokenManager[F, S](config) {
+class KeycloakClient[F[+_] : Concurrent](config: ConfigWithAuth)(implicit client: SttpBackend[F, Any]) extends TokenManager[F](config) {
 
   val realm: String = config.realm
 
@@ -40,9 +40,9 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
   )
 
   /* HTTP Call Builders **/
-  private def setResponse[A <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing])
+  private def setResponse[A <: Any : Manifest](request: RequestT[Identity, Either[String, String], Any])
                                               (implicit tag: TypeTag[A], cId: UUID)
-  : RequestT[Identity, Either[String, A], Nothing] = {
+  : RequestT[Identity, Either[String, A], Any] = {
 
     val respAs = asString.mapWithMetadata { case (raw, meta) =>
       raw.map { body =>
@@ -57,19 +57,19 @@ class KeycloakClient[F[+_] : Concurrent, -S](config: ConfigWithAuth)(implicit cl
     request.response(respAs)
   }
 
-  private def call[B <: Any : Manifest](request: RequestT[Identity, Either[String, String], Nothing], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
+  private def call[B <: Any : Manifest](request: RequestT[Identity, Either[String, String], Any], requestInfo: RequestInfo): F[Either[KeycloakError, B]] = {
     implicit val cId: UUID = UUID.randomUUID()
 
     val resp = setResponse[B](request.header("Accept", "application/json"))
 
-    def sendWithLogging(req: RequestT[Identity, Either[String, B], Nothing]) = {
+    def sendWithLogging(req: RequestT[Identity, Either[String, B], Any]) = {
       F.unit(Logging.requestSent(requestInfo, cId))
-        .flatMap(_ => req.send())
+        .flatMap(_ => req.send(client))
     }
 
-    def retryWithLogging(req: RequestT[Identity, Either[String, B], Nothing]) = {
+    def retryWithLogging(req: RequestT[Identity, Either[String, B], Any]) = {
       F.unit(Logging.retryUnauthorized(requestInfo, cId))
-        .flatMap(_ => req.send())
+        .flatMap(_ => req.send(client))
     }
 
     val response = EitherT(withAuth(resp)).flatMap { r =>

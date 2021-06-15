@@ -9,7 +9,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
-class RealmsAdmin[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class RealmsAdmin[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Creates a realm. */
   def create(realm: Realm.Create): R[Either[KeycloakError, Unit]] = {
