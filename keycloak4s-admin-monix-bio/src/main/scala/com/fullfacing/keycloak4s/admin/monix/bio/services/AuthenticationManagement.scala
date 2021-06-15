@@ -8,7 +8,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class AuthenticationManagement[S](implicit client: KeycloakClient[S]) {
+class AuthenticationManagement(implicit client: KeycloakClient) {
 
   /** Retrieves a list of authenticator providers. */
   def fetchAuthenticatorProviders(): IO[KeycloakError, Seq[AuthenticationProvider]] = {

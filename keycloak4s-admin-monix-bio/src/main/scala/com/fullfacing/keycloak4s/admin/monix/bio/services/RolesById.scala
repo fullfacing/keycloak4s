@@ -8,7 +8,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class RolesById[S](implicit client: KeycloakClient[S]) {
+class RolesById(implicit client: KeycloakClient) {
 
   // ------------------------------------------------------------------------------------------------------ //
   // ------------------------------------------------ CRUD ------------------------------------------------ //

@@ -8,7 +8,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class RealmsAdmin[T](implicit client: KeycloakClient[T]) extends services.RealmsAdmin[Task, Observable[T]] {
+class RealmsAdmin[T](implicit client: KeycloakClient[T]) extends services.RealmsAdmin[Task] {
 
   /** Returns all admin events, or filters events based on URL query parameters listed here. */
   def fetchAdminEventsS(realm: String = client.realm,

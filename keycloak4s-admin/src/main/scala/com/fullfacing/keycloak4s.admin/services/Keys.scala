@@ -6,7 +6,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, KeysMetadata}
 
 import scala.collection.immutable.Seq
 
-class Keys[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Keys[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Retrieves metadata of a Realm's keys. */
   def fetchRealmKeys(): R[Either[KeycloakError, KeysMetadata]] = {

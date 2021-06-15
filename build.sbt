@@ -117,14 +117,14 @@ val akkaHttpVersion       = "10.2.4"
 val akkaStreamsVersion    = "2.6.15"
 val catsEffectVersion     = "2.5.1"
 val catsCoreVersion       = "2.6.1"
-val enumeratumVersion     = "1.6.0"
+val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.11"
 val logbackVersion        = "1.2.3"
 val monixVersion          = "3.4.0"
 val monixBioVersion       = "1.2.0"
 val nimbusVersion         = "9.9.3"
 val scalaTestVersion      = "3.2.9"
-val sttpVersion           = "2.2.9"
+val sttpVersion           = "3.2.3"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -176,16 +176,12 @@ val scalaTest: Seq[ModuleID] = Seq(
 )
 
 val sttp: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "core"   % sttpVersion,
-  "com.softwaremill.sttp.client" %% "json4s" % sttpVersion
-)
-
-val sttpAkka: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client" %% "akka-http-backend" % sttpVersion
+  "com.softwaremill.sttp.client3" %% "core"   % sttpVersion,
+  "com.softwaremill.sttp.client3" %% "json4s" % sttpVersion
 )
 
 val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp-akka-monix-task" % "1.6.0"
+  "com.fullfacing" %% "sttp3-akka-monix-task" % "2.0.1"
 )
 
 // --------------------------------------------- //
@@ -256,7 +252,7 @@ lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
   .settings(scalaVersion  := "2.13.6")
   .settings(publish / skip := true)
-  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit ++ sttpAkka)
+  .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
   .settings(Test / parallelExecution := false)
   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
