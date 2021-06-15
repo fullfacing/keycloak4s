@@ -43,7 +43,7 @@ object Main extends TaskApp {
 
     /* Monix-specific alternative for Admin API calls. Includes additional Observable functionality. **/
     lazy val monixClient: KeycloakClientM[ByteString] = {
-      implicit val backend: SttpBackend[Task, Observable[ByteString]] = ???//AkkaMonixHttpBackend()
+      implicit val backend: SttpBackend[Task, Observable[ByteString]] = AkkaMonixHttpBackend()
       new KeycloakClientM[ByteString](config)
     }
 

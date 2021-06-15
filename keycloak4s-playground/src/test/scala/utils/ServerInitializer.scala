@@ -42,11 +42,10 @@ object ServerInitializer {
     basicRequest
       .get(uri"http://localhost:8080/auth/admin/realms/master/clients?clientId=admin-cli")
       .header("Authorization", s"Bearer $token")
-      .response(???)//asJson[List[Client]])
-//      .mapResponse(_.leftMap(_.getMessage).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
+      .response(asJson[List[Client]])
+      .mapResponse(_.leftMap(_.getMessage).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
       .send(backend)
-//      .map(_.body)
-    ???
+      .map(_.body)
   }
 
   /* Step 3: Update admin-cli to disable public access and enable service accounts. **/
