@@ -8,7 +8,7 @@ import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
 import com.fullfacing.keycloak4s.admin.monix.services.{Clients, Users}
 import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
 import com.fullfacing.keycloak4s.core.models._
-import sttp.client._
+import sttp.client3._
 import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
@@ -49,7 +49,7 @@ class AttackDetectionTests extends IntegrationSpec {
     quickRequest
       .post(uri"http://localhost:8080/auth/realms/$realm/protocol/openid-connect/token")
       .body(body)
-      .send()
+      .send(backend)
   }
 
   val invalidLogin: Task[Response[String]] = login(password = "incorrect")
