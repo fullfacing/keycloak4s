@@ -8,7 +8,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class AttackDetection[S](implicit client: KeycloakClient[S]) {
+class AttackDetection(implicit client: KeycloakClient) {
 
   /** Clear any login failures for all users. This can release temporary disabled users. */
   def clearAllLoginFailures(realm: String = client.realm): IO[KeycloakError, Unit] = {

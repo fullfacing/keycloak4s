@@ -10,7 +10,7 @@ import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
 
-class Roles[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class Roles[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   // ------------------------------------------------------------------------------------------------------------------- //
   // -------------------------------------------------- Client Roles --------------------------------------------------- //

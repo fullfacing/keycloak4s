@@ -10,7 +10,7 @@ import monix.reactive.Observable
 
 import scala.collection.immutable.Seq
 
-class Roles[T](implicit client: KeycloakClient[T]) extends services.Roles[Task, Observable[T]] {
+class Roles[T](implicit client: KeycloakClient[T]) extends services.Roles[Task] {
 
   /**
    *

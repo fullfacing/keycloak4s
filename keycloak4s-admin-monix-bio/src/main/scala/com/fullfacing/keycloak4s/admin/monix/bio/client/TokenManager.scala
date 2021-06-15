@@ -7,14 +7,14 @@ import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import monix.bio.{IO, UIO}
 import org.json4s.jackson.Serialization
-import sttp.client.json4s._
-import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, _}
+import sttp.client3.json4s._
+import sttp.client3.{Identity, NoBody, RequestT, Response, SttpBackend, _}
 
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBackend[IO[Throwable, *], S, NothingT]) {
+abstract class TokenManager(config: ConfigWithAuth)(implicit client: SttpBackend[IO[Throwable, *], Any]) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
@@ -145,7 +145,7 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
    * @param response the oidc token response.
    * @return a new token instance.
    */
-  private def mapToToken(response: Either[ResponseError[Exception], TokenResponse]): Either[String, Token] = {
+  private def mapToToken(response: Either[ResponseException[String, Exception], TokenResponse]): Either[String, Token] = {
     response.map { res =>
       val instant = Instant.now()
       res.refresh_token.fold[Token] {
@@ -191,13 +191,13 @@ abstract class TokenManager[-S](config: ConfigWithAuth)(implicit client: SttpBac
     }
   }
 
-  protected def withAuthNewToken[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID)
-  : IO[KeycloakError, RequestT[Identity, A, Nothing]] = {
+  protected def withAuthNewToken[A](request: RequestT[Identity, A, Any])(implicit cId: UUID)
+  : IO[KeycloakError, RequestT[Identity, A, Any]] = {
     issueAndSetAccessToken().map(tkn => request.auth.bearer(tkn.access))
   }
 
-  def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID)
-  : IO[KeycloakError, RequestT[Identity, A, Nothing]] = {
+  def withAuth[A](request: RequestT[Identity, A, Any])(implicit cId: UUID)
+  : IO[KeycloakError, RequestT[Identity, A, Any]] = {
     evaluateToken().map(tkn => request.auth.bearer(tkn.access))
   }
 }

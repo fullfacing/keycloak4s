@@ -9,7 +9,7 @@ import com.fullfacing.keycloak4s.core.models.{ClientScope, KeycloakError, Mappin
 
 import scala.collection.immutable.Seq
 
-class ClientScopes[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class ClientScopes[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Creates a new client scope. Client Scope’s name must be unique. */
   def create(clientScope: ClientScope.Create): R[Either[KeycloakError, UUID]] = {

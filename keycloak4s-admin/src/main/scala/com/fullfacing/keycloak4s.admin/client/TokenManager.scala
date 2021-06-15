@@ -9,15 +9,15 @@ import com.fullfacing.keycloak4s.admin.handles.Logging.handleLogging
 import com.fullfacing.keycloak4s.core.models.{ConfigWithAuth, KeycloakConfig, KeycloakSttpException, RequestInfo}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
 import org.json4s.jackson.Serialization
-import sttp.client.json4s._
-import sttp.client.monad.MonadError
-import sttp.client.{Identity, NoBody, NothingT, RequestT, Response, SttpBackend, _}
+import sttp.client3.json4s._
+import sttp.monad.MonadError
+import sttp.client3.{Identity, NoBody, RequestT, Response, SttpBackend, _}
 
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(implicit client: SttpBackend[F, S, NothingT]) {
+abstract class TokenManager[F[_] : Concurrent](config: ConfigWithAuth)(implicit client: SttpBackend[F, Any]) {
 
   protected implicit val serialization: Serialization.type = org.json4s.jackson.Serialization
 
@@ -101,7 +101,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
         .body(password)
         .response(asJson[TokenResponse])
         .mapResponse(mapToToken)
-        .send()
+        .send(client)
     }
 
     sendF.map(liftM(_, requestInfo)).map {
@@ -123,7 +123,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
         .body(body)
         .response(asJson[TokenResponse])
         .mapResponse(mapToToken)
-        .send()
+        .send(client)
     }
 
     sendF.map(liftM(_, requestInfo)).map {
@@ -154,7 +154,7 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     * @param response the oidc token response.
     * @return a new token instance.
     */
-  private def mapToToken(response: Either[ResponseError[Exception], TokenResponse]): Either[String, Token] = response.map { res =>
+  private def mapToToken(response: Either[ResponseException[String, Exception], TokenResponse]): Either[String, Token] = response.map { res =>
     val instant = Instant.now()
     res.refresh_token.fold[Token] {
       TokenWithoutRefresh(
@@ -199,12 +199,12 @@ abstract class TokenManager[F[_] : Concurrent, -S](config: ConfigWithAuth)(impli
     }
   }
 
-  protected def withAuthNewToken[A](request: RequestT[Identity, A, Nothing])
-                                   (implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
+  protected def withAuthNewToken[A](request: RequestT[Identity, A, Any])
+                                   (implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Any]]] = {
     Concurrent[F].map(issueAndSetAccessToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 
-  def withAuth[A](request: RequestT[Identity, A, Nothing])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Nothing]]] = {
+  def withAuth[A](request: RequestT[Identity, A, Any])(implicit cId: UUID): F[Either[KeycloakSttpException, RequestT[Identity, A, Any]]] = {
     Concurrent[F].map(evaluateToken())(_.map(tkn => request.auth.bearer(tkn.access)))
   }
 }

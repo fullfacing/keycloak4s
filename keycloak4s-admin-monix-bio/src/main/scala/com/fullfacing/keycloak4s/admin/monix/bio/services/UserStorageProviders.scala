@@ -7,7 +7,7 @@ import monix.bio.IO
 
 import scala.collection.immutable.Seq
 
-class UserStorageProviders[S](implicit client: KeycloakClient[S]) {
+class UserStorageProviders(implicit client: KeycloakClient) {
 
   /** Need this for admin console to display simple name of provider when displaying user detail. */
   def userSimpleProviderName(userStorageId: String): IO[KeycloakError, SimpleNameResponse] = {

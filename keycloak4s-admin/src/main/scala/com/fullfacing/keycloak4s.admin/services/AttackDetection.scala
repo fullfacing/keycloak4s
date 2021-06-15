@@ -8,7 +8,7 @@ import com.fullfacing.keycloak4s.core.models.{BruteForceResponse, KeycloakError}
 
 import scala.collection.immutable.Seq
 
-class AttackDetection[R[+_]: Concurrent, S](implicit client: KeycloakClient[R, S]) {
+class AttackDetection[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
 
   /** Clear any login failures for all users. This can release temporary disabled users. */
   def clearAllLoginFailures(realm: String = client.realm): R[Either[KeycloakError, Unit]] = {

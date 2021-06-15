@@ -1,15 +1,15 @@
 package utils
 
-import java.util.UUID
-
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.TokenManager.TokenResponse
 import com.fullfacing.keycloak4s.core.models.{Client, Credential, Role, User}
 import com.fullfacing.keycloak4s.core.serialization.JsonFormats.default
-import sttp.client.json4s.asJson
-import sttp.client._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.write
+import sttp.client3._
+import sttp.client3.json4s.asJson
+
+import java.util.UUID
 
 object ServerInitializer {
 
@@ -17,7 +17,7 @@ object ServerInitializer {
   private implicit val serializer: Serialization.type = org.json4s.jackson.Serialization
 
   /* Simplistic Synchronous Sttp Backend **/
-  private implicit val backend: SttpBackend[Identity, Nothing, Nothing] = HttpURLConnectionBackend()
+  private implicit val backend: SttpBackend[Identity, Any] = HttpURLConnectionBackend()
 
   /* Step 1: Retrieve an access token for the admin user. **/
   private def fetchToken(): Either[String, String] = {
@@ -33,7 +33,7 @@ object ServerInitializer {
       .body(form)
       .response(asJson[TokenResponse])
       .mapResponse(_.map(_.access_token).leftMap(_.getMessage))
-      .send()
+      .send(backend)
       .map(_.body)
   }
 
@@ -44,7 +44,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .response(asJson[List[Client]])
       .mapResponse(_.leftMap(_.getMessage).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
-      .send
+      .send(backend)
       .map(_.body)
   }
 
@@ -62,7 +62,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .contentType("application/json")
       .body(write(client))
-      .send()
+      .send(backend)
       .map(_.body)
   }
 
@@ -73,7 +73,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .response(asJson[User])
       .mapResponse(_.map(_.id).leftMap(_.getMessage))
-      .send()
+      .send(backend)
       .map(_.body)
   }
 
@@ -84,7 +84,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .response(asJson[Role])
       .mapResponse(_.map(_.id).leftMap(_.getMessage))
-      .send()
+      .send(backend)
       .map(_.body)
   }
 
@@ -100,7 +100,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .contentType("application/json")
       .body(write(List(role)))
-      .send()
+      .send(backend)
       .map(_.body)
   }
 
@@ -111,7 +111,7 @@ object ServerInitializer {
       .header("Authorization", s"Bearer $token")
       .response(asJson[Credential])
       .mapResponse(_.leftMap(_.getMessage).flatMap(_.value.toRight("Client Secret Missing")))
-      .send()
+      .send(backend)
       .map(_.body)
   }
 

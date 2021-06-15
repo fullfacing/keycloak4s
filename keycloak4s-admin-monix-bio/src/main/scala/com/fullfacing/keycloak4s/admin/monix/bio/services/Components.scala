@@ -10,7 +10,7 @@ import sttp.model.Uri.QuerySegment.KeyValue
 
 import scala.collection.immutable.Seq
 
-class Components[S](implicit client: KeycloakClient[S]) {
+class Components(implicit client: KeycloakClient) {
 
   /** Creates a component. */
   def create(component: Component.Create): IO[KeycloakError, UUID] = {
