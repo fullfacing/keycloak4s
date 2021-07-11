@@ -8,6 +8,7 @@ object Keycloak {
   def AttackDetection[R[+_]         : Concurrent](implicit client: KeycloakClient[R]) = new AttackDetection[R]
   def AuthenticationManagement[R[+_]: Concurrent](implicit client: KeycloakClient[R]) = new AuthenticationManagement[R]
   def Clients[R[+_]                 : Concurrent](implicit client: KeycloakClient[R]) = new Clients[R]
+  def ClientScopes[R[+_]            : Concurrent](implicit client: KeycloakClient[R]) = new ClientScopes[R]
   def Components[R[+_]              : Concurrent](implicit client: KeycloakClient[R]) = new Components[R]
   def Groups[R[+_]                  : Concurrent](implicit client: KeycloakClient[R]) = new Groups[R]
   def IdentityProviders[R[+_]       : Concurrent](implicit client: KeycloakClient[R]) = new IdentityProviders[R]
