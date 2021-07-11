@@ -20,7 +20,7 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   type T = ByteString
 
   /* Keycloak Server Configuration **/
-  val authConfig: KeycloakConfig.Secret = KeycloakConfig.Secret("master", "admin-cli", "b9e0c298-bce5-4b1b-af82-947abee17218")//ServerInitializer.clientSecret)
+  val authConfig: KeycloakConfig.Secret = KeycloakConfig.Secret("master", "admin-cli", ServerInitializer.clientSecret)
   val keycloakConfig: ConfigWithAuth    = ConfigWithAuth("http", "127.0.0.1", 8080, "master", authConfig)
 
   /* Keycloak Client Implicits **/
