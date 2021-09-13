@@ -25,6 +25,7 @@ case object MapperTypes extends StringEnum[MapperType] {
   case object SamlAttributeToRole             extends MapperType("saml-role-idp-mapper")
   case object UsernameTemplateImporterOidc    extends MapperType("oidc-username-idp-mapper")
   case object UsernameTemplateImporterSaml    extends MapperType("saml-username-idp-mapper")
+  case object AdvancedRole                    extends MapperType("oidc-advanced-role-idp-mapper")
 
   val values: immutable.IndexedSeq[MapperType] = findValues
 }
