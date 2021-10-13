@@ -21,3 +21,9 @@ project/plugins/project/
 project/project/
 keycloak4s-admin/src/main/java/
 keycloak4s-admin/src/main/scala-2.11/
+
+# vscode
+.bloop
+.bsp
+.metals
+.vscode

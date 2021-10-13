@@ -171,8 +171,8 @@ abstract class TokenManager[F[_] : Concurrent](config: ConfigWithAuth)(implicit 
     }
   }.leftMap(_.getMessage)
 
-  private def getToken: F[Option[Token]] = Concurrent[F].delay(Option(ref.get))
-  private def setToken(token: Token): F[Unit] = Concurrent[F].delay(ref.set(token))
+  private def getToken: F[Option[Token]] = Concurrent[F].pure(Option(ref.get))
+  private def setToken(token: Token): F[Unit] = Concurrent[F].pure(ref.set(token))
 
   /**
     * Inspect the status of the token, reissuing a new access token using the password

@@ -10,6 +10,7 @@ import com.fullfacing.keycloak4s.auth.core.validation.TokenValidator
 import com.fullfacing.keycloak4s.core.models.KeycloakException
 
 import scala.util.{Failure, Success}
+import cats.effect.unsafe.IORuntime
 
 trait ValidationDirectives {
 
@@ -23,17 +24,17 @@ trait ValidationDirectives {
    *
    * @return  Directive with verified user's permissions
    */
-  def validateToken(cId: => UUID)(implicit tv: TokenValidator): Directive[AuthPayloadWithId] = {
+  def validateToken(cId: => UUID)(implicit tv: TokenValidator, ioRuntime: IORuntime): Directive[AuthPayloadWithId] = {
     optionalHeaderValueByName("Id-Token").flatMap { idToken =>
       extractCredentials.flatMap {
-        case Some(token)  => callValidation(token.token(), idToken)(tv, cId)
+        case Some(token)  => callValidation(token.token(), idToken)(tv, cId, ioRuntime)
         case None         => complete(HttpResponse(StatusCodes.Unauthorized, entity = "No token provided"))
       }
     }
   }
 
   /** Runs the validation function. */
-  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator, cId: UUID): Directive[AuthPayloadWithId] = {
+  private def callValidation(token: String, idToken: Option[String])(implicit validator: TokenValidator, cId: UUID, ioRuntime: IORuntime): Directive[AuthPayloadWithId] = {
     val task = idToken.fold(validator.process(token))(validator.parProcess(token, _))
 
     onComplete(task.unsafeToFuture()).flatMap {

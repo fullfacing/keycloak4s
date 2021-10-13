@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.auth.core.validation
 import java.util.{Date, UUID}
 
 import cats.data.EitherT
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.Logging.logValidationEx
@@ -129,7 +129,7 @@ abstract class TokenValidator(val keycloakConfig: KeycloakConfig)(implicit ec: E
    * Parses and validates an access and ID token in parallel.
    */
   def parProcess(rawAccessToken: String, rawIdToken: String)(implicit cId: UUID): IO[Either[KeycloakException, AuthPayload]] = {
-    implicit val context: ContextShift[IO] = IO.contextShift(ec)
+    // implicit val context: ContextShift[IO] = IO.contextShift(ec)
     Logging.tokenValidating(cId)
 
     val now = new Date()
