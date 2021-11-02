@@ -29,7 +29,7 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 lazy val global = {
   Seq(
-    scalaVersion  := "2.13.6",
+    scalaVersion  := "2.13.7",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
@@ -250,7 +250,7 @@ lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-  .settings(scalaVersion  := "2.13.6")
+  .settings(scalaVersion  := "2.13.7")
   .settings(publish / skip := true)
   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
   .settings(coverageEnabled := false)
