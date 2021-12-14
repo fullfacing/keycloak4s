@@ -52,7 +52,7 @@ jobs:
           key: sbt-cache-0
       - add_ssh_keys:
           fingerprints:
-            - "87:c4:7d:c6:43:42:40:6c:38:54:75:72:79:6d:e0:de"
+            - "c8:2c:ff:72:c4:ed:47:51:3a:26:30:92:b7:a2:d1:3a"
       - run:
           name: Import PGP Key
           command: |
@@ -65,8 +65,8 @@ jobs:
           name: Set Git Config
           command: |
             git push --set-upstream origin master
-            git config --global user.email "shadowrhyder@gmail.com"
-            git config --global user.name "Richard"
+            git config --global user.email "stuartjmsn3@gmail.com"
+            git config --global user.name "Stuart"
       - run:
           name: Compile JAR
           command: sbt 'release with-defaults'
