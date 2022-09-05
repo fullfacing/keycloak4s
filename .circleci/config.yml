@@ -6,8 +6,9 @@ jobs:
         - image: circleci/openjdk:latest
         - image: quay.io/keycloak/keycloak:latest
           environment:
-            KEYCLOAK_USER: "admin"
-            KEYCLOAK_PASSWORD: "admin"
+            KEYCLOAK_ADMIN: "admin"
+            KEYCLOAK_ADMIN_PASSWORD: "admin"
+          command: "start-dev"
     environment:
       - _JAVA_OPTIONS: -XX:MaxMetaspaceSize=1536m
     steps:
@@ -24,8 +25,9 @@ jobs:
       - image: circleci/openjdk:latest
       - image: quay.io/keycloak/keycloak:latest
         environment:
-          KEYCLOAK_USER: "admin"
-          KEYCLOAK_PASSWORD: "admin"
+          KEYCLOAK_ADMIN: "admin"
+          KEYCLOAK_ADMIN_PASSWORD: "admin"
+        command: "start-dev"
     environment:
       - _JAVA_OPTIONS: -XX:MaxMetaspaceSize=1536m
     steps:
