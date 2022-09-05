@@ -64,7 +64,8 @@ val keycloakConfig = ConfigWithAuth(
     host    = "fullfacing.com/keycloak",
     port    = 8080,
     realm   = "demo",
-    authn   = authConfig
+    authn   = authConfig,
+    basePath = List("auth")
 )
 ```
 

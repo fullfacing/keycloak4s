@@ -4,7 +4,7 @@ jobs:
     working_directory: ~/code
     docker:
         - image: circleci/openjdk:latest
-        - image: jboss/keycloak:latest
+        - image: quay.io/keycloak/keycloak:latest
           environment:
             KEYCLOAK_USER: "admin"
             KEYCLOAK_PASSWORD: "admin"
@@ -17,12 +17,12 @@ jobs:
           command: dockerize -wait tcp://localhost:8080 -timeout 5m
       - run:
           name: Run Tests
-          command: sbt ++2.13.5! clean test
+          command: sbt ++2.13.8! clean test
   test_212:
     working_directory: ~/code
     docker:
       - image: circleci/openjdk:latest
-      - image: jboss/keycloak:latest
+      - image: quay.io/keycloak/keycloak:latest
         environment:
           KEYCLOAK_USER: "admin"
           KEYCLOAK_PASSWORD: "admin"
@@ -35,7 +35,7 @@ jobs:
           command: dockerize -wait tcp://localhost:8080 -timeout 5m
       - run:
           name: Run Tests
-          command: sbt ++2.12.12! clean coverage test coverageReport
+          command: sbt ++2.12.16! clean coverage test coverageReport
       - run:
           name: Upload Reports
           command: |
