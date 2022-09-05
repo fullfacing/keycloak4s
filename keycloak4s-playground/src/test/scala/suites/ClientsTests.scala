@@ -327,8 +327,8 @@ class ClientsTests extends IntegrationSpec {
   "Create Ancillary Objects" should "create all objects needed to test all the clients service scope calls" in {
     val task =
       for {
-        _ <- clientScopeService.create(ClientScope.Create("ClientScope 1"))
-        r <- clientScopeService.create(ClientScope.Create("ClientScope 2"))
+        _ <- clientScopeService.create(ClientScope.Create("ClientScope_1"))
+        r <- clientScopeService.create(ClientScope.Create("ClientScope_2"))
       } yield r
 
     task.shouldReturnSuccess

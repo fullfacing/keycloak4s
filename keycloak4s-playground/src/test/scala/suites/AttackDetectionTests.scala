@@ -16,7 +16,7 @@ import utils.{Errors, IntegrationSpec}
 @DoNotDiscover
 class AttackDetectionTests extends IntegrationSpec {
 
-  private val adKeycloakConfig  = ConfigWithAuth("http", "127.0.0.1", 8080, "AttackRealm", authConfig)
+  private val adKeycloakConfig  = ConfigWithAuth("http", "127.0.0.1", 8080, "AttackRealm", authConfig, basePath = Nil)
   private val adClient: KeycloakClient[T] = new KeycloakClient(adKeycloakConfig)
 
   override val clientService: Clients[T] = Keycloak.Clients[ByteString](adClient)
@@ -47,7 +47,7 @@ class AttackDetectionTests extends IntegrationSpec {
     )
 
     quickRequest
-      .post(uri"http://localhost:8080/auth/realms/$realm/protocol/openid-connect/token")
+      .post(uri"http://localhost:8080/realms/$realm/protocol/openid-connect/token")
       .body(body)
       .send(backend)
   }
