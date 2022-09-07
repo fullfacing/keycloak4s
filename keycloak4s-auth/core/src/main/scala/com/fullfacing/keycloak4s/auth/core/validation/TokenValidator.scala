@@ -3,7 +3,7 @@ package com.fullfacing.keycloak4s.auth.core.validation
 import java.util.{Date, UUID}
 
 import cats.data.EitherT
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
 import cats.implicits._
 import com.fullfacing.keycloak4s.auth.core.Logging
 import com.fullfacing.keycloak4s.auth.core.Logging.logValidationEx
