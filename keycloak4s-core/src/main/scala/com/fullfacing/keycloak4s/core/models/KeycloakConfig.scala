@@ -5,7 +5,7 @@ sealed trait KeycloakConfig {
   val host: String
   val port: Int
   val realm: String
-  val basePath: List[String]
+  val basePath: List[String] // default base path is /auth/ in earlier versions of Keycloak
   val proxyUrl: Option[String]
 
   def buildBaseUri: String = s"$scheme://$host:$port" + (if (basePath.nonEmpty) s"/${basePath.mkString("/")}" else "")

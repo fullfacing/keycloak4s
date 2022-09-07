@@ -29,7 +29,7 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 lazy val global = {
   Seq(
-    scalaVersion  := "2.13.7",
+    scalaVersion  := "2.13.8",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
@@ -42,7 +42,7 @@ lazy val global = {
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.15"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.16"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
@@ -113,17 +113,17 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.7"
-val akkaStreamsVersion    = "2.6.17"
-val catsEffectVersion     = "2.5.1"
-val catsCoreVersion       = "2.7.0"
+val akkaHttpVersion       = "10.2.9"
+val akkaStreamsVersion    = "2.6.19"
+val catsEffectVersion     = "2.5.5"
+val catsCoreVersion       = "2.8.0"
 val enumeratumVersion     = "1.5.15"
 val json4sVersion         = "3.6.12"
-val logbackVersion        = "1.2.10"
+val logbackVersion        = "1.2.11"
 val monixVersion          = "3.4.0"
 val monixBioVersion       = "1.2.0"
-val nimbusVersion         = "9.15.2"
-val scalaTestVersion      = "3.2.10"
+val nimbusVersion         = "9.24.3"
+val scalaTestVersion      = "3.2.13"
 val sttpVersion           = "3.2.3"
 
 // -------------------------------------- //
@@ -168,7 +168,7 @@ val `monix-bio`: Seq[ModuleID] = Seq(
 
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion,
-  "net.minidev" % "json-smart" % "2.4.7"
+  "net.minidev" % "json-smart" % "2.4.8"
 )
 
 val scalaTest: Seq[ModuleID] = Seq(
