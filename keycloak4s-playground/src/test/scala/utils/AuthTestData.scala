@@ -12,7 +12,7 @@ object AuthTestData {
   val port    = 8080
   val realm   = "test"
 
-  val keycloakConfig = ConfigWithoutAuth(scheme, host, port, realm)
+  private val keycloakConfig = ConfigWithoutAuth(scheme, host, port, realm)
 
   implicit val validator: TokenValidator = TokenValidator.Static(TestData.jwkSet, keycloakConfig)
   val validatorUri = s"$scheme://$host:$port/auth/realms/$realm"

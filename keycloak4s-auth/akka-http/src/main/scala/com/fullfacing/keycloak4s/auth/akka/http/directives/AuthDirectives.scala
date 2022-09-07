@@ -1,7 +1,5 @@
 package com.fullfacing.keycloak4s.auth.akka.http.directives
 
-import java.util.UUID
-
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethod, HttpResponse}
 import akka.http.scaladsl.server.Directives.{complete, extractMatchedPath, extractMethod, extractUnmatchedPath, provide}
@@ -13,6 +11,8 @@ import com.fullfacing.keycloak4s.auth.core.PayloadImplicits._
 import com.fullfacing.keycloak4s.auth.core.models.{AuthPayload, AuthRoles}
 import com.fullfacing.keycloak4s.core.Exceptions.UNAUTHORIZED
 import com.fullfacing.keycloak4s.core.models.enums.{PathMatchingMode, PathMatchingModes}
+
+import java.util.UUID
 
 trait AuthDirectives {
 

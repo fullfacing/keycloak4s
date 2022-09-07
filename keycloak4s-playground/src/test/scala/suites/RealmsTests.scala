@@ -53,7 +53,7 @@ class RealmsTests extends IntegrationSpec {
 
   "fetch" should "retrieve the Realm as configured in KeycloakClient" in {
     realmService.fetch().map(_.map { realm =>
-      realm.id shouldBe "master"
+      realm.realm shouldBe "master"
     })
   }.shouldReturnSuccess
 
@@ -65,7 +65,8 @@ class RealmsTests extends IntegrationSpec {
 
   "fetchAll" should "retrieve all Realms" in {
     realmService.fetchAll().map(_.map { realms =>
-      realms.map(_.id) should contain allOf ("master", "test_realm", "test_realm2")
+      realms.map(_.id) should contain allOf ("test_realm", "test_realm2")
+      realms.map(_.realm) should contain ("master")
     })
   }.shouldReturnSuccess
 
@@ -219,7 +220,7 @@ class RealmsTests extends IntegrationSpec {
 
   "partialExport" should "partially export a Realm" in {
     realmService.partialExport().map(_.map { export =>
-      export.id shouldBe "master"
+      export.realm shouldBe "master"
     })
   }.shouldReturnSuccess
 
