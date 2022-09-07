@@ -29,7 +29,7 @@ object ServerInitializer {
     )
 
     basicRequest
-      .post(uri"http://localhost:8080/auth/realms/master/protocol/openid-connect/token")
+      .post(uri"http://localhost:8080/realms/master/protocol/openid-connect/token")
       .body(form)
       .response(asJson[TokenResponse])
       .mapResponse(_.map(_.access_token).leftMap(_.getMessage))
@@ -40,7 +40,7 @@ object ServerInitializer {
   /* Step 2: Retrieve the ID of the admin-cli client. **/
   private def fetchClientId(token: String): Either[String, UUID] = {
     basicRequest
-      .get(uri"http://localhost:8080/auth/admin/realms/master/clients?clientId=admin-cli")
+      .get(uri"http://localhost:8080/admin/realms/master/clients?clientId=admin-cli")
       .header("Authorization", s"Bearer $token")
       .response(asJson[List[Client]])
       .mapResponse(_.leftMap(_.getMessage).flatMap(_.headOption.map(_.id).toRight("No Clients Found")))
@@ -58,7 +58,7 @@ object ServerInitializer {
     )
 
     basicRequest
-      .put(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId")
+      .put(uri"http://localhost:8080/admin/realms/master/clients/$clientId")
       .header("Authorization", s"Bearer $token")
       .contentType("application/json")
       .body(write(client))
@@ -69,7 +69,7 @@ object ServerInitializer {
   /* Step 4: Retrieve the ID of the service account user. (Steps 4 and 5 can be swapped or executed asynchronously) **/
   private def fetchServiceAccountUserId(token: String, clientId: UUID): Either[String, UUID] = {
     basicRequest
-      .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/service-account-user")
+      .get(uri"http://localhost:8080/admin/realms/master/clients/$clientId/service-account-user")
       .header("Authorization", s"Bearer $token")
       .response(asJson[User])
       .mapResponse(_.map(_.id).leftMap(_.getMessage))
@@ -80,7 +80,7 @@ object ServerInitializer {
   /* Step 5: Retrieve the ID of the admin role. (Steps 4 and 5 can be swapped or executed asynchronously) **/
   private def fetchAdminRoleId(token: String): Either[String, UUID] = {
     basicRequest
-      .get(uri"http://localhost:8080/auth/admin/realms/master/roles/admin")
+      .get(uri"http://localhost:8080/admin/realms/master/roles/admin")
       .header("Authorization", s"Bearer $token")
       .response(asJson[Role])
       .mapResponse(_.map(_.id).leftMap(_.getMessage))
@@ -96,7 +96,7 @@ object ServerInitializer {
     )
 
     basicRequest
-      .post(uri"http://localhost:8080/auth/admin/realms/master/users/$accountId/role-mappings/realm")
+      .post(uri"http://localhost:8080/admin/realms/master/users/$accountId/role-mappings/realm")
       .header("Authorization", s"Bearer $token")
       .contentType("application/json")
       .body(write(List(role)))
@@ -107,7 +107,7 @@ object ServerInitializer {
   /* Step 7: Retrieve admin-cli's client secret. **/
   private def fetchClientSecret(token: String, clientId: UUID): Either[String, String] = {
     basicRequest
-      .get(uri"http://localhost:8080/auth/admin/realms/master/clients/$clientId/client-secret")
+      .get(uri"http://localhost:8080/admin/realms/master/clients/$clientId/client-secret")
       .header("Authorization", s"Bearer $token")
       .response(asJson[Credential])
       .mapResponse(_.leftMap(_.getMessage).flatMap(_.value.toRight("Client Secret Missing")))

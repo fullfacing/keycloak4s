@@ -6,6 +6,7 @@ import com.nimbusds.jose.Payload
 import net.minidev.json.JSONObject
 import org.json4s.Formats
 import org.json4s.jackson.Serialization.read
+import org.json4s.jackson.{compactJson, parseJson}
 
 /**
  * Provides helper functions to safely extract values from any Payload object.
@@ -14,8 +15,11 @@ import org.json4s.jackson.Serialization.read
 object PayloadImplicits {
 
   /* A safe extraction method to extract any field's value from a Payload. **/
-  private def safeExtract(payload: Payload, key: String): Option[String] = Option {
-    new JSONObject(payload.toJSONObject).getAsString(key)
+  private def safeExtract(payload: Payload, key: String): Option[String] = {
+    for {
+      string     <- Option(new JSONObject(payload.toJSONObject).toJSONString)
+      (_, value) <- parseJson(string).findField { case (k, _) => k == key }
+    } yield compactJson(value)
   }
 
   implicit class PayloadImpl(payload: Payload) {
