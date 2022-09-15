@@ -38,7 +38,7 @@ lazy val global = {
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
 
-    credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
+    credentials += Credentials("GnuPG Key ID", "gpg", "B45D4204DBB121424926CFA6DBC0CB15C9B7283D", "ignored"),
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
