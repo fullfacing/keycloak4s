@@ -58,8 +58,8 @@ jobs:
       - run:
           name: Import PGP Key
           command: |
-            echo -e "$PGP_KEY" > pgp.key
-            gpg --import pgp.key
+            echo -e "$PGP_KEY" > key.asc
+            gpg --import key.asc
       - run:
           name: Set Git Config
           command: |
