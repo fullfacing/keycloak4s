@@ -62,7 +62,7 @@ jobs:
             sudo apt-get install -y dos2unix
             echo -e "$PGP_KEY" > key.asc
             dos2unix key.asc
-            gpg --import key.asc
+            gpg --batch --import key.asc
       - run:
           name: Set Git Config
           command: |
