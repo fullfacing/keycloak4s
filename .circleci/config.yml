@@ -58,7 +58,10 @@ jobs:
       - run:
           name: Import PGP Key
           command: |
+            sudo rm -rf /var/lib/apt/lists/* && sudo apt-get update
+            sudo apt-get install -y dos2unix
             echo -e "$PGP_KEY" > key.asc
+            dos2unix key.asc
             gpg --import key.asc
       - run:
           name: Set Git Config
