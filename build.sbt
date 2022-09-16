@@ -38,7 +38,7 @@ lazy val global = {
 
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
 
-    credentials += Credentials("GnuPG Key ID", "gpg", "419C90FB607D11B0A7FE51CFDAF842ABC601C14F", "ignored"),
+    credentials += Credentials("GnuPG Key ID", "gpg", "B45D4204DBB121424926CFA6DBC0CB15C9B7283D", "ignored"),
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
@@ -113,18 +113,16 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.9"
-val akkaStreamsVersion    = "2.6.19"
-val catsEffectVersion     = "3.2.9"
-val catsCoreVersion       = "2.6.1"
-val enumeratumVersion     = "1.5.15"
-val json4sVersion         = "3.6.12"
-val logbackVersion        = "1.2.11"
-val monixVersion          = "3.4.0"
-val monixBioVersion       = "1.2.0"
-val nimbusVersion         = "9.24.3"
+val akkaHttpVersion       = "10.2.10"
+val akkaStreamsVersion    = "2.6.20"
+val catsEffectVersion     = "3.3.14"
+val catsCoreVersion       = "2.8.0"
+val enumeratumVersion     = "1.7.1"
+val json4sVersion         = "4.0.5"
+val logbackVersion        = "1.4.0"
+val nimbusVersion         = "9.24.4"
 val scalaTestVersion      = "3.2.13"
-val sttpVersion           = "3.2.3"
+val sttpVersion           = "3.7.6"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -157,15 +155,6 @@ val logback: Seq[ModuleID] = Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion
 )
 
-val monix: Seq[ModuleID] = Seq(
-  "io.monix" %% "monix" % monixVersion
-)
-
-val `monix-bio`: Seq[ModuleID] = Seq(
-  "io.monix" %% "monix-bio" % monixBioVersion,
-  "io.monix" %% "monix-reactive" % monixVersion
-)
-
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion,
   "net.minidev" % "json-smart" % "2.4.8"
@@ -180,9 +169,6 @@ val sttp: Seq[ModuleID] = Seq(
   "com.softwaremill.sttp.client3" %% "json4s" % sttpVersion
 )
 
-val sttpAkkaMonix: Seq[ModuleID] = Seq(
-  "com.fullfacing" %% "sttp3-akka-monix-task" % "2.0.1"
-)
 
 // --------------------------------------------- //
 // Project and configuration for keycloak4s-core //
@@ -203,65 +189,26 @@ lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
   .settings(name := "keycloak4s-admin", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
-// ---------------------------------------------------- //
-// Project and configuration for keycloak4s-admin-monix //
-// ---------------------------------------------------- //
-// lazy val `keycloak4s-monix` = (project in file("./keycloak4s-admin-monix"))
-//   .settings(global: _*)
-//   .settings(libraryDependencies ++= monix)
-//   .settings(name := "keycloak4s-admin-monix", publishArtifact := true)
-//   .dependsOn(`keycloak4s-admin`)
-
-// ---------------------------------------------------- //
-// Project and configuration for keycloak4s-admin-monix //
-// ---------------------------------------------------- //
-// lazy val `keycloak4s-monix-bio` = (project in file("./keycloak4s-admin-monix-bio"))
-//   .settings(global: _*)
-//   .settings(libraryDependencies ++= `monix-bio` ++ sttp)
-//   .settings(name := "keycloak4s-admin-monix-bio", publishArtifact := true)
-//   .dependsOn(`keycloak4s-core`)
-
-// ------------------------------------------------------- //
-// Project and configuration for keycloak4s-auth-core //
-// ------------------------------------------------------- //
-lazy val `keycloak4s-auth-core` = (project in file("./keycloak4s-auth/core"))
-  .settings(global: _*)
-  .settings(libraryDependencies ++= nimbus)
-  .settings(name := "keycloak4s-auth-core", publishArtifact := true)
-  .dependsOn(`keycloak4s-core`)
-
-// ------------------------------------------------------- //
-// Project and configuration for keycloak4s-auth-akka-http //
-// ------------------------------------------------------- //
-lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"))
-  .settings(global: _*)
-  .settings(libraryDependencies ++= akkaHttp)
-  .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
-  .dependsOn(`keycloak4s-auth-core`)
-
-// ------------------------------------------------------- //
-// Project and configuration for keycloak4s-authz-client //
-// ------------------------------------------------------- //
-lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
-  .settings(global: _*)
-  .settings(name := "keycloak4s-authz-client", publishArtifact := true)
-
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
-// lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
-//   .settings(scalaVersion  := "2.13.6")
-//   .settings(publish / skip := true)
-//   .settings(libraryDependencies ++= sttpAkkaMonix ++ scalaTest ++ akkaTestKit)
-//   .settings(coverageEnabled := false)
-//   .settings(Test / parallelExecution := false)
-//   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-//     case Some((2, n)) if n <= 12 => scalac212Opts
-//     case _                       => scalac213Opts
-//   }))
-//   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
-//   .settings(name := "keycloak4s-playground", publishArtifact := false)
-//   .dependsOn(`keycloak4s-admin`, `keycloak4s-monix`, `keycloak4s-akka-http`)
+val catsBackend: Seq[ModuleID] = Seq(
+  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.0"
+)
+
+ lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
+   .settings(scalaVersion  := "2.13.8")
+   .settings(publish / skip := true)
+   .settings(libraryDependencies ++= scalaTest ++ catsBackend)
+   .settings(coverageEnabled := false)
+   .settings(Test / parallelExecution := false)
+   .settings(scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+     case Some((2, n)) if n <= 12 => scalac212Opts
+     case _                       => scalac213Opts
+   }))
+   .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"))
+   .settings(name := "keycloak4s-playground", publishArtifact := false)
+   .dependsOn(`keycloak4s-admin`)
 
 // ---------------------------------------------- //
 // Project and configuration for the root project //
@@ -273,7 +220,5 @@ lazy val root = (project in file("."))
   .aggregate(
     `keycloak4s-core`,
     `keycloak4s-admin`,
-    `keycloak4s-auth-core`,
-    `keycloak4s-akka-http`
-    // `keycloak4s-playground`
+    `keycloak4s-playground`
   )

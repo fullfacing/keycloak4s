@@ -24,6 +24,7 @@ package object services {
   def extractString(response: Either[KeycloakError, Headers]): Either[KeycloakError, String] = response.flatMap { headers =>
     headers
       .get("Location")
+      .orElse(headers.get("location"))
       .flatMap(location => location.split('/').lastOption)
       .toRight(Exceptions.ID_NOT_FOUND)
   }

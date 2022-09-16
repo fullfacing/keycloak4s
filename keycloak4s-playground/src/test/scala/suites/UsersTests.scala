@@ -1,15 +1,16 @@
 package suites
 
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.{CredentialTypes, ProviderTypes}
-import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class UsersTests extends IntegrationSpec {
@@ -46,25 +47,13 @@ class UsersTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
-  "fetchS" should "be able to stream Users" in {
-    userService.fetchS().toListL.map { users =>
-      users.map(_.username) should contain ("admin")
-    }
-  }.runToFuture
-
-  "fetchL" should "be able to stream a sequence of Users" in {
-    userService.fetchL().map { users =>
-      users.map(_.username) should contain ("admin")
-    }
-  }.runToFuture
-
   "createAndRetrieve" should "create a User and subsequently return it" in {
     userService.create(User.Create(username = "test_user1", enabled = true))
   }.shouldReturnSuccess
 
   it should "correctly handle error when attempting to create a duplicate User" in {
     userService.create(User.Create(username = "test_user1", enabled = true))
-  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).unsafeToFuture
 
   "create" should "create a User" in {
     for {
@@ -81,7 +70,7 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().headOption
 
     for {
-      storedUser  <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
+      storedUser  <- EitherT.fromOption[IO](option, Errors.NO_USERS_FOUND)
       fetchedUser <- EitherT(userService.fetchById(storedUser.id))
     } yield fetchedUser.username shouldBe storedUser.username
   }.value.shouldReturnSuccess
@@ -96,7 +85,7 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().find(_.username == "test_user3")
 
     for {
-      storedUser  <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
+      storedUser  <- EitherT.fromOption[IO](option, Errors.NO_USERS_FOUND)
       _           <- EitherT(userService.update(storedUser.id, User.Update(enabled = Some(false))))
       fetchedUser <- EitherT(userService.fetch(username = Some("test_user3")))
     } yield {
@@ -115,15 +104,15 @@ class UsersTests extends IntegrationSpec {
     val option2 = users.find(_.username == "test_user2")
 
     (for {
-      user1   <- EitherT.fromOption[Task](option1, Errors.NO_USERS_FOUND)
-      user2   <- EitherT.fromOption[Task](option2, Errors.NO_USERS_FOUND)
+      user1   <- EitherT.fromOption[IO](option1, Errors.NO_USERS_FOUND)
+      user2   <- EitherT.fromOption[IO](option2, Errors.NO_USERS_FOUND)
       _       <- EitherT(groupService.create(group1))
       _       <- EitherT(groupService.create(group2))
       _       <- EitherT(groupService.create(group3))
       groups  <- EitherT(groupService.fetch())
-      group1  <- EitherT.fromOption[Task](groups.headOption, Errors.NO_GROUPS_FOUND)
-      group2  <- EitherT.fromOption[Task](groups.toList.get(1), Errors.GROUP_NOT_FOUND)
-      group3  <- EitherT.fromOption[Task](groups.toList.get(2), Errors.GROUP_NOT_FOUND)
+      group1  <- EitherT.fromOption[IO](groups.headOption, Errors.NO_GROUPS_FOUND)
+      group2  <- EitherT.fromOption[IO](groups.toList.get(1), Errors.GROUP_NOT_FOUND)
+      group3  <- EitherT.fromOption[IO](groups.toList.get(2), Errors.GROUP_NOT_FOUND)
       _       <- EitherT(userService.addToGroup(user1.id, group1.id))
       _       <- EitherT(userService.addToGroup(user2.id, group2.id))
       _       <- EitherT(userService.addToGroup(user2.id, group3.id))
@@ -141,32 +130,6 @@ class UsersTests extends IntegrationSpec {
     for {
       groups1 <- EitherT(userService.fetchGroups(user1))
       groups2 <- EitherT(userService.fetchGroups(user2))
-    } yield {
-      groups1.map(_.name) should contain only "test_group1"
-      groups2.map(_.name) should contain only ("test_group2", "test_group3")
-    }
-  }.value.shouldReturnSuccess
-
-  "fetchGroupsS" should "be able to stream Groups a User is linked to" in {
-    val user1 = storedTestUser1.get().id
-    val user2 = storedTestUser2.get().id
-
-    for {
-      groups1 <- EitherT.right[KeycloakError](userService.fetchGroupsS(user1).toListL)
-      groups2 <- EitherT.right[KeycloakError](userService.fetchGroupsS(user2).toListL)
-    } yield {
-      groups1.map(_.name) should contain only "test_group1"
-      groups2.map(_.name) should contain only ("test_group2", "test_group3")
-    }
-  }.value.shouldReturnSuccess
-
-  "fetchGroupsL" should "be able to stream a sequence of Groups a User is linked to" in {
-    val user1 = storedTestUser1.get().id
-    val user2 = storedTestUser2.get().id
-
-    for {
-      groups1 <- EitherT.right[KeycloakError](userService.fetchGroupsL(user1))
-      groups2 <- EitherT.right[KeycloakError](userService.fetchGroupsL(user2))
     } yield {
       groups1.map(_.name) should contain only "test_group1"
       groups2.map(_.name) should contain only ("test_group2", "test_group3")
@@ -196,7 +159,7 @@ class UsersTests extends IntegrationSpec {
     }.parSequence.map(_.sequence)
 
     for {
-      groupId <- EitherT.fromOption[Task](option, Errors.NO_GROUPS_FOUND)
+      groupId <- EitherT.fromOption[IO](option, Errors.NO_GROUPS_FOUND)
       _       <- EitherT(userService.removeFromGroup(user.id, groupId))
       num     <- EitherT(userService.countGroups(user.id))
       _       <- EitherT(deleteGroups)
@@ -286,7 +249,7 @@ class UsersTests extends IntegrationSpec {
     val option = storedUsers.get().find(_.username == "admin")
 
     for {
-      user   <- EitherT.fromOption[Task](option, Errors.NO_USERS_FOUND)
+      user   <- EitherT.fromOption[IO](option, Errors.NO_USERS_FOUND)
       client <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head)
       cRoles <- EitherT(roleService.ClientLevel.fetch(client.id))
       _      <- EitherT(userService.addClientRoles(client.id, user.id, cRoles.map(r => Role.Mapping(r.id, r.name))))
@@ -352,7 +315,7 @@ class UsersTests extends IntegrationSpec {
 
     for {
       idOpt <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.headOption.map(_.id))
-      id    <- EitherT.fromOption[Task](idOpt, Errors.NO_CLIENTS_FOUND)
+      id    <- EitherT.fromOption[IO](idOpt, Errors.NO_CLIENTS_FOUND)
       roles <- EitherT(userService.fetchClientRoles(id, user.id))
     } yield {
       roles shouldNot be (empty)

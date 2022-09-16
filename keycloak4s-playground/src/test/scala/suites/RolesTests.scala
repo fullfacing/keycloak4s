@@ -1,13 +1,14 @@
 package suites
 
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.fullfacing.keycloak4s.core.models._
-import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class RolesTests extends IntegrationSpec {
@@ -81,7 +82,7 @@ class RolesTests extends IntegrationSpec {
   private val group2     = new AtomicReference[UUID]()
 
   "Create Ancillary Objects" should "create all objects needed to test all the roles service calls" in {
-    val task =
+    val IO =
       for {
         _ <- clientService.create(Client.Create("RoleTestClient"))
         _ <- groupService.create(group1Create)
@@ -90,20 +91,20 @@ class RolesTests extends IntegrationSpec {
         r <- userService.create(user2Create)
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   "Fetch Ancillary Object's UUIDs" should "retrieve the created objects and store their IDs" in {
-    val task: EitherT[Task, KeycloakError, Unit] =
+    val IO: EitherT[IO, KeycloakError, Unit] =
       for {
         c <- EitherT(clientService.fetch(clientId = Some("RoleTestClient")))
         g <- EitherT(groupService.fetch())
         u <- EitherT(userService.fetch())
-        c1  <- EitherT.fromOption[Task](c.headOption, Errors.CLIENT_NOT_FOUND)
-        g1  <- EitherT.fromOption[Task](g.find(_.name == group1Create.name), Errors.GROUP_NOT_FOUND)
-        g2  <- EitherT.fromOption[Task](g.find(_.name == group2Create.name), Errors.GROUP_NOT_FOUND)
-        u1  <- EitherT.fromOption[Task](u.find(_.username == user1Create.username), Errors.USER_NOT_FOUND)
-        u2  <- EitherT.fromOption[Task](u.find(_.username == user2Create.username), Errors.USER_NOT_FOUND)
+        c1  <- EitherT.fromOption[IO](c.headOption, Errors.CLIENT_NOT_FOUND)
+        g1  <- EitherT.fromOption[IO](g.find(_.name == group1Create.name), Errors.GROUP_NOT_FOUND)
+        g2  <- EitherT.fromOption[IO](g.find(_.name == group2Create.name), Errors.GROUP_NOT_FOUND)
+        u1  <- EitherT.fromOption[IO](u.find(_.username == user1Create.username), Errors.USER_NOT_FOUND)
+        u2  <- EitherT.fromOption[IO](u.find(_.username == user2Create.username), Errors.USER_NOT_FOUND)
       } yield {
         clientUuid.set(c1.id)
         group1.set(g1.id)
@@ -112,27 +113,27 @@ class RolesTests extends IntegrationSpec {
         user2.set(u2.id)
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Create" should "successfully create realm level roles" in {
-    val task =
+    val IO =
       for {
         _ <- realmRoleService.create(rRole1Create)
         r <- realmRoleService.create(rRole2Create)
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   it should "successfully create a client and client level roles for that client" in {
-    val task =
+    val IO =
       for {
         _ <- clientRoleService.create(clientUuid.get(), cRole1Create)
         r <- clientRoleService.create(clientUuid.get(), cRole2Create)
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   "createAndRetrieve" should "create a realm level role and subsequently return it" in {
@@ -145,7 +146,7 @@ class RolesTests extends IntegrationSpec {
     realmRoleService.createAndRetrieve(rRole3Create).map(_.map { role =>
       rRole3.set(role.id)
     })
-  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).unsafeToFuture
 
   it should "create a client level role and subsequently return it" in {
     clientRoleService.createAndRetrieve(clientUuid.get(), cRole3Create).map(_.map { role =>
@@ -157,10 +158,10 @@ class RolesTests extends IntegrationSpec {
     clientRoleService.createAndRetrieve(clientUuid.get(), cRole3Create).map(_.map { role =>
       cRole3.set(role.id)
     })
-  }.map(_ shouldBe a [scala.util.Left[_, _]]).runToFuture
+  }.map(_ shouldBe a [scala.util.Left[_, _]]).unsafeToFuture
 
   "Fetch" should "successfully fetch the previously created realm roles" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT(realmRoleService.fetch())
         r1 <- EitherT(realmRoleService.fetchByName(rRole1Name))
@@ -170,11 +171,11 @@ class RolesTests extends IntegrationSpec {
         rRole2.set(r2.id)
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "successfully fetch the previously created client roles" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT(clientRoleService.fetch(clientUuid.get()))
         c1 <- EitherT(clientRoleService.fetchByName(clientUuid.get(), cRole1Name))
@@ -187,13 +188,13 @@ class RolesTests extends IntegrationSpec {
         c2.name shouldBe cRole2Name
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Update" should "successfully update a realm role" in {
     val updatedDescription = "This is the description"
     val updatedName        = "TestUpdate"
-    val task =
+    val IO =
       for {
         _  <- EitherT(realmRoleService.update(rRole1Name, Role.Update(name = rRole1Name, description = Some(updatedDescription))))
         _  <- EitherT(realmRoleService.update(rRole2Name, Role.Update(name = updatedName)))
@@ -205,13 +206,13 @@ class RolesTests extends IntegrationSpec {
         r2.name        shouldBe updatedName
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "successfully update a client role" in {
     val updatedDescription = "This is the description"
     val updatedName        = "TestUpdate"
-    val task =
+    val IO =
       for {
         _  <- EitherT(clientRoleService.update(clientUuid.get(), cRole1Name, Role.Update(name = cRole1Name, description = Some(updatedDescription))))
         _  <- EitherT(clientRoleService.update(clientUuid.get(), cRole2Name, Role.Update(name = updatedName)))
@@ -223,7 +224,7 @@ class RolesTests extends IntegrationSpec {
         c2.name        shouldBe updatedName
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Composite Realm Role" should "successfully add sub roles to a realm role" in {
@@ -232,7 +233,7 @@ class RolesTests extends IntegrationSpec {
   }
 
   it should "successfully retrieve sub roles added to the realm role" in {
-    val task =
+    val IO =
       for {
         a <- EitherT(realmRoleService.fetchCompositeRoles(rRole1Name))
         r <- EitherT(realmRoleService.fetchRealmCompositeRoles(rRole1Name))
@@ -243,17 +244,17 @@ class RolesTests extends IntegrationSpec {
         c.exists(_.id == cRole1.get()) shouldBe true
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "successfully remove all sub roles from the realm role" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT(realmRoleService.removeCompositeRoles(rRole1Name, List(rRole2.get(), cRole1.get())))
         r  <- EitherT(realmRoleService.fetchCompositeRoles(rRole1Name))
       } yield r.isEmpty shouldBe true
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Composite Client Role" should "successfully add sub roles to a client role" in {
@@ -262,7 +263,7 @@ class RolesTests extends IntegrationSpec {
   }
 
   it should "successfully retrieve sub roles added to the client role" in {
-    val task =
+    val IO =
       for {
         a <- EitherT(clientRoleService.fetchCompositeRoles(clientUuid.get(), cRole1Name))
         r <- EitherT(clientRoleService.fetchRealmCompositeRoles(clientUuid.get(), cRole1Name))
@@ -273,21 +274,21 @@ class RolesTests extends IntegrationSpec {
         c.exists(_.id == cRole2.get()) shouldBe true
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "successfully remove all sub roles from the client role" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT(clientRoleService.removeCompositeRoles(clientUuid.get(), cRole1Name, List(rRole1.get(), cRole2.get())))
         r  <- EitherT(clientRoleService.fetchCompositeRoles(clientUuid.get(), cRole1Name))
       } yield r.isEmpty shouldBe true
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Management Permissions" should "do something or another to a realm role" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(realmRoleService.fetchManagementPermissions(rRole1Name))
         b <- EitherT(realmRoleService.enableManagementPermissions(rRole1Name))
@@ -297,11 +298,11 @@ class RolesTests extends IntegrationSpec {
         c.enabled shouldBe false
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "do something or another to a client role" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(clientRoleService.fetchManagementPermissions(clientUuid.get(), cRole1Name))
         b <- EitherT(clientRoleService.enableManagementPermissions(clientUuid.get(), cRole1Name))
@@ -311,126 +312,110 @@ class RolesTests extends IntegrationSpec {
         c.enabled shouldBe false
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
 
   "Fetch Users" should "successfully retrieve all users who have a realm role" in {
     val r1 = mapToRoleMapping(rRole1.get(), rRole1Create)
     val r2 = mapToRoleMapping(rRole2.get(), rRole2Create)
-    val task =
+    val IO =
       for {
         _ <- EitherT(userService.addRealmRoles(user1.get(), List(r1, r2)))
         _ <- EitherT(userService.addRealmRoles(user2.get(), List(r1)))
         a <- EitherT(realmRoleService.fetchUsers(rRole1Name, None, None))
         b <- EitherT(realmRoleService.fetchUsers(rRole2Name, None, None))
-        c <- EitherT.right[KeycloakError](roleService.fetchRealmRoleUsersS(rRole1Name).toListL)
-        d <- EitherT.right[KeycloakError](roleService.fetchRealmRoleUsersS(rRole2Name).toListL)
         _ <- EitherT(userService.removeRealmRoles(user1.get(), List(r1, r2)))
         _ <- EitherT(userService.removeRealmRoles(user2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
-        c.sortBy(_.createdTimestamp) shouldBe a.sortBy(_.createdTimestamp)
-        d shouldBe b
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "successfully retrieve all users who have a client role" in {
     val r1 = mapToRoleMapping(cRole1.get(), cRole1Create)
     val r2 = mapToRoleMapping(cRole2.get(), cRole2Create)
-    val task =
+    val IO =
       for {
         _ <- EitherT(userService.addClientRoles(clientUuid.get(), user1.get(), List(r1, r2)))
         _ <- EitherT(userService.addClientRoles(clientUuid.get(), user2.get(), List(r1)))
         a <- EitherT(clientRoleService.fetchUsers(clientUuid.get(), cRole1Name, None, None))
         b <- EitherT(clientRoleService.fetchUsers(clientUuid.get(), cRole2Name, None, None))
-        c <- EitherT.right[KeycloakError](roleService.fetchClientRoleUsersS(clientUuid.get(), cRole1Name).toListL)
-        d <- EitherT.right[KeycloakError](roleService.fetchClientRoleUsersS(clientUuid.get(), cRole2Name).toListL)
         _ <- EitherT(userService.removeClientRoles(clientUuid.get(), user1.get(), List(r1, r2)))
         _ <- EitherT(userService.removeClientRoles(clientUuid.get(), user2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
-        c.sortBy(_.createdTimestamp) shouldBe a.sortBy(_.createdTimestamp)
-        d shouldBe b
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Fetch Groups" should "successfully retrieve all groups that a given realm role" in {
     val r1 = mapToRoleMapping(rRole1.get(), rRole1Create)
     val r2 = mapToRoleMapping(rRole2.get(), rRole2Create)
-    val task =
+    val IO =
       for {
         _ <- EitherT(groupService.addRealmRoles(group1.get(), List(r1, r2)))
         _ <- EitherT(groupService.addRealmRoles(group2.get(), List(r1)))
         a <- EitherT(realmRoleService.fetchGroups(rRole1Name, None, None, Some(true)))
         b <- EitherT(realmRoleService.fetchGroups(rRole2Name, None, None, Some(false)))
-        c <- EitherT.right[KeycloakError](roleService.fetchRealmRoleGroupsS(rRole1Name, Some(true)).toListL)
-        d <- EitherT.right[KeycloakError](roleService.fetchRealmRoleGroupsS(rRole2Name, Some(false)).toListL)
         _ <- EitherT(groupService.removeRealmRoles(group1.get(), List(r1, r2)))
         _ <- EitherT(groupService.removeRealmRoles(group2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
-        c.sortBy(_.name) shouldBe a.sortBy(_.name)
-        d shouldBe b
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "successfully retrieve all groups that have a client role" in {
     val r1 = mapToRoleMapping(cRole1.get(), cRole1Create)
     val r2 = mapToRoleMapping(cRole2.get(), cRole2Create)
-    val task =
+    val IO =
       for {
         _ <- EitherT(groupService.addClientRoles(clientUuid.get(), group1.get(), List(r1, r2)))
         _ <- EitherT(groupService.addClientRoles(clientUuid.get(), group2.get(), List(r1)))
         a <- EitherT(clientRoleService.fetchGroups(clientUuid.get(), cRole1Name, None, None, Some(true)))
         b <- EitherT(clientRoleService.fetchGroups(clientUuid.get(), cRole2Name, None, None, Some(false)))
-        c <- EitherT.right[KeycloakError](roleService.fetchClientRoleGroupsS(clientUuid.get(), cRole1Name, Some(true)).toListL)
-        d <- EitherT.right[KeycloakError](roleService.fetchClientRoleGroupsS(clientUuid.get(), cRole2Name, Some(false)).toListL)
         _ <- EitherT(groupService.removeClientRoles(clientUuid.get(), group1.get(), List(r1, r2)))
         _ <- EitherT(groupService.removeClientRoles(clientUuid.get(), group2.get(), List(r1)))
       } yield {
         a.size shouldBe 2
         b.size shouldBe 1
-        c.sortBy(_.id) shouldBe a.sortBy(_.id)
-        d shouldBe b
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Delete" should "successfully remove roles from the realm" in {
-    val task =
+    val IO =
       for {
         _ <- realmRoleService.delete(rRole1Name)
         _ <- realmRoleService.delete(rRole2Name)
         _ <- realmRoleService.delete(rRole3Name)
       } yield Right(())
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   it should "successfully remove roles from the client" in {
-    val task =
+    val IO =
       for {
         _ <- clientRoleService.delete(clientUuid.get(), cRole1Name)
         _ <- clientRoleService.delete(clientUuid.get(), cRole2Name)
         r <- clientRoleService.delete(clientUuid.get(), cRole3Name)
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   "Delete Ancillary Objects" should "remove all the ancillary objects created for testing Roles" in {
-    val task =
+    val IO =
       for {
         _ <- clientService.delete(clientUuid.get())
         _ <- userService.delete(user1.get())
@@ -439,6 +424,6 @@ class RolesTests extends IntegrationSpec {
         r <- groupService.delete(group2.get())
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 }

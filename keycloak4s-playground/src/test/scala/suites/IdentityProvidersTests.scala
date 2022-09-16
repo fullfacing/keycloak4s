@@ -1,13 +1,13 @@
 package suites
 
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.core.models.{IdentityProvider, IdentityProviderMapper}
+import cats.effect.IO
 import com.fullfacing.keycloak4s.core.models.enums.{MapperTypes, ProviderTypes}
-import monix.eval.Task
+import com.fullfacing.keycloak4s.core.models.{IdentityProvider, IdentityProviderMapper}
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class IdentityProvidersTests extends IntegrationSpec {
@@ -65,7 +65,7 @@ class IdentityProvidersTests extends IntegrationSpec {
     for {
       _       <- EitherT(idProvService.create(identityProvider))
       idProvs <- EitherT(idProvService.fetch())
-      idProv  <- EitherT.fromOption[Task](idProvs.headOption, Errors.NO_IDPROVS_FOUND)
+      idProv  <- EitherT.fromOption[IO](idProvs.headOption, Errors.NO_IDPROVS_FOUND)
     } yield {
       savedIdentityProvider.set(idProv)
       idProv.alias shouldBe "test_oidc"
@@ -133,7 +133,7 @@ class IdentityProvidersTests extends IntegrationSpec {
     for {
       _       <- EitherT(idProvService.createMapper("test_oidc", mapper))
       mappers <- EitherT(idProvService.fetchMappers("test_oidc"))
-      mapper  <- EitherT.fromOption[Task](mappers.headOption, Errors.NO_MAPPERS_FOUND)
+      mapper  <- EitherT.fromOption[IO](mappers.headOption, Errors.NO_MAPPERS_FOUND)
     } yield {
       mapper.name shouldBe "test_mapper"
       storedMapper.set(mapper)

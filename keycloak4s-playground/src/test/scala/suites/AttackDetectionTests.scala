@@ -1,26 +1,26 @@
 package suites
 
-import java.util.concurrent.atomic.AtomicReference
-
-import akka.util.ByteString
 import cats.data.EitherT
-import com.fullfacing.keycloak4s.admin.monix.client.{Keycloak, KeycloakClient}
-import com.fullfacing.keycloak4s.admin.monix.services.{Clients, Users}
-import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
+import cats.effect.IO
+import com.fullfacing.keycloak4s.admin.client.{Keycloak, KeycloakClient}
+import com.fullfacing.keycloak4s.admin.services.{Clients, Users}
 import com.fullfacing.keycloak4s.core.models._
-import sttp.client3._
-import monix.eval.Task
+import com.fullfacing.keycloak4s.core.models.enums.CredentialTypes
 import org.scalatest.DoNotDiscover
+import sttp.client3._
 import utils.{Errors, IntegrationSpec}
+
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class AttackDetectionTests extends IntegrationSpec {
 
   private val adKeycloakConfig  = ConfigWithAuth("http", "127.0.0.1", 8080, "AttackRealm", authConfig, basePath = Nil)
-  private val adClient: KeycloakClient[T] = new KeycloakClient(adKeycloakConfig)
 
-  override val clientService: Clients[T] = Keycloak.Clients[ByteString](adClient)
-  override val userService: Users[T]     = Keycloak.Users[ByteString](adClient)
+  override implicit val client: KeycloakClient[IO] = new KeycloakClient(adKeycloakConfig)
+
+  override val clientService: Clients[IO] = Keycloak.Clients
+  override val userService: Users[IO]     = Keycloak.Users
 
   val realm = "AttackRealm"
   val realmCreate = Realm.Create(
@@ -38,7 +38,7 @@ class AttackDetectionTests extends IntegrationSpec {
   val tClient = new AtomicReference[Client]()
   val tUser   = new AtomicReference[User]()
 
-  def login(realm: String = "AttackRealm", username: String = "attackuser", password: String): Task[Response[String]] = {
+  def login(realm: String = "AttackRealm", username: String = "attackuser", password: String): IO[Response[String]] = {
     val body = Map(
       "username"   -> username,
       "password"   -> password,
@@ -52,28 +52,28 @@ class AttackDetectionTests extends IntegrationSpec {
       .send(backend)
   }
 
-  val invalidLogin: Task[Response[String]] = login(password = "incorrect")
+  val invalidLogin: IO[Response[String]] = login(password = "incorrect")
 
   "Test Setup" should "complete successfully" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT(realmService.create(realmCreate))
         _  <- EitherT(clientService.create(clientCreate))
         lc <- EitherT(clientService.fetch(clientId = Some(clientCreate.clientId)))
-        c  <- EitherT.fromOption[Task](lc.find(_.clientId == clientCreate.clientId), Errors.CLIENT_NOT_FOUND)
+        c  <- EitherT.fromOption[IO](lc.find(_.clientId == clientCreate.clientId), Errors.CLIENT_NOT_FOUND)
         _  <- EitherT(userService.create(userCreate))
         lu <- EitherT(userService.fetch(username = Some(userCreate.username)))
-        u  <- EitherT.fromOption[Task](lu.find(_.username == userCreate.username), Errors.USER_NOT_FOUND)
+        u  <- EitherT.fromOption[IO](lu.find(_.username == userCreate.username), Errors.USER_NOT_FOUND)
       } yield {
         tClient.set(c)
         tUser.set(u)
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetchUserStatus" should "retrieve an object documenting all invalid login attempts by the given user" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT.right(login(password = userCredentials.value.getOrElse("")))
         b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
@@ -85,11 +85,11 @@ class AttackDetectionTests extends IntegrationSpec {
         a.numFailures shouldBe 2
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "clearAllLoginFailures" should "reset all login failures by users on the realm" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT.right(invalidLogin)
         b  <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
@@ -100,11 +100,11 @@ class AttackDetectionTests extends IntegrationSpec {
         a.numFailures     shouldBe 0
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "enable users that have been disabled due to too many login failures" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
@@ -119,11 +119,11 @@ class AttackDetectionTests extends IntegrationSpec {
         a.disabled        shouldBe false
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "clearUserLoginFailure" should "reset all login failures by the given user" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT.right(invalidLogin)
         b <- EitherT(attackDetService.fetchUserStatus(tUser.get.id, realm))
@@ -134,11 +134,11 @@ class AttackDetectionTests extends IntegrationSpec {
         a.numFailures     shouldBe 0
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "enable the given user that has been disabled due to too many login failures" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT.right(invalidLogin)
         _ <- EitherT.right(invalidLogin)
@@ -153,7 +153,7 @@ class AttackDetectionTests extends IntegrationSpec {
         a.disabled        shouldBe false
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Test Reset" should "complete successfully" in

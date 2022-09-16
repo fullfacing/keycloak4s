@@ -1,14 +1,15 @@
 package suites
 
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.fullfacing.keycloak4s.core.models._
 import com.fullfacing.keycloak4s.core.models.enums.EventTypes
-import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class RealmsTests extends IntegrationSpec {
@@ -85,12 +86,6 @@ class RealmsTests extends IntegrationSpec {
     })
   }.shouldReturnSuccess
 
-  "fetchAdminEventsS" should "be able to stream admin events" in {
-    realmService.fetchAdminEventsS(realm = "test_realm").toListL.map { events =>
-      events shouldNot be (empty)
-    }
-  }.runToFuture
-
   "deleteAdminEvents" should "delete all admin events that have been logged" in {
     for {
       _       <- EitherT(realmService.deleteAdminEvents(realm = "test_realm"))
@@ -107,7 +102,7 @@ class RealmsTests extends IntegrationSpec {
   "fetchDefaultClientScopes" should "retrieve a non-empty list of default client scopes" in {
     for {
       scopes  <- EitherT(realmService.fetchDefaultClientScopes("test_realm"))
-      scope   <- EitherT.fromOption[Task](scopes.headOption, Errors.SCOPE_NOT_FOUND)
+      scope   <- EitherT.fromOption[IO](scopes.headOption, Errors.SCOPE_NOT_FOUND)
     } yield {
       scopes shouldNot be (empty)
       storedScopeId.set(scope.id)
@@ -138,7 +133,7 @@ class RealmsTests extends IntegrationSpec {
     for {
       _       <- EitherT(groupService.create(Group.Create(name = "test_group")))
       opt     <- EitherT(groupService.fetch()).map(_.find(_.name == "test_group"))
-      group   <- EitherT.fromOption[Task](opt, Errors.NO_GROUPS_FOUND)
+      group   <- EitherT.fromOption[IO](opt, Errors.NO_GROUPS_FOUND)
       _       <- EitherT(realmService.assignGroupAsDefault(group.id))
       fetched <- EitherT(realmService.fetchDefaultGroups())
     } yield {
@@ -164,7 +159,7 @@ class RealmsTests extends IntegrationSpec {
   "fetchOptionalClientScopes" should "retrieve a non-empty list of assigned optional client scopes" in {
     for {
       scopes  <- EitherT(realmService.fetchOptionalClientScopes("test_realm"))
-      scope   <- EitherT.fromOption[Task](scopes.headOption, Errors.SCOPE_NOT_FOUND)
+      scope   <- EitherT.fromOption[IO](scopes.headOption, Errors.SCOPE_NOT_FOUND)
     } yield {
       scopes shouldNot be (empty)
       storedScopeId.set(scope.id)
@@ -189,12 +184,6 @@ class RealmsTests extends IntegrationSpec {
   "fetchEvents" should "retrieve a list of login events" in {
     realmService.fetchEvents()
   }.shouldReturnSuccess
-
-  "fetchEventsS" should "be able to stream a list of login events" in {
-    realmService.fetchEventsS().toListL.map { events =>
-      events shouldBe a [List[_]]
-    }
-  }.runToFuture
 
   "deleteAllEvents" should "delete all logging events" in {
     for {
@@ -228,14 +217,14 @@ class RealmsTests extends IntegrationSpec {
     for {
       id        <- EitherT(clientService.fetch(clientId = Some("account"))).map(_.head.id)
       option    <- EitherT(clientService.fetchUserSessions(id)).map(_.headOption)
-      session   <- EitherT.fromOption[Task](option, Errors.NO_SESSIONS_FOUND)
+      session   <- EitherT.fromOption[IO](option, Errors.NO_SESSIONS_FOUND)
       _         <- EitherT(realmService.removeUserSession(session.id))
       sessions  <- EitherT(clientService.fetchUserSessions(id))
     } yield (sessions.map(_.id), session.id)
   }.value.map {
     case Left(l)          => l.getMessage.toLowerCase shouldBe "no sessions found."
     case Right((ids, id)) => ids shouldNot contain (id)
-  }.runToFuture
+  }.unsafeToFuture
 
   "fetchUsersManagementPermissions" should "retrieve an object stating that management permissions are disabled" in {
     realmService.fetchUsersManagementPermissions("test_realm").map(_.map { permissions =>
@@ -272,7 +261,7 @@ class RealmsTests extends IntegrationSpec {
     for {
       _       <- EitherT(realmService.createInitialAccessToken(config, "test_realm"))
       tokens  <- EitherT(realmService.fetchInitialAccessTokens("test_realm"))
-      token   <- EitherT.fromOption[Task](tokens.headOption, Errors.NO_TOKENS_FOUND)
+      token   <- EitherT.fromOption[IO](tokens.headOption, Errors.NO_TOKENS_FOUND)
     } yield {
       token.count shouldBe 5
       storedTokenId.set(token.id)

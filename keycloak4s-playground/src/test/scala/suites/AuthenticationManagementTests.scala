@@ -1,12 +1,12 @@
 package suites
 
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
+import cats.effect.IO
 import com.fullfacing.keycloak4s.core.models._
-import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class AuthenticationManagementTests extends IntegrationSpec {
@@ -60,7 +60,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
     val option = storedExecutionsInfo.get().find(_.configurable)
 
     for {
-      execution <- EitherT.fromOption[Task](option, Errors.EXECUTION_NOT_FOUND)
+      execution <- EitherT.fromOption[IO](option, Errors.EXECUTION_NOT_FOUND)
       _         <- EitherT(authMgmt.createExecutionConfig(execution.id, config))
     } yield storedExecutionInfo.set(execution)
   }.value.shouldReturnSuccess
@@ -75,7 +75,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
     val option = storedExecution.get().authenticatorConfig
 
     for {
-      configId  <- EitherT.fromOption[Task](option, Errors.CONFIG_NOT_FOUND)
+      configId  <- EitherT.fromOption[IO](option, Errors.CONFIG_NOT_FOUND)
       config    <- EitherT(authMgmt.fetchAuthenticatorProviderConfig(configId))
     } yield {
       config.alias shouldBe "test_config"
@@ -104,7 +104,7 @@ class AuthenticationManagementTests extends IntegrationSpec {
 
     for {
       infos       <- EitherT(authMgmt.fetchFlowExecutions("temp_flow"))
-      info        <- EitherT.fromOption[Task](infos.headOption, Errors.EXECUTION_NOT_FOUND)
+      info        <- EitherT.fromOption[IO](infos.headOption, Errors.EXECUTION_NOT_FOUND)
       execution1  <- EitherT(authMgmt.fetchExecution(info.id))
       _           <- EitherT(authMgmt.lowerExecutionPriority(execution1.id))
       execution2  <- EitherT(authMgmt.fetchExecution(info.id))

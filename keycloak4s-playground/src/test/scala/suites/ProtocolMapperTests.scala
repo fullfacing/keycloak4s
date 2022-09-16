@@ -1,14 +1,14 @@
 package suites
 
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
+import cats.effect.IO
 import com.fullfacing.keycloak4s.core.models.enums.{ProtocolMapperEntities, Protocols}
 import com.fullfacing.keycloak4s.core.models.{Client, ClientScope, ProtocolMapper}
-import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class ProtocolMapperTests extends IntegrationSpec {
@@ -32,22 +32,22 @@ class ProtocolMapperTests extends IntegrationSpec {
   private val sProtocolMap4  = new AtomicReference[UUID]()
 
   "Create Supporting objects" should "" in {
-    val task =
+    val IO =
       for {
         _  <- EitherT(clientService.create(clientCreate))
         c  <- EitherT(clientService.fetch(clientId = Some("protocol-mappers-test")))
-        c1 <- EitherT.fromOption[Task](c.headOption, Errors.CLIENT_NOT_FOUND)
+        c1 <- EitherT.fromOption[IO](c.headOption, Errors.CLIENT_NOT_FOUND)
         _  =  clientUuid.set(c1.id)
         _  <- EitherT(clientScopeService.create(scope1Create))
         cs <- EitherT(clientScopeService.fetch())
-        s1 <- EitherT.fromOption[Task](cs.find(_.name == "scope1"), Errors.SCOPE_NOT_FOUND)
+        s1 <- EitherT.fromOption[IO](cs.find(_.name == "scope1"), Errors.SCOPE_NOT_FOUND)
       } yield scope1.set(s1.id)
 
-      task.value.shouldReturnSuccess
+      IO.value.shouldReturnSuccess
   }
 
   "create" should "add a protocol mapper to the client or client scope" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(protocolMapService.create(clientUuid.get(), ProtocolMapperEntities.Client, create1))
         _ <- EitherT(protocolMapService.create(scope1.get(), ProtocolMapperEntities.Scope, create1))
@@ -72,11 +72,11 @@ class ProtocolMapperTests extends IntegrationSpec {
         sProtocolMap2.set(p4.get.id)
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "createMany" should "add the given valid protocol mappers to the client or client scope" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(protocolMapService.createMany(clientUuid.get(), ProtocolMapperEntities.Client, List(create3, create4)))
         _ <- EitherT(protocolMapService.createMany(scope1.get(), ProtocolMapperEntities.Scope, List(create3, create4)))
@@ -100,11 +100,11 @@ class ProtocolMapperTests extends IntegrationSpec {
       }
 
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetch" should "retrieve all protocol mappers belonging to the given client or scope" in {
-    val task =
+    val IO =
       for {
         c <- EitherT(protocolMapService.fetch(clientUuid.get(), ProtocolMapperEntities.Client))
         s <- EitherT(protocolMapService.fetch(scope1.get(), ProtocolMapperEntities.Scope))
@@ -113,21 +113,21 @@ class ProtocolMapperTests extends IntegrationSpec {
         s.nonEmpty shouldBe true
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetchById" should "retrieve the protocol mapper with the given" in {
-    val task =
+    val IO =
       for {
         _ <- protocolMapService.fetchById(clientUuid.get(), ProtocolMapperEntities.Client, cProtocolMap1.get())
         r <- protocolMapService.fetchById(scope1.get(), ProtocolMapperEntities.Scope, sProtocolMap1.get())
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   "fetchByProtocol" should "retrieve all protocol mappers belong to the given entity and have the given protocol type" in {
-    val task =
+    val IO =
       for {
         c1 <- EitherT(protocolMapService.fetchByProtocol(clientUuid.get(), ProtocolMapperEntities.Client, Protocols.OpenIdConnect))
         s1 <- EitherT(protocolMapService.fetchByProtocol(scope1.get(), ProtocolMapperEntities.Scope, Protocols.OpenIdConnect))
@@ -146,7 +146,7 @@ class ProtocolMapperTests extends IntegrationSpec {
         s2.exists(_.id == sProtocolMap3.get()) shouldBe true
         s2.exists(_.id == sProtocolMap4.get()) shouldBe true
       }
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "update" should "successfully alter the specified properties of the given protocol mapper" in {
@@ -158,7 +158,7 @@ class ProtocolMapperTests extends IntegrationSpec {
         config         = Some(Map("key" -> "value"))
       )
 
-    val task =
+    val IO =
       for {
         _  <- EitherT(protocolMapService.update(clientUuid.get(), ProtocolMapperEntities.Client, cProtocolMap1.get(), update(cProtocolMap1.get(), create1)))
         _  <- EitherT(protocolMapService.update(scope1.get(), ProtocolMapperEntities.Scope, sProtocolMap1.get(), update(sProtocolMap1.get(), create1)))
@@ -175,11 +175,11 @@ class ProtocolMapperTests extends IntegrationSpec {
         s2.config.exists(_ == ("key" -> "value")) shouldBe true
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "delete" should "remove the protocol mapper from the given client or scope" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(protocolMapService.delete(clientUuid.get(), ProtocolMapperEntities.Client, cProtocolMap1.get()))
         _ <- EitherT(protocolMapService.delete(clientUuid.get(), ProtocolMapperEntities.Client, cProtocolMap2.get()))
@@ -196,16 +196,16 @@ class ProtocolMapperTests extends IntegrationSpec {
         s.isEmpty shouldBe true
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "Delete Supporting Objects" should "remove all the ancillary objects created for testing Roles" in {
-    val task =
+    val IO =
       for {
         _ <- clientService.delete(clientUuid.get())
         r <- clientScopeService.delete(scope1.get())
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 }

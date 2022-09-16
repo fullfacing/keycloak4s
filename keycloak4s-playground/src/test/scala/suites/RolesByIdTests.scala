@@ -1,13 +1,13 @@
 package suites
 
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-
 import cats.data.EitherT
+import cats.effect.IO
 import com.fullfacing.keycloak4s.core.models.Role
-import monix.eval.Task
 import org.scalatest.DoNotDiscover
 import utils.{Errors, IntegrationSpec}
+
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 @DoNotDiscover
 class RolesByIdTests extends IntegrationSpec {
@@ -50,10 +50,10 @@ class RolesByIdTests extends IntegrationSpec {
 
 
   "Test setup" should "create the roles necessary to perform these tests" in {
-    val task =
+    val IO =
       for {
         c   <- EitherT(clientService.fetch(clientId = Some("admin-cli")))
-        c1  <- EitherT.fromOption[Task](c.headOption, Errors.NO_CLIENTS_FOUND)
+        c1  <- EitherT.fromOption[IO](c.headOption, Errors.NO_CLIENTS_FOUND)
         _   =  cId.set(c1.id)
         _   <- EitherT(realmRoleService.create(rRole1Create))
         _   <- EitherT(realmRoleService.create(rRole2Create))
@@ -61,11 +61,11 @@ class RolesByIdTests extends IntegrationSpec {
         _   <- EitherT(clientRoleService.create(cId.get(), cRole2Create))
       } yield ()
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   it should "fetch the created roles and store their IDs" in {
-    val task =
+    val IO =
       for {
         r <- EitherT(realmRoleService.fetch())
         c <- EitherT(clientRoleService.fetch(cId.get()))
@@ -76,11 +76,11 @@ class RolesByIdTests extends IntegrationSpec {
         cRole2.set(c.find(_.name == cRole2Name).get.id)
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetch" should "successfully retrieve the requested roles" in {
-    val task =
+    val IO =
       for {
         r1 <- EitherT(rolesByIdService.fetch(rRole1.get()))
         r2 <- EitherT(rolesByIdService.fetch(rRole2.get()))
@@ -93,12 +93,12 @@ class RolesByIdTests extends IntegrationSpec {
         c2.name shouldBe cRole2Name
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "update" should "successfully update specified values of the given role" in {
     val updatedDescription = Some("New description")
-    val task =
+    val IO =
       for {
         _ <- EitherT(rolesByIdService.update(rRole1.get(), Role.Update(name = rRole1Name, description = updatedDescription)))
         _ <- EitherT(rolesByIdService.update(cRole1.get(), Role.Update(name = cRole1Name, description = updatedDescription)))
@@ -109,21 +109,21 @@ class RolesByIdTests extends IntegrationSpec {
         c.description shouldBe updatedDescription
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "addCompositeRoles" should "successfully add sub roles to a given role" in {
-    val task=
+    val IO=
       for {
         _ <- rolesByIdService.addCompositeRoles(rRole1.get(), List(rRole2.get(), cRole2.get()))
         r <- rolesByIdService.addCompositeRoles(cRole1.get(), List(rRole2.get(), cRole2.get()))
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   "fetchCompositeRoles" should "successfully retrieve all sub roles of the given role" in {
-    val task =
+    val IO =
       for {
         r <- EitherT(rolesByIdService.fetchCompositeRoles(rRole1.get()))
         c <- EitherT(rolesByIdService.fetchCompositeRoles(cRole1.get()))
@@ -132,11 +132,11 @@ class RolesByIdTests extends IntegrationSpec {
         c.size shouldBe 2
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetchClientLevelCompositeRoles" should "successfully retrieve all client level sub roles of the given role" in {
-    val task =
+    val IO =
       for {
         r <- EitherT(rolesByIdService.fetchClientLevelCompositeRoles(rRole1.get(), cId.get()))
         c <- EitherT(rolesByIdService.fetchClientLevelCompositeRoles(cRole1.get(), cId.get()))
@@ -145,11 +145,11 @@ class RolesByIdTests extends IntegrationSpec {
         c.size shouldBe 1
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetchRealmLevelCompositeRoles" should "successfully retrieve all realm level sub roles of the given role" in {
-    val task =
+    val IO =
       for {
         r <- EitherT(rolesByIdService.fetchRealmLevelCompositeRoles(rRole1.get()))
         c <- EitherT(rolesByIdService.fetchRealmLevelCompositeRoles(cRole1.get()))
@@ -158,11 +158,11 @@ class RolesByIdTests extends IntegrationSpec {
         c.size shouldBe 1
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "removeCompositeRoles" should "successfully remove all specified sub roles from the given role" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(rolesByIdService.removeCompositeRoles(rRole1.get(), List(rRole2.get(), cRole2.get())))
         _ <- EitherT(rolesByIdService.removeCompositeRoles(cRole1.get(), List(rRole2.get(), cRole2.get())))
@@ -173,21 +173,21 @@ class RolesByIdTests extends IntegrationSpec {
         c.size shouldBe 0
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "fetchManagementPermissions" should "return the management permissions of the role stating whether it is enabled or not" in {
-    val task =
+    val IO =
       for {
         _ <- rolesByIdService.fetchManagementPermissions(rRole1.get())
         r <- rolesByIdService.fetchManagementPermissions(cRole1.get())
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 
   "enableManagementPermissions" should "successfully initialise the role's auth permissions" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(rolesByIdService.enableManagementPermissions(rRole1.get()))
         _ <- EitherT(rolesByIdService.enableManagementPermissions(cRole1.get()))
@@ -198,11 +198,11 @@ class RolesByIdTests extends IntegrationSpec {
         c.enabled shouldBe true
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "disableManagementPermissions" should "successfully disable the role's auth permissions" in {
-    val task =
+    val IO =
       for {
         _ <- EitherT(rolesByIdService.disableManagementPermissions(rRole1.get()))
         _ <- EitherT(rolesByIdService.disableManagementPermissions(cRole1.get()))
@@ -213,11 +213,11 @@ class RolesByIdTests extends IntegrationSpec {
         c.enabled shouldBe false
       }
 
-    task.value.shouldReturnSuccess
+    IO.value.shouldReturnSuccess
   }
 
   "delete" should "successfully delete all specified roles" in {
-    val task =
+    val IO =
       for {
         _ <- rolesByIdService.delete(rRole1.get())
         _ <- rolesByIdService.delete(rRole2.get())
@@ -225,6 +225,6 @@ class RolesByIdTests extends IntegrationSpec {
         r <- rolesByIdService.delete(cRole2.get())
       } yield r
 
-    task.shouldReturnSuccess
+    IO.shouldReturnSuccess
   }
 }

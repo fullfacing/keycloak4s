@@ -2,7 +2,7 @@ import suites._
 import org.scalatest.Sequential
 
 class IntegrationTests extends Sequential(
-  new AttackDetectionTests,
+//  new AttackDetectionTests,
   new AuthenticationManagementTests,
   new ClientsTests,
   new ComponentsTests,
