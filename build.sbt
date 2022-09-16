@@ -99,13 +99,9 @@ lazy val global = {
       inquireVersions,
       runClean,
       setReleaseVersion,
-      tagRelease,
       pushChanges,
       releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepCommand("sonatypeBundleRelease"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
+      releaseStepCommand("sonatypeBundleRelease")
     )
   )
 }
@@ -178,7 +174,7 @@ lazy val coreDependencies: Seq[ModuleID] = cats ++ json4s ++ logback ++ enumerat
 lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
   .settings(global: _*)
   .settings(libraryDependencies ++= coreDependencies)
-  .settings(name := "keycloak4s-core", publishArtifact := true)
+  .settings(name := "keycloak4s-core-ce3", publishArtifact := true)
 
 // ---------------------------------------------- //
 // Project and configuration for keycloak4s-admin //
@@ -186,7 +182,7 @@ lazy val `keycloak4s-core` = (project in file("./keycloak4s-core"))
 lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
   .settings(global: _*)
   .settings(libraryDependencies ++= sttp)
-  .settings(name := "keycloak4s-admin", publishArtifact := true)
+  .settings(name := "keycloak4s-admin-ce3", publishArtifact := true)
   .dependsOn(`keycloak4s-core`)
 
 // --------------------------------------------------- //

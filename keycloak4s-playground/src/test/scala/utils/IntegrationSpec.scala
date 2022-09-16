@@ -20,27 +20,27 @@ class IntegrationSpec extends AsyncFlatSpec with Matchers with Inspectors {
   val keycloakConfig: ConfigWithAuth    = ConfigWithAuth("http", "127.0.0.1", 8080, "master", authConfig, basePath = List.empty)
 
   /* Keycloak Client Implicits **/
-    implicit val backend: SttpBackend[IO, Any] = ArmeriaCatsBackend[IO]()
+  implicit val backend: SttpBackend[IO, Any] = ArmeriaCatsBackend[IO]()
 
-    implicit val client: KeycloakClient[IO] = new KeycloakClient(keycloakConfig)
+  implicit val client: KeycloakClient[IO] = new KeycloakClient(keycloakConfig)
 
-    /* Keycloak Services **/
-    val attackDetService: AttackDetection[IO] = Keycloak.AttackDetection
-    val authMgmt: AuthenticationManagement[IO] = Keycloak.AuthenticationManagement
-    val clientScopeService: ClientScopes[IO] = Keycloak.ClientScopes
-    val clientService: Clients[IO] = Keycloak.Clients
-    val componentService: Components[IO] = Keycloak.Components
-    val groupService: Groups[IO] = Keycloak.Groups
-    val idProvService: IdentityProviders[IO] = Keycloak.IdentityProviders
-    val protocolMapService: ProtocolMappers[IO] = Keycloak.ProtocolMappers
-    val realmService: RealmsAdmin[IO] = Keycloak.RealmsAdmin
-    val rolesByIdService: RolesById[IO] = Keycloak.RolesById
-    val roleService: Roles[IO] = Keycloak.Roles
-    val userService: Users[IO] = Keycloak.Users
+  /* Keycloak Services **/
+  val attackDetService: AttackDetection[IO] = Keycloak.AttackDetection
+  val authMgmt: AuthenticationManagement[IO] = Keycloak.AuthenticationManagement
+  val clientScopeService: ClientScopes[IO] = Keycloak.ClientScopes
+  val clientService: Clients[IO] = Keycloak.Clients
+  val componentService: Components[IO] = Keycloak.Components
+  val groupService: Groups[IO] = Keycloak.Groups
+  val idProvService: IdentityProviders[IO] = Keycloak.IdentityProviders
+  val protocolMapService: ProtocolMappers[IO] = Keycloak.ProtocolMappers
+  val realmService: RealmsAdmin[IO] = Keycloak.RealmsAdmin
+  val rolesByIdService: RolesById[IO] = Keycloak.RolesById
+  val roleService: Roles[IO] = Keycloak.Roles
+  val userService: Users[IO] = Keycloak.Users
 
-    /* Sub-Services **/
-    val clientRoleService: roleService.ClientLevel.type = roleService.ClientLevel
-    val realmRoleService: roleService.RealmLevel.type = roleService.RealmLevel
+  /* Sub-Services **/
+  val clientRoleService: roleService.ClientLevel.type = roleService.ClientLevel
+  val realmRoleService: roleService.RealmLevel.type = roleService.RealmLevel
 
   /* Implicit Helper Classes **/
   implicit class taskImpl[A, B](task: IO[Either[B, A]]) {
