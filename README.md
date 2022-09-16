@@ -16,6 +16,8 @@ The project is split into the following modules, each as a separate dependency:
 * `keycloak4s-admin-monix`: A more concrete implementation of keycloak-admin using [Monix][Monix]. Contains additional reactive streaming functionality.
 * `keycloak4s-auth-akka-http`: A client adapter capable of validating Keycloak's bearer tokens, and providing authorization for [Akka-HTTP][Akka-Http] requests.
 
+* `keycloak4s-admin-ce3`: Admin module upgraded to Cats Effect 3
+
 ### Contents
 1. [Installation](#Installation)
 2. [Module: keycloak4s-core](#keycloak4s-core)
