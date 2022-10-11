@@ -107,6 +107,8 @@ case object EventTypes extends StringEnum[EventType] {
   case object ValidateAccessTokenError            extends EventType("VALIDATE_ACCESS_TOKEN_ERROR")
   case object VerifyEmail                         extends EventType("VERIFY_EMAIL")
   case object VerifyEmailError                    extends EventType("VERIFY_EMAIL_ERROR")
+  case object VerifyProfile                       extends EventType("VERIFY_PROFILE")
+  case object VerifyProfileError                  extends EventType("VERIFY_PROFILE_ERROR")
 
   val values: immutable.IndexedSeq[EventType] = findValues
 }

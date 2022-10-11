@@ -243,13 +243,6 @@ lazy val `keycloak4s-akka-http` = (project in file("./keycloak4s-auth/akka-http"
   .settings(name := "keycloak4s-auth-akka-http", publishArtifact := true)
   .dependsOn(`keycloak4s-auth-core`)
 
-// ------------------------------------------------------- //
-// Project and configuration for keycloak4s-authz-client //
-// ------------------------------------------------------- //
-lazy val `keycloak4s-authz` = (project in file("./keycloak4s-authz-client"))
-  .settings(global: _*)
-  .settings(name := "keycloak4s-authz-client", publishArtifact := true)
-
 // --------------------------------------------------- //
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
@@ -281,6 +274,5 @@ lazy val root = (project in file("."))
     `keycloak4s-monix-bio`,
     `keycloak4s-auth-core`,
     `keycloak4s-akka-http`,
-    `keycloak4s-authz`,
     `keycloak4s-playground`
   )
