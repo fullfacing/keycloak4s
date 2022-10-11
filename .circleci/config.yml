@@ -64,7 +64,7 @@ jobs:
       - run:
           name: Set Git Config
           command: |
-            git push --set-upstream origin master
+            git push --set-upstream origin legacy/v2
             git config --global user.email "stuartjmsn3@gmail.com"
             git config --global user.name "Stuart"
       - run:
