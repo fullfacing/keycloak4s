@@ -189,7 +189,7 @@ lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 val catsBackend: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.0"
+  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.2"
 )
 
  lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
