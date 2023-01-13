@@ -12,6 +12,7 @@ object EnumSerializers {
     Json4s.serializer(LogicTypes),
     Json4s.serializer(PolicyEnforcementModes),
     Json4s.serializer(PolicyTypes),
+    Json4s.serializer(PolicyResponseTypes),
     Json4s.serializer(ProviderTypes),
     Json4s.serializer(CredentialTypes),
     Json4s.serializer(Directions),

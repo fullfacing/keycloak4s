@@ -1,8 +1,7 @@
 package com.fullfacing.keycloak4s.core.models
 
 import java.util.UUID
-
-import com.fullfacing.keycloak4s.core.models.enums.RequiredAction
+import com.fullfacing.keycloak4s.core.models.enums.{PolicyResponseType, PolicyType, RequiredAction}
 
 final case class User(username: String,
                       access: Option[UserAccess] = None,
@@ -39,6 +38,7 @@ object User {
                           emailVerified: Option[Boolean] = None,
                           firstName: Option[String] = None,
                           lastName: Option[String] = None,
+                          realmRoles: Option[List[String]] = None,
                           federationLink: Option[String] = None,
                           requiredActions: List[RequiredAction] = List.empty[RequiredAction])
 
@@ -66,5 +66,42 @@ object User {
                           serviceAccountClientId: Option[String] = None,
                           createdTimestamp: Option[Long] = None,
                           id: Option[UUID] = None)
+
+  /**
+   * Request model to create multiple users at the same time.
+   *
+   * @param ifResourceExists If the resource already exists what should happen then (Skip, Overwrite, fail)
+   * @param users            The list of users to add.
+   */
+  case class CreateUsers(ifResourceExists: PolicyType,
+                         users: List[User.Create])
+
+  /**
+   * The response model for each user in request.
+   *
+   * @param action       What action was applied when trying to create user (Overwritten, Added, Skipped)
+   * @param resourceType The resourceType. In this case always "USER".
+   * @param resourceName The username.
+   * @param id           The id of the user in keycloak.
+   */
+  case class CreateUsersResponseUser(action: PolicyResponseType,
+                                     resourceType: String,
+                                     resourceName: String,
+                                     id: UUID)
+
+  /**
+   * The response model when trying to add multiple users.
+   *
+   * @param overwritten The count of users that were overwritten.
+   * @param added       The count of users added.
+   * @param skipped     The count of users skipped.
+   * @param results     The result response of each user creation.
+   */
+  case class CreateUsersResponse(overwritten: Int,
+                                 added: Int,
+                                 skipped: Int,
+                                 results: List[CreateUsersResponseUser])
+
+
 }
 
