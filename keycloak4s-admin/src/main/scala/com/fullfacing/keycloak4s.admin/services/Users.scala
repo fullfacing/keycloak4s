@@ -1,12 +1,12 @@
 package com.fullfacing.keycloak4s.admin.services
 
 import java.util.UUID
-
 import cats.effect.Concurrent
 import cats.implicits._
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient
 import com.fullfacing.keycloak4s.admin.client.KeycloakClient.Headers
-import com.fullfacing.keycloak4s.core.models.enums.RequiredAction
+import com.fullfacing.keycloak4s.core.models.User.{CreateUsers, CreateUsersResponse}
+import com.fullfacing.keycloak4s.core.models.enums.{PolicyResponseType, PolicyType, PolicyTypes, RequiredAction}
 import com.fullfacing.keycloak4s.core.models.{KeycloakError, _}
 
 import scala.collection.immutable.Seq
@@ -20,6 +20,13 @@ class Users[R[+_]: Concurrent](implicit client: KeycloakClient[R]) {
   def create(user: User.Create): R[Either[KeycloakError, UUID]] = {
     val path = Seq(client.realm, "users")
     Concurrent[R].map(client.post[Headers](path, user))(extractUuid)
+  }
+
+  /** Create new users in the realm. */
+  def createMany(users: List[User.Create], ifResourceExists: PolicyType = PolicyTypes.Skip): R[Either[KeycloakError, CreateUsersResponse]] = {
+    val path    = Seq(client.realm, "partialImport")
+    val request = CreateUsers(ifResourceExists = ifResourceExists, users = users)
+    client.post[CreateUsersResponse](path, request)
   }
 
   /** Compound function that creates and then retrieves a new user. */
