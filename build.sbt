@@ -118,7 +118,7 @@ val json4sVersion         = "4.0.5"
 val logbackVersion        = "1.4.0"
 val nimbusVersion         = "9.24.4"
 val scalaTestVersion      = "3.2.13"
-val sttpVersion           = "3.7.6"
+val sttpVersion           = "3.8.11"
 
 // -------------------------------------- //
 //          Library Dependencies          //
