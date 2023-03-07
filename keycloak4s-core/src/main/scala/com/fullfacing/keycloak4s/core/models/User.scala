@@ -25,7 +25,7 @@ final case class User(username: String,
                       requiredActions: List[RequiredAction] = List.empty[RequiredAction],
                       self: Option[String] = None,
                       serviceAccountClientId: Option[String] = None,
-                      createdTimestamp: Long,
+                      createdTimestamp: Option[Long] = None,
                       id: UUID)
 
 object User {
