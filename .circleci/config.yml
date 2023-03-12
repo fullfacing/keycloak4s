@@ -23,7 +23,7 @@ jobs:
     working_directory: ~/code
     docker:
       - image: circleci/openjdk:latest
-      - image: quay.io/keycloak/keycloak:latest
+      - image: quay.io/keycloak/keycloak:19.0.1
         environment:
           KEYCLOAK_ADMIN: "admin"
           KEYCLOAK_ADMIN_PASSWORD: "admin"
