@@ -41,8 +41,8 @@ Each module can be pulled into a project separately using the following SBT depe
 * keycloak4s-auth-akka-http:    `"com.fullfacing" %% "keycloak4s-auth-akka-http" % "3.2.4"`
 
 Cats 3 modules
-* keycloak4s-core-ce3:          `"com.fullfacing" %% "keycloak4s-core-ce3" % "3.2.0"`
-* keycloak4s-admin-ce3:         `"com.fullfacing" %% "keycloak4s-admin-ce3" % "3.2.0"`
+* keycloak4s-core-ce3:          `"com.fullfacing" %% "keycloak4s-core-ce3" % "3.2.1"`
+* keycloak4s-admin-ce3:         `"com.fullfacing" %% "keycloak4s-admin-ce3" % "3.2.1"`
 
 The core module is a dependency for all other modules, and is automatically pulled in when using any other module.
 
