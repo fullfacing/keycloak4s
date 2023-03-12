@@ -29,7 +29,7 @@ val scalac212Opts = baseScalaOpts ++ Seq("-Ypartial-unification")
 
 lazy val global = {
   Seq(
-    scalaVersion  := "2.13.8",
+    scalaVersion  := "2.13.10",
     organization  := "com.fullfacing",
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 12 => scalac212Opts
@@ -42,7 +42,7 @@ lazy val global = {
 
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
 
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.16"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.17"),
 
     // Your profile name of the sonatype account. The default is the same with the organization value
     sonatypeProfileName := "com.fullfacing",
@@ -109,16 +109,16 @@ lazy val global = {
 // ---------------------------------- //
 //          Library Versions          //
 // ---------------------------------- //
-val akkaHttpVersion       = "10.2.10"
-val akkaStreamsVersion    = "2.6.20"
-val catsEffectVersion     = "3.3.14"
-val catsCoreVersion       = "2.8.0"
-val enumeratumVersion     = "1.7.1"
-val json4sVersion         = "4.0.5"
-val logbackVersion        = "1.4.0"
-val nimbusVersion         = "9.24.4"
-val scalaTestVersion      = "3.2.13"
-val sttpVersion           = "3.7.6"
+val akkaHttpVersion       = "10.5.0"
+val akkaStreamsVersion    = "2.7.0"
+val catsEffectVersion     = "3.4.8"
+val catsCoreVersion       = "2.9.0"
+val enumeratumVersion     = "1.7.2"
+val json4sVersion         = "4.0.6"
+val logbackVersion        = "1.4.5"
+val nimbusVersion         = "9.30.2"
+val scalaTestVersion      = "3.2.15"
+val sttpVersion           = "3.8.13"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -153,7 +153,7 @@ val logback: Seq[ModuleID] = Seq(
 
 val nimbus: Seq[ModuleID] = Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % nimbusVersion,
-  "net.minidev" % "json-smart" % "2.4.8"
+  "net.minidev" % "json-smart" % "2.4.9"
 )
 
 val scalaTest: Seq[ModuleID] = Seq(
@@ -189,7 +189,7 @@ lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 val catsBackend: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.0"
+  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.13"
 )
 
  lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
