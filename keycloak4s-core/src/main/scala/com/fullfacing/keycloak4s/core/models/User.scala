@@ -40,6 +40,7 @@ object User {
                           lastName: Option[String] = None,
                           realmRoles: Option[List[String]] = None,
                           federationLink: Option[String] = None,
+                          createdTimestamp: Option[Long] = None,
                           requiredActions: List[RequiredAction] = List.empty[RequiredAction])
 
   final case class Update(username: Option[String] = None,
