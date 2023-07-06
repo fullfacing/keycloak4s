@@ -118,7 +118,7 @@ val json4sVersion         = "4.0.6"
 val logbackVersion        = "1.4.5"
 val nimbusVersion         = "9.30.2"
 val scalaTestVersion      = "3.2.15"
-val sttpVersion           = "3.8.13"
+val sttpVersion           = "3.8.16"
 
 // -------------------------------------- //
 //          Library Dependencies          //
@@ -189,7 +189,7 @@ lazy val `keycloak4s-admin` = (project in file("./keycloak4s-admin"))
 // Project and configuration for keycloak4s-playground //
 // --------------------------------------------------- //
 val catsBackend: Seq[ModuleID] = Seq(
-  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.13"
+  "com.softwaremill.sttp.client3" %% "armeria-backend-cats" % "3.8.16"
 )
 
  lazy val `keycloak4s-playground` = (project in file("./keycloak4s-playground"))
