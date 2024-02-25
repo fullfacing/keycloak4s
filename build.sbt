@@ -36,7 +36,7 @@ lazy val global = {
       case _                       => scalac213Opts
     }),
 
-    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.3" cross CrossVersion.full),
 
     credentials += Credentials("GnuPG Key ID", "gpg", "B45D4204DBB121424926CFA6DBC0CB15C9B7283D", "ignored"),
 
